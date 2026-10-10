@@ -4,7 +4,8 @@
 // Then type commands on stdin (one per line). Events are printed as JSON lines on stdout.
 //   status                      -> prints your needs/coins/position/actions
 //   go <place>                  -> walk there: diner | office | school | arcade | mart | plaza | home | house <player> | <x>,<y> (town tile)
-//   do <action> [arg]           -> act at the spot you're next to: sleep eat work play hang study talk gift checkout | shop <item key e.g. coffee, f:couch>
+//   do <action> [arg]           -> act at the spot you're next to: sleep eat work play hang study talk checkout | shop <item key e.g. coffee, f:couch>
+//   do gift <item> <player>     -> give flowers|plush|f:<furniture> from your bag to an adjacent player/agent
 //   say <text>                  -> speech bubble above your agent (shown to everyone, max 80 chars)
 //   jump                        -> jump emote
 //   place <item>                -> place a bought furniture item inside your house (auto tile)
@@ -36,13 +37,14 @@ async function walkTo(place){const g=goalFor(place);if(!g){out({ev:'error',msg:'
   const before=JSON.stringify(q);send({t:'step',dx:n[0]-q.x,dy:n[1]-q.y});
   for(let k=0;k<20&&JSON.stringify(P().pos)===before;k++)await sleep(50);await sleep(60);}
   out({ev:'error',msg:'walk timed out'});return false;}finally{walking--;}}
-async function doAct(a,arg){send({t:'do',action:a,arg:arg||null});await sleep(300);const p=P();out({ev:'did',action:a,busy:p&&p.busy?p.busy.a:null});}
+async function doAct(a,arg,who){if(a==='gift'&&who){const q=Object.values(st.players).find(q=>q.name.toLowerCase().startsWith(who.toLowerCase()));if(!q){out({ev:'error',msg:'no player named '+who});return;}arg=(arg||'')+'@'+q.id;}
+ send({t:'do',action:a,arg:arg||null});await sleep(300);const p=P();out({ev:'did',action:a,busy:p&&p.busy?p.busy.a:null});}
 async function autopilot(){while(true){await sleep(500);if(!auto||walking||!P()||st.phase!=='day'||P().busy)continue;const p=P(),n=p.needs;
  let plan=n.energy<40?['home','sleep']:p.coins<25?['office','work']:n.energy<60?['diner','eat']:n.mood<=n.social?['arcade','play']:['plaza','hang'];
  if(p.cd&&p.cd[plan[1]]>Date.now())plan=['diner','eat'];out({ev:'auto',plan});if(await walkTo(plan[0]))await doAct(plan[1]);}}
 function handle(line){const [cmd,...rest]=line.trim().split(/\s+/);const arg=rest.join(' ');
  const job={status:async()=>{const p=P();out({ev:'status',phase:st&&st.phase,day:st&&st.day,me:p&&{name:p.name,pos:p.pos,needs:p.needs,coins:p.coins,visits:p.visits,edu:p.edu,streak:p.streak,inv:p.inv,gifts:p.gifts,busy:p.busy&&p.busy.a},actions:p?E.actionsAt(st,me).map(a=>a.action+(a.aisle?':'+a.aisle:'')+(a.target?':'+a.target:'')):[]});},
-  go:()=>walkTo(arg),do:()=>doAct(rest[0],rest[1]),say:async()=>send({t:'say',text:arg}),jump:async()=>send({t:'emote'}),
+  go:()=>walkTo(arg),do:()=>doAct(rest[0],rest[1],rest.slice(2).join(' ')),say:async()=>send({t:'say',text:arg}),jump:async()=>send({t:'emote'}),
   place:async()=>send({t:'buy',item:rest[0],x:null,y:null}),start:async()=>send({t:'start'}),auto:async()=>{auto=rest[0]!=='off';out({ev:'auto',on:auto});},quit:async()=>process.exit(0)}[cmd];
  if(!job){if(cmd)out({ev:'error',msg:'unknown command '+cmd});return;}queue=queue.then(job).catch(e=>out({ev:'error',msg:String(e)}));}
 (async()=>{E=await loadEngine();ws=new WebSocket((U.protocol==='https:'?'wss://':'ws://')+U.host);

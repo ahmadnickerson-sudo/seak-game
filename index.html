@@ -66,7 +66,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
     <div id="actbar"></div></div>
   <div id="side">
     <div class="card" id="lobbyCard" style="display:none"><b>Lobby</b><div id="lobbyList"></div><div id="inviteBox" style="display:none;margin-top:8px"><div class="small">Invite link: friends open it to join</div><div class="row" style="margin-top:4px"><input id="inviteUrl" readonly style="flex:3;font-size:13px"><button id="copyBtn" style="flex:0">Copy</button><button id="shareBtn" style="flex:0;display:none">Share</button></div></div><div class="row" style="margin-top:8px"><button id="botBtn">+ AI neighbor</button><button id="startBtn">Start game ▶</button></div></div>
-    <div class="card"><div class="row"><b id="meName"></b><span id="coinLbl" style="text-align:right"></span></div><div id="eduLbl" class="small" style="margin:4px 0"></div><div id="rewardLbl" class="small" style="margin:4px 0"></div><div id="needs"></div></div>
+    <div class="card"><div class="row"><b id="meName"></b><span id="coinLbl" style="text-align:right"></span></div><div id="eduLbl" class="small" style="margin:4px 0"></div><div id="rewardLbl" class="small" style="margin:4px 0"></div><div id="giftRow" class="small" style="display:none;margin:4px 0">🎁 Gift to give (E next to someone): <select id="giftSel"></select></div><div id="needs"></div></div>
     <div class="card" id="martCard" style="display:none"><b>🛒 Seak Mart</b> <span class="small" id="martHint"></span><div class="shop" id="martItems" style="margin-top:6px"></div><div id="cartBox" class="small" style="margin-top:6px"></div></div>
     <div class="card" id="buildCard"><b>Build</b> <span class="small" id="buildHint"></span><div class="shop" id="shop" style="margin-top:6px"></div></div>
     <div class="card"><b>Town log</b><div id="log"></div></div>
@@ -188,7 +188,7 @@ function actionsAt(st,id){const p=st.players[id];if(!p)return[];const out=[],see
  // chat: talk to any adjacent player or agent
  st.order.map(x=>st.players[x]).filter(q=>q!==p&&!q.busy&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>out.unshift({action:'talk',src:q.name.replace(' (AI)',''),target:q.id}));
  // gifts: hand one to any adjacent agent
- if(p.gifts&&p.gifts.length)st.order.map(x=>st.players[x]).filter(q=>q!==p&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>out.unshift({action:'gift',src:q.name.replace(' (AI)',''),target:q.id}));
+ if((p.gifts&&p.gifts.length)||(p.inv&&p.inv.length))st.order.map(x=>st.players[x]).filter(q=>q!==p&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>out.unshift({action:'gift',src:q.name.replace(' (AI)',''),target:q.id}));
  return out;}
 const CHAT_LINES={tired:["Yawn… I could really use a nap 😴","So sleepy. Bed is calling me 🛏️"],bored:["I need some arcade time, like, now 👾","Wanna see my high score at the plaza? 🎮"],lonely:["I missed you! Let's hang out 🎉","It's been quiet today… stay a bit? 🥺"],broke:["Off to the Office, gotta earn some coins 💼","Saving up for a café counter ☕"],
  work:["Busy busy! Spreadsheets are fun, right? 📊"],play:["Shh, I'm about to beat the boss! 👾"],happy:["Hi {n}! Lovely day in Seak 🌸","Have you tried the diner yet? 🍔","Race you to the plaza! 🏃","Your house is looking cute, {n} 🏡","Best neighbors ever 💖"]};
@@ -206,7 +206,13 @@ function doAction(st,id,action,now,arg){const p=st.players[id];if(!p||st.phase!=
   const total=p.cart.reduce((s,k)=>s+catItem(k).c,0);if(p.coins<total)return`Not enough coins (total ${total})`;p.coins-=total;const names=[];
   for(const k of p.cart){const it=catItem(k);names.push(it.e+' '+it.n);if(it.fx)for(const n in it.fx)p.needs[n]=clamp(p.needs[n]+it.fx[n]);if(it.gift)p.gifts.push(k);if(it.hat)p.hat=it.hat;if(it.color)p.color=it.color;if(it.furn)p.inv.push(it.furn);}
   log(st,`🧾 ${p.name} checked out at Seak Mart: ${names.join(', ')} (−${total} coins).`);p.cart=[];return'ok';}
- if(action==='gift'){const o=actionsAt(st,id).find(o=>o.action==='gift'&&(!arg||o.target===arg));if(!o)return'Stand next to someone to give a gift';const k=p.gifts.shift(),it=catItem(k),q=st.players[o.target];
+ if(action==='gift'){// arg: "<target>" or "<giftKey>@<target>"; giftKey = flowers|plush|f:<furniture>
+  let gk=null,tg=arg;if(arg&&arg.includes('@')){[gk,tg]=arg.split('@');}
+  const o=actionsAt(st,id).find(o=>o.action==='gift'&&(!tg||o.target===tg));if(!o)return'Stand next to someone to give a gift';const q=st.players[o.target];
+  if(!gk)gk=p.gifts[0]||(p.inv[0]?'f:'+p.inv[0]:null);if(!gk)return'Nothing to give';
+  if(gk.startsWith('f:')){const t=gk.slice(2),i=p.inv.indexOf(t);if(i<0)return'That item is not in your bag';p.inv.splice(i,1);q.inv.push(t);const G=8;
+   p.needs.social=clamp(p.needs.social+G);q.needs.social=clamp(q.needs.social+G);if(q.ai)say(st,q,`A ${ITEMS[t].n}? I'll put it in my house! Thanks ${p.name} 💖`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${ITEMS[t].e} ${ITEMS[t].n} for their home (+${G} Social each).`);return'ok';}
+  const gi=p.gifts.indexOf(gk);if(gi<0)return'That gift is not in your bag';const k=p.gifts.splice(gi,1)[0],it=catItem(k);
   p.needs.social=clamp(p.needs.social+it.gift);q.needs.social=clamp(q.needs.social+it.gift);if(q.ai)say(st,q,`Aww, ${it.e} for me? Thank you ${p.name}! 💖`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${it.n.replace(' (gift)','')} (+${it.gift} Social each).`);return'ok';}
  if(action==='talk'){const o=actionsAt(st,id).find(o=>o.action==='talk'&&(!arg||o.target===arg));if(!o)return'Walk up to someone to chat';const q=st.players[o.target];
   if(cdLeft(st,p,'talk',now)>0)return'Give them a sec 😊';p.cd.talk=now+st.dur.talk;if(q.ai)say(st,q,chatLine(st,q,p),now);else if(!p.say||now>p.say.until)say(st,p,`👋 Hi ${q.name}!`,now);p.needs.social=clamp(p.needs.social+4);q.needs.social=clamp(q.needs.social+4);log(st,`💬 ${p.name} chatted with ${q.name} (+4 Social each).`);return'ok';}
@@ -402,6 +408,8 @@ function ui(){if(!st)return;const p=st.players[me];if(!p)return;
  const cols={energy:'#ffd34d',mood:'#ff9ecb',social:'#8ecbff'};$('needs').innerHTML=E.NEEDS.map(n=>`<div class="small">${n[0].toUpperCase()+n.slice(1)} ${p.needs[n]}</div><div class="bar"><i style="width:${p.needs[n]}%;background:${cols[n]}"></i></div>`).join('');
  const inHome=p.pos.map==='h'+p.lot;$('buildCard').style.opacity=inHome&&st.phase==='day'?1:.5;$('buildHint').textContent=(p.inv.length?'':'Buy furniture at Seak Mart (Furniture aisle). ')+(inHome?'Pick an item from your bag, then tap a free floor tile.':'Go inside your house to place items.');
  $('rewardLbl').textContent=`💼 Shift streak ${p.streak}${p.star?' · 🏅 Star Employee':''} (Great Shift = Energy & Mood ≥ 60 when you work)`+(p.hat?'  '+p.hat:'')+(p.gifts.length?`  🎁×${p.gifts.length}`:'');
+ {const opts=[...new Set(p.gifts)].map(k=>[k,E.catItem(k).e+' '+E.catItem(k).n.replace(' (gift)','')+' ×'+p.gifts.filter(x=>x===k).length]).concat([...new Set(p.inv)].map(t=>['f:'+t,E.ITEMS[t].e+' '+E.ITEMS[t].n+' (furniture) ×'+p.inv.filter(x=>x===t).length]));
+  $('giftRow').style.display=opts.length?'block':'none';const sel=$('giftSel'),cur=sel.value,h=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');if(sel.dataset.h!==h){sel.innerHTML=h;sel.dataset.h=h;if(opts.some(o=>o[0]===cur))sel.value=cur;}}
  martPanel(p);
  [...shop.children].forEach(b=>{const n=p.inv.filter(t=>t===b.dataset.i).length;b.querySelector('.cnt').textContent=n?`×${n} in bag`:`${E.ITEMS[b.dataset.i].c}🪙 at Mart`;b.disabled=!inHome||st.phase!=='day'||!n;b.classList.toggle('sel',selItem===b.dataset.i);});
  $('log').innerHTML=st.log.slice().reverse().slice(0,40).map(l=>`<div><span class="small">D${l.d}</span> ${l.m}</div>`).join('');
@@ -416,9 +424,9 @@ function martPanel(p){const inMart=p.pos.map==='b:mart';$('martCard').style.disp
  const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0);$('cartBox').innerHTML=p.cart.length?`Cart: ${p.cart.map(k=>E.catItem(k).e).join(' ')} · total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}`:'Cart is empty.';}
 function actionBar(){const p=st&&st.players[me];const box=$('actbar');if(!p||st.phase!=='day'){box.innerHTML='';return;}
  const t=now();let html='';if(p.busy){const left=Math.ceil((p.busy.until-t)/1000);html=`<span class="pill">${E.ACTIONS[p.busy.a].e} ${E.ACTIONS[p.busy.a].label}… ${Math.max(0,left)}s</span>`;}
- else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give gift to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');
+ else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give '+(($('giftSel').value&&E.catItem($('giftSel').value))?E.catItem($('giftSel').value).e:'gift')+' to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');
  if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{const a=E.actionsAt(st,me)[i];if(a)doAct(a);});}}
-function doAct(a){if(a.action==='shop'){flash(`Pick items from the ${a.src} in the Seak Mart panel →`);$('martCard').scrollIntoView({block:'nearest'});return;}send({t:'do',action:a.action,arg:a.target||null});}
+function doAct(a){if(a.action==='shop'){flash(`Pick items from the ${a.src} in the Seak Mart panel →`);$('martCard').scrollIntoView({block:'nearest'});return;}send({t:'do',action:a.action,arg:a.action==='gift'&&$('giftSel').value?$('giftSel').value+'@'+a.target:(a.target||null)});}
 // ---------- rendering ----------
 let W=0,H=0,T=32,cam={x:0,y:0};
 function resize(){const DPR=devicePixelRatio||1,r=$('stage').getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}

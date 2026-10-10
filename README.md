@@ -12,7 +12,7 @@ node server.js        # or: npm start  (honors PORT)
 Open http://localhost:3000 → name → **Create room** → share the 4-letter code; others open the same URL and **Join**. Host can add AI neighbors in the lobby, then **Start**.
 **Invite link:** the lobby shows `<your-site>/?room=CODE` with Copy (and Share on phones). Opening it shows a simple *Join room CODE* screen (`#nameIn` + `#joinBtn`; add `&name=Pinky` to prefill the name). Bad, full, or already-started rooms show a clear message. Hidden when the page is opened as a file.
 
-**Agents / bots as players:** `node agent_client.js "https://your-site/?room=CODE" Pinky [--auto]` joins like a normal player over the same WebSocket. Commands on stdin: `status`, `go diner|office|school|arcade|mart|plaza|home|house <name>|x,y`, `do <action> [arg]`, `say <text>`, `jump`, `place <item>`, `start`, `auto on|off`, `quit`. Events print as JSON lines.
+**Agents / bots as players:** `node agent_client.js "https://your-site/?room=CODE" Pinky [--auto]` joins like a normal player over the same WebSocket. Commands on stdin: `status`, `go diner|office|school|arcade|mart|plaza|home|house <name>|x,y`, `do <action> [arg]`, `do gift <flowers|plush|f:item> <player>`, `say <text>`, `jump`, `place <item>`, `start`, `auto on|off`, `quit`. Events print as JSON lines.
 
 Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Railway (start command `node server.js`).
 
@@ -44,7 +44,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 | Arcade cabinet (walk-in Arcade) / Console / Arcade machine | Play | +12 / +10 / +13 Mood |
 | Neighbor's door | Visit | +8 Social for you, +5 Social & +1 visit for the owner (once per house per day); decor gives you Mood |
 | Seak Mart aisles → Checkout | Shop | Treats (Coffee +12 Energy, Donut), Fun (Movie +15 Mood, New game +20 Mood), Gifts (Flowers/Plushie), Furniture (all 10 build items → your bag), Cosmetics (Cap/Top hat/Crown, Mint/Gold paint). Pay at the checkout; leaving without paying puts the cart back |
-| Next to anyone with a gift in your bag | Give gift | +8 (Flowers) / +12 (Plushie) Social for both |
+| Next to anyone with a gift or furniture in your bag | Give gift | Pick it in the 🎁 selector: Flowers +8 / Plushie +12 / furniture +8 Social for both. Furniture moves to their bag; they place it in their own home |
 | Next to any player/agent | Talk | +4 Social each (8 s cooldown) |
 
 **Building:** furniture is bought at Seak Mart and goes to your bag. Inside your house, pick it in the Build panel and tap a free tile.

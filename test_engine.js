@@ -41,6 +41,12 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  const pk=st.players.pk;pk.pos={...me.pos};pk.pos.x+=1;if(!E.walkable(st,'b:mart',pk.pos.x,pk.pos.y))pk.pos.x-=2;const s0=me.needs.social,ps=pk.needs.social;
  ok(E.actionsAt(st,'me')[0].action==='gift'&&E.doAction(st,'me','gift',now)==='ok'&&me.needs.social===Math.min(100,s0+8)&&pk.needs.social===Math.min(100,ps+8),'gave flowers to an AI neighbor: +8 Social both, they say: "'+((pk.say||{}).text||'(player)')+'"');
  now=walkTo(st,'me','h0',(x,y)=>x===4&&y===5,now);const n0=me.items.length;ok(E.buy(st,'me','couch',null,null)==='ok'&&me.items.length===n0+1&&!me.inv.includes('couch'),'placed the bought couch at home from the bag');ok(E.buy(st,'me','arcade',null,null)!=='ok','cannot place furniture you did not buy');}
+// 4b. gift furniture from the bag
+{const me=st.players.me,pk=st.players.pk;me.inv.push('lamp','plant');pk.pos={...me.pos};const pi=pk.inv.length,s0=me.needs.social;
+ ok(E.doAction(st,'me','gift',now,'f:lamp@pk')==='ok'&&!me.inv.includes('lamp')&&pk.inv.includes('lamp')&&pk.inv.length===pi+1&&me.needs.social===Math.min(100,s0+8),'gave a Lamp from my bag: it moved to their bag, +8 Social');
+ ok(E.doAction(st,'me','gift',now,'f:arcade@pk')!=='ok','cannot gift furniture you do not have');
+ const mine=me.items.length;ok(E.buy(st,'pk','lamp',null,null)==='ok'&&pk.items.some(i=>i.t==='lamp')&&me.items.length===mine,'recipient placed the Lamp in THEIR own house (giver\'s house unchanged)');
+ me.gifts.push('flowers');ok(E.doAction(st,'me','gift',now,'flowers@pk')==='ok'&&me.inv.includes('plant'),'choosing flowers keeps the furniture in the bag');}
 // 5. End scoring
 {st.order.forEach((id,i)=>st.players[id].coins=[95,10,250][i]);const R=E.scores(st);const r=R.rows.find(x=>x.id==='j');
  ok(r.coinPts===25&&r.score===r.happiness+r.visits*10+25,'score adds +1 per 10 coins: Juno '+JSON.stringify({h:r.happiness,v:r.visits,coins:r.coins,score:r.score}));ok(R.richest==='Juno (AI)','Richest title → '+R.richest);}
