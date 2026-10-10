@@ -30,6 +30,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - **Work** now costs Mood (−7) as well as Energy.
 - **Run:** hold Shift (or toggle 🏃 Run on phones) to move about 1.8× faster. Walking costs ~1 Energy per 40 tiles, running 3×; can't run below 10 Energy. Below 30 Energy Mood slips slowly.
 - **Premium (Seak Mart):** ⌚ Watch 80 (exact clock + opening times, +5 Mood), 🚗 Car 200 (parks at home, faster + no Energy drain on roads, +10 Mood).
+- **Arcade mini-games:** press E at a cabinet. Pong (2 paired cabinets = 2-player online, CPU fallback after 5s), Blockfall, Chomp Maze. Score bonus up to +8 Mood on top of the normal Play reward; best scores are logged. `node test_arcade.js` checks them in headless Chrome.
 - **Homes:** everyone starts in a Starter home (7×6). Real Estate desk: Cozy House 150 (9×7), Dream House 350 (11×8, +5 Mood per home sleep), Hilltop Villa 500 (13×9, only one, you move there). Not giftable.
 - **Chat:** press E next to any player or agent: +4 Social each (AI neighbors answer with a speech bubble).
 - A crowded diner now means other agents *inside* the diner: smaller meals.

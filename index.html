@@ -54,7 +54,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
     <div class="row" style="margin-top:8px"><input id="codeIn" placeholder="CODE" maxlength="4" style="text-transform:uppercase"><button id="joinBtn">Join</button></div>
     <div id="mpMsg" class="small"></div></div>
   <details class="card" style="text-align:left"><summary><b>How to play</b></summary>
-  <p>Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walking costs a little Energy (about 1 per 40 tiles), running costs 3× that, and you can't run below 10 Energy. Below 30 Energy your Mood slowly slips 😪. <b>Premium aisle</b> at Seak Mart: a ⌚ Watch (80🪙, shows exact time and when Office/School open) and a 🚗 Car (200🪙, parks at home, fast and Energy-free on roads). <b>Real Estate desk</b>: upgrade your Starter home to a Cozy House (150🪙) or Dream House (350🪙, +Mood when you sleep), or buy the one-of-a-kind 🏯 Hilltop Villa (500🪙) and move there. These can't be gifted. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (3 classes, one per day, to graduate: Work then pays 60% more), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
+  <p>Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walking costs a little Energy (about 1 per 40 tiles), running costs 3× that, and you can't run below 10 Energy. Below 30 Energy your Mood slowly slips 😪. <b>Premium aisle</b> at Seak Mart: a ⌚ Watch (80🪙, shows exact time and when Office/School open) and a 🚗 Car (200🪙, parks at home, fast and Energy-free on roads). <b>Real Estate desk</b>: upgrade your Starter home to a Cozy House (150🪙) or Dream House (350🪙, +Mood when you sleep), or buy the one-of-a-kind 🏯 Hilltop Villa (500🪙) and move there. These can't be gifted. <b>Arcade mini-games:</b> walk up to a cabinet in the Arcade and press E. 🏓 Pong (two cabinets: if someone is at the other one you play each other, otherwise the CPU steps in after 5s), 🧱 Blockfall (falling blocks: ◀ ▶ move, ▲ rotate, ▼ soft drop, Space drop) and 🟡 Chomp Maze (eat the dots, dodge the ghosts). Better scores give up to +8 extra Mood. Esc stops and collects. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (3 classes, one per day, to graduate: Work then pays 60% more), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
   <p>Seak has a clock: <b>1 real minute = 1 in-game hour</b>, so each day lasts 24 minutes (Day 1 = Monday, starting at 7:00; Day 7 = Sunday). Nights (22:00–6:00) get dark. When your Energy drops below 30 your agent gets 😪 tired and slowly loses Mood (faster below 15), so eat or sleep. The <b>School</b> is open Mon–Fri 8:00–15:00 and the <b>Office</b> Mon–Fri 9:00–17:00; they're closed at night and on weekends, and anyone inside at closing time is shown out. A desk at home works any time. The Diner, Arcade, Seak Mart and Plaza never close. Needs drop overnight. Watch out: a crowded diner means smaller meals, and noisy hangouts next door ruin a neighbor's sleep. After 7 days: score = average needs + 10 × visits + 1 point per 10 leftover coins.</p>
   <p><b>Shopping &amp; gifts:</b> Walk into <b>Seak Mart</b>, add items at the aisles, and pay at the checkout. Furniture goes into your bag; place it at home in build mode. To <b>gift</b> flowers, a plushie, or furniture, pick it in the 🎁 Gift selector, stand next to another player or agent, and press <b>E</b>. You both get +8 Social (+12 for a plushie). Gifted furniture moves from your bag to theirs, and they can only place it in their own house. Gifts work on anyone: other players, invited agents, and AI neighbors. Flowers and plushies are used up when given. AI neighbors place gifted furniture next time they're home, but they don't give gifts themselves. You can also gift <b>coins</b> (5, 10 or 20) from the same selector: they move from your wallet to theirs and you both get +4 Social. To keep scores fair, you can give at most 30 coins per day.</p></details>
 </div>
@@ -109,7 +109,7 @@ const PUB_LAYOUT={
  diner:['###########','#.........#','#.C.C.C.C.#','#.........#','#.t.t.t.t.#','#.........#','#####D#####'],
  office:['###########','#.........#','#.W.W.W.W.#','#.........#','#.W.W.W.W.#','#.........#','#####D#####'],
  school:['###########','#..b...b..#','#.........#','#.K.K.K.K.#','#.........#','#.K.K.K.K.#','#####D#####'],
- arcade:['###########','#.A.A.A.A.#','#.........#','#.A.....A.#','#.........#','#.p.....p.#','#####D#####']};
+ arcade:['###########','#.1.1.2.3.#','#.........#','#.2.....3.#','#.........#','#.p.....p.#','#####D#####']};
 PUB_LAYOUT.mart=['###############','#.............#','#.R.R..F.F..G.#','#.............#','#.U.U.U..M.M..#','#.............#','#.E...$$...P..#','#.............#','#######D#######'];
 const AISLES={R:'Treats',F:'Fun',G:'Gifts',U:'Furniture',M:'Cosmetics',P:'Premium',E:'Real Estate'};
 const CAT={coffee:{n:'Coffee',e:'☕',c:8,aisle:'R',fx:{energy:12}},donut:{n:'Donut',e:'🍩',c:6,aisle:'R',fx:{energy:6,mood:4}},
@@ -119,7 +119,8 @@ const CAT={coffee:{n:'Coffee',e:'☕',c:8,aisle:'R',fx:{energy:12}},donut:{n:'Do
  watch:{n:'Watch',e:'⌚',c:80,aisle:'P',watch:true},car_red:{n:'Car (red)',e:'🚗',c:200,aisle:'P',car:'#e8434a'},car_blue:{n:'Car (blue)',e:'🚙',c:200,aisle:'P',car:'#3f7de8'},
  house_cozy:{n:'Cozy House upgrade',e:'🏡',c:150,aisle:'E',house:'cozy'},house_dream:{n:'Dream House upgrade',e:'🏰',c:350,aisle:'E',house:'dream'},house_villa:{n:'Hilltop Villa (one only!)',e:'🏯',c:500,aisle:'E',house:'villa'},
  mint:{n:'Mint paint',e:'🟢',c:15,aisle:'M',color:'#3fd0a0'},gold:{n:'Gold paint',e:'🟡',c:15,aisle:'M',color:'#f2b630'}};
-const PUB_SPOT={C:{action:'eat',src:'Diner counter',e:'🍳',col:'#ffc28a'},W:{action:'work',src:'Office desk',e:'🖥️',col:'#a9d0ff'},K:{action:'study',src:'School desk',e:'📚',col:'#c4ecb0'},A:{action:'play',src:'Arcade cabinet',e:'👾',col:'#d6b3ff'},R:{action:'shop',src:'Treats aisle',e:'☕',col:'#ffd9b3'},F:{action:'shop',src:'Fun aisle',e:'🎟️',col:'#ffc4e1'},G:{action:'shop',src:'Gifts aisle',e:'🎁',col:'#ffe2a8'},U:{action:'shop',src:'Furniture aisle',e:'🛋️',col:'#d8ccff'},M:{action:'shop',src:'Cosmetics aisle',e:'🎩',col:'#c8f0ff'},P:{action:'shop',src:'Premium aisle',e:'⌚',col:'#ffe9a8'},E:{action:'shop',src:'Real Estate desk',e:'🏡',col:'#d6f5c9'},$:{action:'checkout',src:'Checkout',e:'🧾',col:'#b9f2c9'}};
+const ARC_GAMES={pong:'Pong',blockfall:'Blockfall',chomp:'Chomp Maze'};
+const PUB_SPOT={'1':{action:'play',src:'Pong cabinet (2P)',game:'pong',e:'🏓',col:'#d6b3f5'},'2':{action:'play',src:'Blockfall cabinet',game:'blockfall',e:'🧱',col:'#d6b3f5'},'3':{action:'play',src:'Chomp Maze cabinet',game:'chomp',e:'🟡',col:'#d6b3f5'},C:{action:'eat',src:'Diner counter',e:'🍳',col:'#ffc28a'},W:{action:'work',src:'Office desk',e:'🖥️',col:'#a9d0ff'},K:{action:'study',src:'School desk',e:'📚',col:'#c4ecb0'},A:{action:'play',src:'Arcade cabinet',e:'👾',col:'#d6b3ff'},R:{action:'shop',src:'Treats aisle',e:'☕',col:'#ffd9b3'},F:{action:'shop',src:'Fun aisle',e:'🎟️',col:'#ffc4e1'},G:{action:'shop',src:'Gifts aisle',e:'🎁',col:'#ffe2a8'},U:{action:'shop',src:'Furniture aisle',e:'🛋️',col:'#d8ccff'},M:{action:'shop',src:'Cosmetics aisle',e:'🎩',col:'#c8f0ff'},P:{action:'shop',src:'Premium aisle',e:'⌚',col:'#ffe9a8'},E:{action:'shop',src:'Real Estate desk',e:'🏡',col:'#d6f5c9'},$:{action:'checkout',src:'Checkout',e:'🧾',col:'#b9f2c9'}};
 const PUB_DECOR={t:{e:'🍽️',col:'#ffe0c4'},b:{e:'🧑‍🏫',col:'#e6f7da'},p:{e:'🪴',col:'#c9f2d6'}};
 function buildTown(){const g=[];for(let y=0;y<TH;y++){g.push([]);for(let x=0;x<TW;x++)g[y].push((x==0||y==0||x==TW-1||y==TH-1)?'T':'.');}
  const set=(x,y,c)=>{g[y][x]=c;};const houses=[],buildings=[],spots=[];
@@ -205,7 +206,7 @@ function visit(st,p,o,now){const key=o.id;if(p.visited[key]===st.day){log(st,`�
 function actionsAt(st,id){const p=st.players[id];if(!p)return[];const out=[],seen=new Set();
  for(const k in DIRS){const x=p.pos.x+DIRS[k][0],y=p.pos.y+DIRS[k][1];
   if(p.pos.map==='town'){const s=TOWN.spots.find(s=>s.x===x&&s.y===y);if(s&&!seen.has(s.action)){seen.add(s.action);out.push({action:s.action,place:s.place,src:s.place==='diner'?'Diner counter':s.place==='office'?'Office desk':s.place==='school'?'School desk':s.action==='play'?'Plaza arcade':'Plaza bench',x,y});}}
-  else if(p.pos.map[0]==='b'){const c=tileAt(st,p.pos.map,x,y),sp=PUB_SPOT[c];const key=sp&&(sp.action==='shop'?'shop'+c:sp.action);if(sp&&!seen.has(key)){seen.add(key);out.push({action:sp.action,place:p.pos.map.slice(2),src:sp.src,aisle:sp.action==='shop'?c:undefined,x,y});}}
+  else if(p.pos.map[0]==='b'){const c=tileAt(st,p.pos.map,x,y),sp=PUB_SPOT[c];const key=sp&&(sp.action==='shop'?'shop'+c:sp.game?'play'+sp.game:sp.action);if(sp&&!seen.has(key)){seen.add(key);out.push({action:sp.action,place:p.pos.map.slice(2),src:sp.src,game:sp.game,aisle:sp.action==='shop'?c:undefined,x,y});}}
   else{const it=itemAt(st,p.pos.map,x,y);if(it&&ITEMS[it.t].a&&!seen.has(ITEMS[it.t].a+it.t)){seen.add(ITEMS[it.t].a+it.t);out.push({action:ITEMS[it.t].a,place:p.pos.map,item:it.t,src:ITEMS[it.t].n,x,y});}}}
  // chat: talk to any adjacent player or agent
  st.order.map(x=>st.players[x]).filter(q=>q!==p&&!q.busy&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>out.unshift({action:'talk',src:q.name.replace(' (AI)',''),target:q.id}));
@@ -251,7 +252,7 @@ function doAction(st,id,action,now,arg){st.now=now;const p=st.players[id];if(!p|
  if(action==='talk'){const o=actionsAt(st,id).find(o=>o.action==='talk'&&(!arg||o.target===arg));if(!o)return'Walk up to someone to chat';const q=st.players[o.target];
   if(cdLeft(st,p,'talk',now)>0)return'Give them a sec 😊';p.cd.talk=now+st.dur.talk;if(q.ai)say(st,q,chatLine(st,q,p),now);else if(!p.say||now>p.say.until)say(st,p,`👋 Hi ${q.name}!`,now);p.needs.social=clamp(p.needs.social+4);q.needs.social=clamp(q.needs.social+4);log(st,`💬 ${p.name} chatted with ${q.name} (+4 Social each).`);return'ok';}
 
- const opt=actionsAt(st,id).filter(o=>o.action===action).sort((a,b)=>gainBase(b)-gainBase(a))[0];if(!opt)return'Walk up to a spot for that';
+ const ag=action==='play'&&/^(\w+):/.exec(arg||'');const opt=actionsAt(st,id).filter(o=>o.action===action).sort((a,b)=>(ag&&b.game===ag[1])-(ag&&a.game===ag[1])||gainBase(b)-gainBase(a))[0];if(!opt)return'Walk up to a spot for that';
  if(cdLeft(st,p,action,now)>0)return`${ACTIONS[action].label} cooling down (${Math.ceil(cdLeft(st,p,action,now)/1000)}s)`;
  if(action==='work'&&p.needs.energy<8)return'Too tired to work';
  const others=st.order.map(x=>st.players[x]).filter(q=>q!==p);const g={energy:0,mood:0,social:0,coins:0,note:''};
@@ -262,7 +263,11 @@ function doAction(st,id,action,now,arg){st.now=now;const p=st.players[id];if(!p|
   else{if(p.streak)g.note=`streak reset (needs Energy & Mood ≥ 60 for a Great Shift)`;p.streak=0;}
   g.coins=Math.round((opt.place==='office'?15:22)*mult);g.energy=-6;g.mood=-7;}
  if(action==='study'){if(p.edu>=GRAD_AT)return'Already graduated 🎓';if(p.studied===st.day)return'One class per day. Come back tomorrow!';g.energy=-5;g.study=1;p.studied=st.day;}
- if(action==='play'){g.mood=opt.item==='arcade'?13:opt.item==='console'?10:opt.place==='arcade'?12:8;}
+ if(action==='play'){g.mood=opt.item==='arcade'?13:opt.item==='console'?10:opt.place==='arcade'?12:8;
+  // arcade mini-game result "game:score[:win]" adds a skill bonus (max +8 Mood) and tracks high scores
+  const mg=/^(pong|blockfall|chomp):(\d{1,6})(:win)?$/.exec(arg||'');if(mg&&opt.game===mg[1]){const sc=+mg[2],win=!!mg[3];
+   const bonus=Math.min(8,mg[1]==='pong'?(win?6:0)+Math.min(2,sc>>1):mg[1]==='blockfall'?Math.floor(sc/300):Math.floor(sc/20)+(win?3:0));g.mood+=bonus;
+   p.hi=p.hi||{};g.note=`${ARC_GAMES[mg[1]]}: ${sc}${win?' (win!)':''}, +${bonus} bonus Mood`;if(sc>(p.hi[mg[1]]||0)){p.hi[mg[1]]=sc;if(sc>0)log(st,`🏆 ${p.name} set a ${ARC_GAMES[mg[1]]} best: ${sc}`);}}}
  if(action==='eat'){g.energy=opt.place==='diner'?10:14;const eating=others.filter(q=>q.busy&&q.busy.a==='eat');
   if(opt.place==='diner'){const crowd=others.filter(q=>q.pos.map==='b:diner');if(crowd.length){g.energy=Math.max(4,g.energy-3*crowd.length-2);log(st,`💥 Crowded diner! ${p.name} squeezed in next to ${crowd.map(q=>q.name).join(' & ')} — smaller meal (${crowd.length} others inside).`);}}
   if(eating.length){g.social+=5;eating.forEach(q=>q.busy.g.social+=5);log(st,`🍲 Shared meal: ${[p,...eating].map(q=>q.name).join(', ')} are eating at the same time (+Social).`);}}
@@ -357,7 +362,7 @@ function scores(st){const rows=st.order.map(id=>{const p=st.players[id],h=Math.r
  const top=k=>rows.slice().sort((a,b)=>b[k]-a[k])[0];return{rows,winner:rows[0]&&rows[0].name,bestHost:top('visits').name,mostRested:top('energy').name,architect:top('built').name,richest:top('coins').name};}
 function chat(st,id,text,now){const p=st.players[id];if(!p||st.phase==='results')return false;text=String(text||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,80);if(!text||(p.lastSay&&now-p.lastSay<1000))return false;p.lastSay=now;say(st,p,text,now);log(st,`💬 ${p.name}: “${text}”`);return true;}
 function positions(st){const o={};for(const id of st.order){const q=st.players[id].pos;o[id]=[q.map,q.x,q.y,q.dir];}return o;}
-const E={HOME_TIERS,VILLA_LOT,homeInfo,onRoadFor,premiumBlock,HOURS,clockMin,clockText,isNight,isOpen,opensText,WEEKDAYS,COIN_GIFT_CAP,chat,MAX_PLAYERS,adjLots,CAT,AISLES,catItem,pubInfo,exitDoor,PUB_LAYOUT,PUB_SPOT,PUB_DECOR,PUB_W,PUB_H,mapSize,doorOf,GRAD_AT,GRAD_PAY,nextStep:bfs,NEEDS,ACTIONS,ITEMS,COLORS,DAYS,VISIT_PTS,DUR,TOWN,TW,TH,IW,IH,IDOOR,ISPAWN,createState,addPlayer,removePlayer,startGame,step,actionsAt,doAction,buy,canPlace,tick,scores,positions,tileAt,walkable,itemAt,ownerOfMap,moodE,has,cdLeft};
+const E={ARC_GAMES,HOME_TIERS,VILLA_LOT,homeInfo,onRoadFor,premiumBlock,HOURS,clockMin,clockText,isNight,isOpen,opensText,WEEKDAYS,COIN_GIFT_CAP,chat,MAX_PLAYERS,adjLots,CAT,AISLES,catItem,pubInfo,exitDoor,PUB_LAYOUT,PUB_SPOT,PUB_DECOR,PUB_W,PUB_H,mapSize,doorOf,GRAD_AT,GRAD_PAY,nextStep:bfs,NEEDS,ACTIONS,ITEMS,COLORS,DAYS,VISIT_PTS,DUR,TOWN,TW,TH,IW,IH,IDOOR,ISPAWN,createState,addPlayer,removePlayer,startGame,step,actionsAt,doAction,buy,canPlace,tick,scores,positions,tileAt,walkable,itemAt,ownerOfMap,moodE,has,cdLeft};
 if(typeof module!=='undefined'&&module.exports)module.exports=E;root.SeakEngine=E;
 })(typeof globalThis!=='undefined'?globalThis:this);
 </script>
@@ -391,6 +396,7 @@ function send(msg){if(mode==='solo'){const t=now();let r='ok';
 function connect(first){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
  ws.onopen=()=>ws.send(JSON.stringify(first));ws.onclose=()=>{$('mpMsg').textContent='Disconnected.';flash('Disconnected from server');};
  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='err'){$('mpMsg').textContent=m.msg;flash(m.msg);return;}
+  if(m.t==='arcmsg'){if(window.SeakArcade)window.SeakArcade.onMsg(m);return;}
   if(m.t==='welcome'){me=m.id;mode='online';window.__seakPlaying=true;}
   if(m.t==='state'){offset=m.now-Date.now();const mine=st&&st.players[me]&&st.players[me].pos;st=m.state;keepMine(mine);if($('menu').style.display!=='none')show();ui();}
   if(m.t==='pos'&&st){const mine=st.players[me]&&{...st.players[me].pos};for(const id in m.p){const q=st.players[id];if(!q)continue;const[a,x,y,d]=m.p[id];q.pos={map:a,x,y,dir:d};}keepMine(mine);}};}
@@ -411,7 +417,7 @@ const KEYMAP={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-
 const KEYS={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]};
 function dirOf(e){return KEYMAP[e.code]||KEYS[(e.key||'').toLowerCase()]||null;}
 const inMenu=()=>$('menu').style.display!=='none';
-addEventListener('keydown',e=>{if(!st||inMenu())return;if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&e.target.id!=='cv')e.target.blur();
+addEventListener('keydown',e=>{if(!st||inMenu()||(window.SeakArcade&&window.SeakArcade.isOpen()))return;if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&e.target.id!=='cv')e.target.blur();
  const d=dirOf(e);if(d){held=d;e.preventDefault();tryStep();}
  const k=(e.key||'').toLowerCase();if(e.code==='KeyE'||e.code==='Space'||k==='e'||k===' '){e.preventDefault();const a=E.actionsAt(st,me)[0];if(a)doAct(a);}
  if(e.code==='Escape'){selItem=null;ui();}});
@@ -463,7 +469,7 @@ function actionBar(){const p=st&&st.players[me];const box=$('actbar');if(!p||st.
  const t=now();let html='';if(p.busy){const left=Math.ceil((p.busy.until-t)/1000);html=`<span class="pill">${E.ACTIONS[p.busy.a].e} ${E.ACTIONS[p.busy.a].label}… ${Math.max(0,left)}s</span>`;}
  else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give '+(($('giftSel').value||'').startsWith('coins:')?'🪙'+$('giftSel').value.slice(6):($('giftSel').value&&E.catItem($('giftSel').value))?E.catItem($('giftSel').value).e:'gift')+' to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');
  if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{const a=E.actionsAt(st,me)[i];if(a)doAct(a);});}}
-function doAct(a){if(a.action==='shop'){flash(`Pick items from the ${a.src} in the Seak Mart panel →`);$('martCard').scrollIntoView({block:'nearest'});return;}send({t:'do',action:a.action,arg:a.action==='gift'&&$('giftSel').value?$('giftSel').value+'@'+a.target:(a.target||null)});}
+function doAct(a){if(a.action==='play'&&a.game&&window.SeakArcade){window.SeakArcade.open(a.game,a.src);return;}if(a.action==='shop'){flash(`Pick items from the ${a.src} in the Seak Mart panel →`);$('martCard').scrollIntoView({block:'nearest'});return;}send({t:'do',action:a.action,arg:a.action==='gift'&&$('giftSel').value?$('giftSel').value+'@'+a.target:(a.target||null)});}
 // ---------- rendering ----------
 let W=0,H=0,T=32,cam={x:0,y:0};
 function resize(){const DPR=devicePixelRatio||1,r=$('stage').getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
@@ -530,6 +536,7 @@ function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('
  if(Date.now()-msgT>2500)$('msg').style.opacity=0;}
 cv.addEventListener('pointerdown',e=>{if(!st||!selItem)return;const p=st.players[me];if(p.pos.map!=='h'+p.lot)return;const r=cv.getBoundingClientRect();
  const x=Math.floor((e.clientX-r.left+cam.x)/T),y=Math.floor((e.clientY-r.top+cam.y)/T);if(E.canPlace(st,p,x,y)){send({t:'buy',item:selItem,x,y});selItem=null;ui();}else flash("Can't place there");});
+window.__seakBridge={get st(){return st;},get me(){return me;},get mode(){return mode;},net(m){if(mode==='online'&&ws&&ws.readyState===1)ws.send(JSON.stringify(m));},finish(arg){send({t:'do',action:'play',arg});},flash:t=>flash(t)};
 let lastRev=-1;(function loop(){if(held)tryStep();if(st){if(st.rev!==lastRev){lastRev=st.rev;ui();}actionBar();draw();}requestAnimationFrame(loop);})();
 window.__seak=()=>({phase:st&&st.phase,pos:st&&st.players[me]&&{...st.players[me].pos}});window.SeakDebug={get st(){return st},send,setMe:id=>me=id};
 // screenshot hook: index.html#auto=town / #auto=home
@@ -544,4 +551,88 @@ if(/auto/.test(location.hash)){$('nameIn').value='Ahmad';$('soloBtn').click();co
  ui();}
 })();
 </script>
+<script id="arcade">
+// ---------- Arcade mini-games: Pong (2P paired cabinets, CPU fallback), Blockfall, Chomp Maze ----------
+(function(){
+const B=()=>window.__seakBridge;let open=null;// {game,...}
+const ov=document.createElement('div');ov.id='arcOv';ov.style.cssText='display:none;position:fixed;inset:0;background:#2a2140ee;z-index:50;align-items:center;justify-content:center;flex-direction:column;color:#fff;font:14px system-ui;touch-action:none';
+ov.innerHTML='<div id="arcTitle" style="font-size:18px;font-weight:700;margin:6px">Arcade</div><div id="arcInfo" style="margin:4px;min-height:18px"></div><canvas id="arcCv" width="300" height="400" style="background:#140f22;border-radius:10px;height:min(60vh,400px);width:auto;max-width:92vw;aspect-ratio:3/4;flex:none"></canvas>'+
+ '<div id="arcPad" style="display:flex;gap:6px;margin:8px;flex-wrap:wrap;justify-content:center"></div><button id="arcQuit" style="margin:4px;padding:8px 16px;border-radius:10px;border:0;background:#ffd6e8">Stop & collect (Esc)</button>';
+document.body.appendChild(ov);const cv=ov.querySelector('#arcCv'),cx=cv.getContext('2d'),info=t=>ov.querySelector('#arcInfo').textContent=t;
+const keys={};const pad=(btns)=>{const el=ov.querySelector('#arcPad');el.innerHTML='';btns.forEach(([lab,k])=>{const b=document.createElement('button');b.textContent=lab;b.style.cssText='font-size:20px;padding:10px 16px;border-radius:10px;border:0;background:#c9b6ff';
+ b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true;open&&open.key&&open.key(k);});b.addEventListener('pointerup',()=>keys[k]=false);b.addEventListener('pointerleave',()=>keys[k]=false);el.appendChild(b);});};
+const KN={ArrowLeft:'L',a:'L',A:'L',ArrowRight:'R',d:'R',D:'R',ArrowUp:'U',w:'U',W:'U',ArrowDown:'D',s:'D',S:'D',' ':'X'};
+addEventListener('keydown',e=>{if(!open)return;e.preventDefault();e.stopImmediatePropagation();if(e.key==='Escape'){finish();return;}const k=KN[e.key];if(k){if(!keys[k]&&open.key)open.key(k);keys[k]=true;}},true);
+addEventListener('keyup',e=>{if(!open)return;const k=KN[e.key];if(k)keys[k]=false;e.stopImmediatePropagation();},true);
+ov.querySelector('#arcQuit').onclick=()=>finish();
+function finish(){if(!open)return;const g=open,arg=g.result();open=null;ov.style.display='none';for(const k in keys)keys[k]=false;B().net({t:'arc',game:null});if(g.stop)g.stop();
+ if(arg)B().finish(arg);window.__arcLast=arg;}
+function start(game,title){B().flash&&0;open=game;ov.style.display='flex';ov.querySelector('#arcTitle').textContent=title;dispatchEvent(new Event('blur'));
+ let last=performance.now();(function f(t){if(open!==game)return;const dt=Math.min(50,t-last);last=t;game.update(dt);game.draw();if(game.over&&!game.endAt)game.endAt=t;if(game.endAt&&t-game.endAt>1800){finish();return;}requestAnimationFrame(f);})(last);}
+// ---------- Pong ----------
+function pong(){const W=300,H=400,PW=60,G={over:false};let ball,l=W/2,r=W/2,sl=0,sr=0,mode='wait',partner=null,host=false,waitT=0,sendT=0,guestPad=W/2,lastFrame=0;// paddles move along x: me at bottom
+ const reset=d=>{ball={x:W/2,y:H/2,vx:(Math.random()-.5)*3,vy:3.2*d};};reset(1);
+ const solo=B().mode!=='online';if(solo)mode='cpu';else B().net({t:'arc',game:'pong'});
+ const findPartner=()=>{const st=B().st,me=B().me;if(!st)return null;const p=st.players[me];return st.order.map(i=>st.players[i]).find(q=>q.id!==me&&!q.ai&&q.arc==='pong'&&q.pos.map===p.pos.map)||null;};
+ G.onMsg=m=>{if(mode!=='2p'||!partner||m.from!==partner.id)return;const d=m.data;lastFrame=performance.now();if(host){if(typeof d.pad==='number')guestPad=d.pad;}else if(d.b){ball={x:W-d.b[0],y:H-d.b[1],vx:0,vy:0};r=W-d.l;sl=d.sr;sr=d.sl;if(d.over){G.over=true;G.win=sl>sr;}}};
+ G.update=dt=>{const f=dt/16.7,sp=6*f;if(keys.L)l-=sp;if(keys.R)l+=sp;l=Math.max(PW/2,Math.min(W-PW/2,l));
+  if(mode==='wait'){waitT+=dt;const q=findPartner();if(q){partner=q;mode='2p';host=B().me<q.id;lastFrame=performance.now();info(`2-player vs ${q.name}! First to 5.`);}
+   else{info(`Waiting for a player at the other Pong cabinet… CPU in ${Math.max(0,Math.ceil((5000-waitT)/1000))}s`);if(waitT>5000){mode='cpu';B().net({t:'arc',game:'pong-cpu'});}}return;}
+  if(mode==='cpu')info('You vs CPU — first to 5. ◀ ▶ to move.');
+  if(mode==='2p'&&performance.now()-lastFrame>4000&&!G.over){mode='cpu';partner=null;B().net({t:'arc',game:'pong-cpu'});info('Partner left — CPU takes over.');}
+  if(G.over)return;
+  if(mode==='2p'&&!host){sendT+=dt;if(sendT>40){sendT=0;B().net({t:'arcmsg',to:partner.id,data:{pad:W-l}});}return;}
+  // host / cpu simulate. me = bottom paddle l, opponent = top paddle r
+  if(mode==='cpu'){r+=Math.max(-3.4*f,Math.min(3.4*f,ball.x-r));}else r=guestPad;r=Math.max(PW/2,Math.min(W-PW/2,r));
+  ball.x+=ball.vx*f;ball.y+=ball.vy*f;if(ball.x<6||ball.x>W-6){ball.vx*=-1;ball.x=Math.max(6,Math.min(W-6,ball.x));}
+  if(ball.vy>0&&ball.y>H-26&&ball.y<H-10&&Math.abs(ball.x-l)<PW/2+6){ball.vy=-Math.min(9,Math.abs(ball.vy)*1.06);ball.vx+=(ball.x-l)/9;}
+  if(ball.vy<0&&ball.y<26&&ball.y>10&&Math.abs(ball.x-r)<PW/2+6){ball.vy=Math.min(9,Math.abs(ball.vy)*1.06);ball.vx+=(ball.x-r)/9;}
+  if(ball.y>H+10){sr++;reset(-1);}if(ball.y<-10){sl++;reset(1);}if(sl>=5||sr>=5){G.over=true;G.win=sl>sr;info(G.win?'You win! 🎉':'CPU/partner wins. Good game!');}
+  if(mode==='2p'){sendT+=dt;if(sendT>40||G.over){sendT=0;B().net({t:'arcmsg',to:partner.id,data:{b:[ball.x,ball.y],l,r,sl,sr,over:G.over}});}}};
+ G.draw=()=>{cx.fillStyle='#140f22';cx.fillRect(0,0,W,H);cx.fillStyle='#ffffff22';for(let x=0;x<W;x+=16)cx.fillRect(x,H/2-1,8,2);cx.fillStyle='#ff9ecb';cx.fillRect(l-PW/2,H-22,PW,8);cx.fillStyle='#9ecbff';cx.fillRect(r-PW/2,14,PW,8);
+  if(mode!=='wait'){cx.fillStyle='#fff';cx.beginPath();cx.arc(ball.x,ball.y,6,0,7);cx.fill();}cx.font='bold 28px system-ui';cx.fillText(sr,12,H/2-14);cx.fillText(sl,12,H/2+38);if(G.over){cx.font='bold 26px system-ui';cx.fillText(G.win?'YOU WIN!':'GAME OVER',W/2-70,H/2-50);}};
+ G.result=()=>mode==='wait'?null:`pong:${sl}${G.win?':win':''}`;G.stop=()=>{};return G;}
+// ---------- Blockfall ----------
+function blockfall(){const C=10,R=20,S=20,G={over:false};const g=[...Array(R)].map(()=>Array(C).fill(0));let score=0,lines=0,t=0,cur,
+ SH=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]],COL=['#ff9ecb','#ffd29e','#c9b6ff','#9ecbff','#a8e6a1','#ffb3b3','#ffe9a8'];
+ const hit=(m,x,y)=>m.some((row,j)=>row.some((v,i)=>v&&(x+i<0||x+i>=C||y+j>=R||(y+j>=0&&g[y+j][x+i]))));
+ const spawn=()=>{const k=Math.floor(Math.random()*7);cur={m:SH[k],c:k+1,x:3,y:0};if(hit(cur.m,cur.x,cur.y)){G.over=true;info('Topped out! Score '+score);}};
+ const lock=()=>{cur.m.forEach((row,j)=>row.forEach((v,i)=>{if(v&&cur.y+j>=0)g[cur.y+j][cur.x+i]=cur.c;}));let n=0;for(let y=R-1;y>=0;y--)if(g[y].every(v=>v)){g.splice(y,1);g.unshift(Array(C).fill(0));n++;y++;}
+  lines+=n;score+=[0,100,300,500,800][n];spawn();};
+ const rot=m=>m[0].map((_,i)=>m.map(r=>r[i]).reverse());
+ G.key=k=>{if(G.over||!cur)return;if(k==='L'&&!hit(cur.m,cur.x-1,cur.y))cur.x--;if(k==='R'&&!hit(cur.m,cur.x+1,cur.y))cur.x++;if(k==='U'){const m=rot(cur.m);for(const dx of[0,-1,1,-2])if(!hit(m,cur.x+dx,cur.y)){cur.m=m;cur.x+=dx;break;}}
+  if(k==='X'){while(!hit(cur.m,cur.x,cur.y+1))cur.y++;lock();}};
+ spawn();info('◀ ▶ move · ▲ rotate · ▼ soft drop · Space drop');
+ G.update=dt=>{if(G.over)return;t+=dt*(keys.D?8:1);const iv=Math.max(120,600-lines*30);if(t>iv){t=0;if(!hit(cur.m,cur.x,cur.y+1))cur.y++;else lock();}};
+ G.draw=()=>{cx.fillStyle='#140f22';cx.fillRect(0,0,300,400);const ox=50;cx.fillStyle='#ffffff10';cx.fillRect(ox,0,C*S,R*S);
+  for(let y=0;y<R;y++)for(let x=0;x<C;x++)if(g[y][x]){cx.fillStyle=COL[g[y][x]-1];cx.fillRect(ox+x*S+1,y*S+1,S-2,S-2);}
+  if(cur&&!G.over){cx.fillStyle=COL[cur.c-1];cur.m.forEach((row,j)=>row.forEach((v,i)=>{if(v)cx.fillRect(ox+(cur.x+i)*S+1,(cur.y+j)*S+1,S-2,S-2);}));}
+  cx.fillStyle='#fff';cx.font='bold 16px system-ui';cx.fillText('Score '+score+'  Lines '+lines,ox,R*S+0-4>396?396:396);if(G.over){cx.font='bold 26px system-ui';cx.fillText('GAME OVER',80,190);}};
+ G.result=()=>`blockfall:${score}`;G._g=g;G._score=()=>score;return G;}
+// ---------- Chomp Maze ----------
+function chomp(){const M=['###############','#.............#','#.###.###.###.#','#o#.......#..o#','#.#.##.##.#.#.#','#.....#.....#.#','###.#.#.#.#...#','#...#.....#.###','#.#.###.###.#.#','#.#.........#.#','#.###.#.#.###.#','#o....#.#....o#','#.##.##.##.##.#','#.............#','###############'],N=15,S=20,G={over:false};
+ const dots=new Set();M.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='.'||c==='o')dots.add(x+','+y);}));const total=dots.size;
+ let me={x:7,y:13,d:[0,0],nd:[0,0]},ghosts=[{x:1,y:1,c:'#ff6b8a',d:[1,0]},{x:13,y:1,c:'#7ad7ff',d:[-1,0]}],lives=3,score=0,mt=0,gt=0,scared=0;dots.delete('7,13');
+ const wall=(x,y)=>M[y]==null||M[y][x]==null||M[y][x]==='#';
+ G.key=k=>{me.nd={L:[-1,0],R:[1,0],U:[0,-1],D:[0,1]}[k]||me.nd;};info('Eat every dot! ◀ ▶ ▲ ▼ · 🔵 power dots scare ghosts');
+ G.update=dt=>{if(G.over)return;mt+=dt;gt+=dt;scared=Math.max(0,scared-dt);
+  if(mt>150){mt=0;if(!wall(me.x+me.nd[0],me.y+me.nd[1]))me.d=me.nd;if(!wall(me.x+me.d[0],me.y+me.d[1])){me.x+=me.d[0];me.y+=me.d[1];}const k=me.x+','+me.y;if(dots.has(k)){dots.delete(k);score++;if(M[me.y][me.x]==='o')scared=6000;}
+   if(!dots.size){G.over=true;G.win=true;score+=20;info('Maze cleared! 🎉');}}
+  if(gt>(scared?320:230)){gt=0;for(const g of ghosts){const opts=[[1,0],[-1,0],[0,1],[0,-1]].filter(d=>!wall(g.x+d[0],g.y+d[1])&&!(d[0]===-g.d[0]&&d[1]===-g.d[1]));const o=opts.length?opts:[[-g.d[0],-g.d[1]]];
+   const dist=d=>Math.abs(g.x+d[0]-me.x)+Math.abs(g.y+d[1]-me.y);o.sort((a,b)=>scared?dist(b)-dist(a):dist(a)-dist(b));g.d=Math.random()<.65?o[0]:o[Math.floor(Math.random()*o.length)];g.x+=g.d[0];g.y+=g.d[1];}}
+  for(const g of ghosts)if(g.x===me.x&&g.y===me.y){if(scared){score+=5;g.x=7;g.y=5;}else{lives--;me.x=7;me.y=13;me.d=me.nd=[0,0];ghosts[0].x=1;ghosts[0].y=1;ghosts[1].x=13;ghosts[1].y=1;if(lives<=0){G.over=true;info('Caught! Score '+score);}}}};
+ G.draw=()=>{cx.fillStyle='#140f22';cx.fillRect(0,0,300,400);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(M[y][x]==='#'){cx.fillStyle='#6b5bd6';cx.fillRect(x*S+1,y*S+1,S-2,S-2);}
+   else if(dots.has(x+','+y)){cx.fillStyle=M[y][x]==='o'?'#7ad7ff':'#ffe9a8';cx.beginPath();cx.arc(x*S+10,y*S+10,M[y][x]==='o'?5:2.5,0,7);cx.fill();}}
+  cx.fillStyle='#ffd23f';cx.beginPath();cx.moveTo(me.x*S+10,me.y*S+10);cx.arc(me.x*S+10,me.y*S+10,8,.6,5.7);cx.fill();
+  for(const g of ghosts){cx.fillStyle=scared?'#4455ff':g.c;cx.fillRect(g.x*S+3,g.y*S+3,14,14);}
+  cx.fillStyle='#fff';cx.font='bold 16px system-ui';cx.fillText(`Dots ${score}  ❤️ ${lives}`,8,330);if(G.over){cx.font='bold 24px system-ui';cx.fillText(G.win?'CLEARED!':'GAME OVER',80,370);}};
+ G.result=()=>`chomp:${score}${G.win?':win':''}`;G._me=me;G._dots=dots;G._total=total;return G;}
+window.SeakArcade={isOpen:()=>!!open,onMsg:m=>{if(open&&open.onMsg)open.onMsg(m);},
+ open(game,title){if(open)return;if(game==='pong'){pad([['◀','L'],['▶','R']]);start(pong(),'🏓 Pong');}
+  else if(game==='blockfall'){B().net({t:'arc',game:'blockfall'});pad([['◀','L'],['⟳','U'],['▶','R'],['▼','D'],['⤓','X']]);start(blockfall(),'🧱 Blockfall');}
+  else if(game==='chomp'){B().net({t:'arc',game:'chomp'});pad([['◀','L'],['▲','U'],['▼','D'],['▶','R']]);start(chomp(),'🟡 Chomp Maze');}},
+ _cur:()=>open,finish};
+})();
+</script>
+
 </body></html>

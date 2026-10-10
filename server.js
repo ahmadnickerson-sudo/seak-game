@@ -17,6 +17,9 @@ wss.on('connection',ws=>{ws.id='p'+(nextId++);
    if(!E.addPlayer(room.st,ws.id,String(m.name||'Player')))return err(room.st.order.length>=E.MAX_PLAYERS?`Room is full (${E.MAX_PLAYERS} max)`:'That game has already started. Ask the host to make a new room.');
    ws.room=room;room.clients.add(ws);ws.send(JSON.stringify({t:'welcome',id:ws.id,code:room.st.code}));broadcast(room);return;}
   const room=ws.room;if(!room)return;const st=room.st;let r='ok';
+  // arcade: 'arc' marks which mini-game you have open (for Pong pairing); 'arcmsg' relays Pong frames to your partner
+  if(m.t==='arc'){const p=st.players[ws.id];if(p){const g=m.game;p.arc=['pong','pong-cpu','blockfall','chomp'].includes(g)?g:null;st.rev++;broadcast(room);}return;}
+  if(m.t==='arcmsg'){const me=st.players[ws.id],to=st.players[m.to];if(!me||!to||me.arc!=='pong'||to.arc!=='pong')return;for(const c of room.clients)if(c.id===m.to&&c.readyState===1)c.send(JSON.stringify({t:'arcmsg',from:ws.id,data:m.data}));return;}
   if(m.t==='say'){E.chat(st,ws.id,m.text,Date.now());return;}
   if(m.t==='step'){E.step(st,ws.id,m.dx|0,m.dy|0,now,!!m.run);return;}// positions go out in the 10Hz 'pos' broadcast
   if(m.t==='do')r=E.doAction(st,ws.id,String(m.action),now,m.arg==null?null:String(m.arg));else if(m.t==='buy')r=E.buy(st,ws.id,String(m.item),m.x==null?null:m.x|0,m.y==null?null:m.y|0);
