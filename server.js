@@ -19,7 +19,7 @@ wss.on('connection',ws=>{ws.id='p'+(nextId++);
   const room=ws.room;if(!room)return;const st=room.st;let r='ok';
   if(m.t==='emote'){if(E.emote(st,ws.id,now)){const msg=JSON.stringify({t:'emote',id:ws.id,at:now});for(const c of room.clients)if(c.readyState===1)c.send(msg);}return;}
   if(m.t==='step'){E.step(st,ws.id,m.dx|0,m.dy|0,now);return;}// positions go out in the 10Hz 'pos' broadcast
-  if(m.t==='do')r=E.doAction(st,ws.id,String(m.action),now);else if(m.t==='buy')r=E.buy(st,ws.id,String(m.item),m.x==null?null:m.x|0,m.y==null?null:m.y|0);
+  if(m.t==='do')r=E.doAction(st,ws.id,String(m.action),now,m.arg==null?null:String(m.arg));else if(m.t==='buy')r=E.buy(st,ws.id,String(m.item),m.x==null?null:m.x|0,m.y==null?null:m.y|0);
   else if(m.t==='start')E.startGame(st,now);else if(m.t==='bot'){if(st.phase==='lobby')E.addPlayer(st,'bot'+(nextId++),(st.order.some(i=>st.players[i].pinky)?['Pixel','Juno','Byte','Mochi','Nova'][st.order.length%5]:'Pinky')+' (AI)',true);}
   if(r!=='ok')err(r);E.tick(st,now);broadcast(room);});
  ws.on('close',()=>{const room=ws.room;if(!room)return;room.clients.delete(ws);E.removePlayer(room.st,ws.id);if(!room.clients.size)rooms.delete(room.st.code);else broadcast(room);});});

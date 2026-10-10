@@ -26,20 +26,29 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - **Jump:** press J or tap 🦘 Jump. Cosmetic, synced in multiplayer; happy AIs jump too.
 - **Pinky** (pink AI neighbor; first AI added in multiplayer): works at the Office, plays at the Arcade, studies, visits your house, talks when you press E next to her (+4 Social each), and sometimes walks over to offer a hangout (press E to accept: both Hang out, +12 Social).
 - A crowded diner now means other agents *inside* the diner: smaller meals.
+- **Seak Mart** (walk-in store), **Great Shift streaks / Star Employee**, coins count toward the final score, **Richest** title, trophies on the results screen.
 
 ## Rules
 | Spot | Action | Effect |
 |---|---|---|
-| Bed (every house starts with one) | Sleep | +18 Energy |
-| Diner counter / home Kitchen | Eat/Cook | +10 / +14 Energy |
-| Office desk / home Desk | Work | +15 / +22 coins, −6 Energy |
-| Plaza bench / Couch / Café | Hang out | +8 / +10 / +12 Social |
-| Plaza arcade / Console / Arcade | Play | +8 / +10 / +13 Mood |
-| Neighbor's door | Visit | +8 Social you, +5 Social & +1 visit for owner (once per house per day); decor gives you Mood |
+| Bed (every house starts with one) | Sleep | +18 Energy (+12 without own bed); halved if a noisy hangout is next door |
+| Diner counter (walk-in Diner) / home Kitchen | Eat/Cook | +10 / +14 Energy; smaller meal for each other agent inside the Diner; eating at the same time = +5 Social |
+| Office desk / home Desk | Work | +15 / +22 coins, −6 Energy, −7 Mood. Graduates ×1.6. **Great Shift** (Energy & Mood ≥ 60): +50% coins, +10% more per streak step (max +100%); 3 in a row = 🏅 Star Employee |
+| School desk (walk-in School) | Study | −5 Energy, one class per day; 3 classes = Graduated 🎓 |
+| Plaza bench / Couch / Café | Hang out | +8 / +10 / +12 Social; +3 per agent hanging out with you |
+| Arcade cabinet (walk-in Arcade) / Console / Arcade machine | Play | +12 / +10 / +13 Mood |
+| Neighbor's door | Visit | +8 Social for you, +5 Social & +1 visit for the owner (once per house per day); decor gives you Mood |
+| Seak Mart aisles → Checkout | Shop | Treats (Coffee +12 Energy, Donut), Fun (Movie +15 Mood, New game +20 Mood), Gifts (Flowers/Plushie), Furniture (all 10 build items → your bag), Cosmetics (Cap/Top hat/Crown, Mint/Gold paint). Pay at the checkout; leaving without paying puts the cart back |
+| Next to anyone with a gift in your bag | Give gift | +8 (Flowers) / +12 (Plushie) Social for both |
+| Next to Pinky | Talk / accept hangout | +4 Social each / Hang out together +12 Social |
+
+**Building:** furniture is bought at Seak Mart and goes to your bag. Inside your house, pick it in the Build panel and tap a free tile.
+
+**End of week:** score = average needs + 10 × visits + 1 per 10 leftover coins. Titles: Best Host, Most Rested, Town Architect, Richest, plus 🏅 Star Employee badges and 🥇🥈🥉 trophies.
 
 - **Real-time days:** each day is ~2½ min. Actions take a few seconds (your agent is busy) and then cool down ~12 s, so you get several actions a day but must choose. Overnight: Energy −22, Mood −18 (+decor), Social −18, +10 coins.
 - **Collisions:** a crowded diner gives smaller meals; eating at the same time as someone = shared meal (+Social); hanging out together stacks Social; a hangout in your house or a neighbor's (same row) halves the Sleep of anyone sleeping there; a Plaza party (2+) disturbs sleepers in the bottom-row houses; several visitors at once = packed house bonus.
-- **After Day 7:** score = average needs + 10 × visits. Titles: Best Host (visits), Most Rested (Energy), Town Architect (items built).
+
 
 ## How it's built
 - `index.html`: UI + canvas renderer + the shared engine (`<script id="engine">`).
