@@ -35,7 +35,7 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
  // B walks along row 5 to A's door and in => Visit
  const bs=b.st.players[b.id].pos;await walk(b,-1,0,bs.x-start.x);await walk(b,0,-1,1);
  await wait(()=>a.st.players[a.id].visits===1&&a.st.players[b.id].pos.map==='h0',3000,'visit');ok(`visit: B entered A's house, A visits=${a.st.players[a.id].visits}, log: "${a.st.log.filter(l=>/visited/.test(l.m)).pop().m}"`);
- await walk(b,0,1,1);await wait(()=>a.st.players[b.id].pos.map==='town',2000,'exit');await walk(b,0,-1,1);await sleep(300);
+ await walk(b,0,1,2);await wait(()=>a.st.players[b.id].pos.map==='town',3000,'exit');await sleep(150);await walk(b,0,-1,1);await sleep(300);
  if(a.st.players[a.id].visits!==1)throw new Error('visit counted twice same day');ok('re-entering same day does not add a second visit');
  a.errs.length=0;tx(a,{t:'buy',item:'plant',x:5,y:2});await wait(()=>a.errs.some(e=>/Seak Mart/.test(e)),3000,'refuse');ok('placing furniture you have not bought is refused');
  await walkTo(a,'b:diner',(x,y)=>E.PUB_LAYOUT.diner[y-1]&&E.PUB_LAYOUT.diner[y-1][x]==='C');await wait(()=>b.st.players[a.id].pos.map==='b:diner',2000,'diner sync');ok('A walked through the door into the Town Diner (B sees map b:diner)');
@@ -43,6 +43,7 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
  const adj=ch=>(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const L=E.PUB_LAYOUT.mart;return L[y+dy]&&L[y+dy][x+dx]===ch;});
  await walkTo(a,'b:mart',adj('R'));tx(a,{t:'do',action:'shop',arg:'coffee'});await wait(()=>b.st.players[a.id].cart.length===1,3000,'cart');
  await walkTo(a,'b:mart',adj('U'));tx(a,{t:'do',action:'shop',arg:'f:plant'});tx(a,{t:'do',action:'shop',arg:'f:lamp'});await wait(()=>b.st.players[a.id].cart.length===3,3000,'cart2');
+ {a.errs.length=0;tx(a,{t:'buy',item:'plant'});tx(a,{t:'do',action:'gift',arg:'lamp@'+b.id});await wait(()=>a.errs.length>=2,3000,'unpaid');const pa=a.st.players[a.id];ok(!pa.inv.includes('plant')&&!pa.items.some(i=>i.t==='plant'),'unpaid cart items cannot be placed or gifted (server): '+a.errs.slice(0,2).join(' | '));}
  await walkTo(a,'b:mart',adj('$'));const c0=a.st.players[a.id].coins;tx(a,{t:'do',action:'checkout'});await wait(()=>b.st.players[a.id].coins===c0-28&&!b.st.players[a.id].cart.length,3000,'checkout');ok('Seak Mart: A bought Coffee + Plant + Lamp at checkout (B sees coins '+c0+' -> '+(c0-28)+')');
  await walkTo(a,'h0',(x,y)=>{const s=E.homeInfo(a.st,'h0').spawn;return x===s.x&&y===s.y;});tx(a,{t:'buy',item:'plant',x:5,y:2});await wait(()=>b.st.players[a.id].items.some(i=>i.t==='plant'),3000,'place');ok('placed the bought plant at home; B sees it');
  if(b.st.players[b.id].pos.map!=='h0')throw new Error('B expected in A house');tx(a,{t:'do',action:'gift',arg:'f:lamp@'+b.id});

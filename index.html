@@ -54,7 +54,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
     <div class="row" style="margin-top:8px"><input id="codeIn" placeholder="CODE" maxlength="4" style="text-transform:uppercase"><button id="joinBtn">Join</button></div>
     <div id="mpMsg" class="small"></div></div>
   <details class="card" style="text-align:left"><summary><b>How to play</b></summary>
-  <p>Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walking costs a little Energy (about 1 per 40 tiles), running costs 3× that, and you can't run below 10 Energy. Below 30 Energy your Mood slowly slips 😪. <b>Premium aisle</b> at Seak Mart: a ⌚ Watch (80🪙, shows exact time and when Office/School open) and a 🚗 Car (200🪙, parks at home, fast and Energy-free on roads). <b>Real Estate desk</b>: upgrade your Starter home to a Cozy House (150🪙) or Dream House (350🪙, +Mood when you sleep), or buy the one-of-a-kind 🏯 Hilltop Villa (500🪙) and move there. These can't be gifted. <b>Arcade mini-games:</b> walk up to a cabinet in the Arcade and press E. 🏓 Pong (two cabinets: if someone is at the other one you play each other, otherwise the CPU steps in after 5s), 🧱 Blockfall (falling blocks: ◀ ▶ move, ▲ rotate, ▼ soft drop, Space drop) and 🟡 Chomp Maze (eat the dots, dodge the ghosts). Better scores give up to +8 extra Mood. Esc stops and collects. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (3 classes, one per day, to graduate: Work then pays 60% more), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
+  <p><b>Timing:</b> Work and Sleep take 20s, School 15s, everything else 10s or less, then a short cooldown (≤15s). Sleep restores Energy <i>and</i> Mood; sleeping in your <b>own bed</b> makes you 😌 Well rested (+8 Energy, +6 Mood). Agents can't stand on the same tile (doors are always open, and you slip past if stuck for over a second). Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walking costs a little Energy (about 1 per 40 tiles), running costs 3× that, and you can't run below 10 Energy. Below 30 Energy your Mood slowly slips 😪. <b>Premium aisle</b> at Seak Mart: a ⌚ Watch (80🪙, shows exact time and when Office/School open) and a 🚗 Car (200🪙, parks at home, fast and Energy-free on roads). <b>Real Estate desk</b>: upgrade your Starter home to a Cozy House (150🪙) or Dream House (350🪙, +Mood when you sleep), or buy the one-of-a-kind 🏯 Hilltop Villa (500🪙) and move there. These can't be gifted. <b>Arcade mini-games:</b> walk up to a cabinet in the Arcade and press E. 🏓 Pong (two cabinets: if someone is at the other one you play each other, otherwise the CPU steps in after 5s), 🧱 Blockfall (falling blocks: ◀ ▶ move, ▲ rotate, ▼ soft drop, Space drop) and 🟡 Chomp Maze (eat the dots, dodge the ghosts). Better scores give up to +8 extra Mood. Esc stops and collects. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (3 classes, one per day, to graduate: Work then pays 60% more), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
   <p>Seak has a clock: <b>1 real minute = 1 in-game hour</b>, so each day lasts 24 minutes (Day 1 = Monday, starting at 7:00; Day 7 = Sunday). Nights (22:00–6:00) get dark. When your Energy drops below 30 your agent gets 😪 tired and slowly loses Mood (faster below 15), so eat or sleep. The <b>School</b> is open Mon–Fri 8:00–15:00 and the <b>Office</b> Mon–Fri 9:00–17:00; they're closed at night and on weekends, and anyone inside at closing time is shown out. A desk at home works any time. The Diner, Arcade, Seak Mart and Plaza never close. Needs drop overnight. Watch out: a crowded diner means smaller meals, and noisy hangouts next door ruin a neighbor's sleep. After 7 days: score = average needs + 10 × visits + 1 point per 10 leftover coins.</p>
   <p><b>Shopping &amp; gifts:</b> Walk into <b>Seak Mart</b>, add items at the aisles, and pay at the checkout. Furniture goes into your bag; place it at home in build mode. To <b>gift</b> flowers, a plushie, or furniture, pick it in the 🎁 Gift selector, stand next to another player or agent, and press <b>E</b>. You both get +8 Social (+12 for a plushie). Gifted furniture moves from your bag to theirs, and they can only place it in their own house. Gifts work on anyone: other players, invited agents, and AI neighbors. Flowers and plushies are used up when given. AI neighbors place gifted furniture next time they're home, but they don't give gifts themselves. You can also gift <b>coins</b> (5, 10 or 20) from the same selector: they move from your wallet to theirs and you both get +4 Social. To keep scores fair, you can give at most 30 coins per day.</p></details>
 </div>
@@ -88,7 +88,7 @@ const DAYS=7,VISIT_PTS=10;
 // base timings (ms) – scaled by opts.speed
 // Clock: 1 real minute = 1 in-game hour, so a day is 24 real minutes. Action times scale with the day (×9.6 vs the old 2.5-min day) so a day has a similar number of actions.
 const DAYSCALE=9.6,START_HOUR=7,WEEKDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const STEP_MS_UNUSED=0;const DUR={day:1440000,busy:{sleep:10000*DAYSCALE,eat:6000*DAYSCALE,work:4000*DAYSCALE,hang:6000*DAYSCALE,play:6000*DAYSCALE,study:8000*DAYSCALE},cooldown:12000*DAYSCALE,workCooldown:6000*DAYSCALE,talk:8000,say:5000};
+const STEP_MS_UNUSED=0;const DUR={day:1440000,busy:{sleep:20000,eat:8000,work:20000,hang:8000,play:8000,study:15000},cooldown:15000,workCooldown:12000,talk:8000,say:5000};
 // opening hours (minutes after midnight); days are 1=Mon … 7=Sun. Unlisted places are always open.
 const HOURS={school:{days:[1,2,3,4,5],open:8*60,close:15*60,name:'School'},office:{days:[1,2,3,4,5],open:9*60,close:17*60,name:'Office'}};
 const STEP_MS=60;// server-side minimum gap between steps (running client steps every ~83ms)
@@ -106,11 +106,11 @@ const OPEN_LOTS=[];const VILLA_AREA={x:5,y:26,w:12,h:8};
 // walk-in public buildings: interior tile maps ('#' wall, '.' floor, 'D' exit, letters = furniture; spot letters trigger actions)
 const PUB_W=11,PUB_H=7,PDOOR={x:5,y:6},PSPAWN={x:5,y:5};
 const PUB_LAYOUT={
- diner:['###########','#.........#','#.C.C.C.C.#','#.........#','#.t.t.t.t.#','#.........#','#####D#####'],
- office:['###########','#.........#','#.W.W.W.W.#','#.........#','#.W.W.W.W.#','#.........#','#####D#####'],
- school:['###########','#..b...b..#','#.........#','#.K.K.K.K.#','#.........#','#.K.K.K.K.#','#####D#####'],
- arcade:['###########','#.1.1.2.3.#','#.........#','#.2.....3.#','#.........#','#.p.....p.#','#####D#####']};
-PUB_LAYOUT.mart=['###############','#.............#','#.R.R..F.F..G.#','#.............#','#.U.U.U..M.M..#','#.............#','#.E...$$...P..#','#.............#','#######D#######'];
+ diner:['#############','#...........#','#..C..C..C..#','#...........#','#...........#','#..t..t..t..#','#...........#','#...........#','######D######'],
+ office:['#############','#...........#','#..W..W..W..#','#...........#','#...........#','#..W..W..W..#','#...........#','#...........#','######D######'],
+ school:['###############','#b...........b#','#..K...K...K..#','#.............#','#..K...K...K..#','#.............#','#.............#','#.............#','#######D#######'],
+ arcade:['#############','#...........#','#..1..1..2..#','#...........#','#...........#','#..2..3..3..#','#...........#','#p.........p#','######D######']};
+PUB_LAYOUT.mart=['#################','#...............#','#..R..F..G..M...#','#...............#','#...............#','#..U..U..E..P...#','#...............#','#...............#','#..........$$...#','#...............#','########D########'];
 const AISLES={R:'Treats',F:'Fun',G:'Gifts',U:'Furniture',M:'Cosmetics',P:'Premium',E:'Real Estate'};
 const CAT={coffee:{n:'Coffee',e:'☕',c:8,aisle:'R',fx:{energy:12}},donut:{n:'Donut',e:'🍩',c:6,aisle:'R',fx:{energy:6,mood:4}},
  movie:{n:'Movie ticket',e:'🎟️',c:12,aisle:'F',fx:{mood:15}},game:{n:'New game',e:'💿',c:16,aisle:'F',fx:{mood:20}},
@@ -185,14 +185,20 @@ function walkable(st,map,x,y){const t=tileAt(st,map,x,y);if(map==='town'){if(t==
 const DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 function onRoadFor(st,p,dx,dy){return p.pos.map==='town'&&tileAt(st,'town',p.pos.x,p.pos.y)==='='&&tileAt(st,'town',p.pos.x+dx,p.pos.y+dy)==='=';}
 function stepGap(st,p,dx,dy,run){const car=!!p.car&&onRoadFor(st,p,dx,dy);return car?(run?30:40):(run?60:100);}// server minimum gaps (client: walk 150ms, run 83, car 60, car+run 45)
+// entrants land one tile further in (offset sideways if taken) so the doorway never clogs
+function entrySpot(st,map,sp,id){for(const[dx,dy]of[[0,-1],[-1,-1],[1,-1],[0,0],[-1,0],[1,0]]){const x=sp.x+dx,y=sp.y+dy;if(walkable(st,map,x,y)&&tileAt(st,map,x,y)==='.'&&!occupiedBy(st,map,x,y,id))return{x,y};}return sp;}
+function occupiedBy(st,map,x,y,exceptId){return st.order.some(i=>i!==exceptId&&st.players[i].pos.map===map&&st.players[i].pos.x===x&&st.players[i].pos.y===y);}
 function step(st,id,dx,dy,now,run){st.now=now;const p=st.players[id];if(!p||st.phase!=='day'||p.busy)return false;if(Math.abs(dx)+Math.abs(dy)!==1)return false;
  run=!!run&&p.needs.energy>=10;if(now-p.lastStep<stepGap(st,p,dx,dy,run))return false;const driving=!!p.car&&onRoadFor(st,p,dx,dy);const d=dx>0?'right':dx<0?'left':dy>0?'down':'up';p.pos.dir=d;
- const nx=p.pos.x+dx,ny=p.pos.y+dy,map=p.pos.map;if(!walkable(st,map,nx,ny))return false;p.lastStep=now;
+ const nx=p.pos.x+dx,ny=p.pos.y+dy,map=p.pos.map;if(!walkable(st,map,nx,ny))return false;
+ // no two agents on one tile; doors are always passable, and you slip past after being stuck >1s
+ if(tileAt(st,map,nx,ny)!=='D'&&occupiedBy(st,map,nx,ny,id)){const k=map+':'+nx+','+ny;if(p.blockK!==k||now-p.blockT>2500){p.blockK=k;p.blockT=now;}if(now-p.blockT<=1000)return false;}
+ p.blockK=null;p.lastStep=now;
  // movement costs a little Energy: 1 per 40 walked tiles, running ×3, driving on roads free
  if(!driving){p.stepAcc=(p.stepAcc||0)+(run?3:1);if(p.stepAcc>=40){p.stepAcc-=40;p.needs.energy=clamp(p.needs.energy-1);st.rev++;}}
  const t=tileAt(st,map,nx,ny);
- if(map==='town'&&t==='D'){const h=TOWN.houses.find(h=>h.door.x===nx&&h.door.y===ny);{const sp=homeInfo(st,h.lot).spawn;p.pos={map:'h'+h.lot,x:sp.x,y:sp.y,dir:'up'};}const o=ownerOfMap(st,p.pos.map);if(o&&o!==id)visit(st,p,st.players[o],now);st.rev++;return true;}
- if(map==='town'&&t==='P'){const b=TOWN.buildings.find(b=>b.door.x===nx&&b.door.y===ny);const sp=pubInfo(b.id).spawn;p.pos={map:'b:'+b.id,x:sp.x,y:sp.y,dir:'up'};st.rev++;return true;}
+ if(map==='town'&&t==='D'){const h=TOWN.houses.find(h=>h.door.x===nx&&h.door.y===ny);{const sp=entrySpot(st,'h'+h.lot,homeInfo(st,h.lot).spawn,id);p.pos={map:'h'+h.lot,x:sp.x,y:sp.y,dir:'up'};}const o=ownerOfMap(st,p.pos.map);if(o&&o!==id)visit(st,p,st.players[o],now);st.rev++;return true;}
+ if(map==='town'&&t==='P'){const b=TOWN.buildings.find(b=>b.door.x===nx&&b.door.y===ny);const sp=entrySpot(st,'b:'+b.id,pubInfo(b.id).spawn,id);p.pos={map:'b:'+b.id,x:sp.x,y:sp.y,dir:'up'};st.rev++;return true;}
  if(map[0]==='b'&&t==='D'){const b=TOWN.buildings.find(b=>'b:'+b.id===map);if(p.cart&&p.cart.length){log(st,`🛒 ${p.name} left Seak Mart without paying, so the cart went back on the shelves.`);p.cart=[];}p.pos={map:'town',x:b.exit.x,y:b.exit.y,dir:'down'};st.rev++;return true;}
  if(map!=='town'&&t==='D'){const h=TOWN.houses[+map.slice(1)];p.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:h.y<TH/2?'down':'up'};st.rev++;return true;}
  p.pos.x=nx;p.pos.y=ny;return true;}
@@ -256,7 +262,7 @@ function doAction(st,id,action,now,arg){st.now=now;const p=st.players[id];if(!p|
  if(cdLeft(st,p,action,now)>0)return`${ACTIONS[action].label} cooling down (${Math.ceil(cdLeft(st,p,action,now)/1000)}s)`;
  if(action==='work'&&p.needs.energy<8)return'Too tired to work';
  const others=st.order.map(x=>st.players[x]).filter(q=>q!==p);const g={energy:0,mood:0,social:0,coins:0,note:''};
- if(action==='sleep'){g.energy=has(st.players[ownerOfMap(st,p.pos.map)]||p,'bed')?18:12;if(p.pos.map==='h'+p.lot&&(p.home==='dream'||p.lot===VILLA_LOT))g.mood=5;}
+ if(action==='sleep'){g.energy=has(st.players[ownerOfMap(st,p.pos.map)]||p,'bed')?18:12;g.mood=4;if(p.pos.map==='h'+p.lot&&opt.item==='bed'){g.energy+=8;g.mood+=6;p.rested=now+st.dur.day/8;g.note='😌 Well rested (own bed): +8 Energy, +6 Mood';}if(p.pos.map==='h'+p.lot&&(p.home==='dream'||p.lot===VILLA_LOT))g.mood+=5;}
  if(action==='work'){let mult=p.edu>=GRAD_AT?GRAD_PAY:1;const great=p.needs.energy>=60&&p.needs.mood>=60;
   if(great){p.streak++;p.bestStreak=Math.max(p.bestStreak,p.streak);const bonus=0.5+Math.min(0.1*(p.streak-1),0.5);mult*=1+bonus;g.note=`⭐ Great Shift! streak ${p.streak} (+${Math.round(bonus*100)}% coins)`;
    if(p.streak>=3&&!p.star){p.star=true;log(st,`🏅 ${p.name} earned the Star Employee badge (3 great shifts in a row)!`);}}
@@ -299,10 +305,10 @@ function canPlace(st,p,x,y){const I=homeInfo(st,p.lot);if(interiorTile(x,y,I)!==
  const m='h'+p.lot;if(st.order.some(id=>{const q=st.players[id].pos;return q.map===m&&q.x===x&&q.y===y;}))return false;return reachableOk(st,p,{x,y});}
 // ---------- AI (BFS pathfinding) ----------
 function rng(st,p){p._r=((p._r||(st.seed+p.lot*977))*1664525+1013904223)>>>0;return p._r/4294967296;}
-function bfs(st,map,sx,sy,goalFn){const W=map==='town'?TW:IW,prev=new Map(),k0=sx+','+sy,q=[[sx,sy]];prev.set(k0,null);
+function bfs(st,map,sx,sy,goalFn,avoid){const W=map==='town'?TW:IW,prev=new Map(),k0=sx+','+sy,q=[[sx,sy]];prev.set(k0,null);
  while(q.length){const[x,y]=q.shift();if(goalFn(x,y)&&!(x===sx&&y===sy)||(goalFn(x,y)&&q.length===0&&prev.size===1)){let cur=x+','+y,first=cur;while(prev.get(cur)&&prev.get(cur)!==k0){cur=prev.get(cur);}return cur===k0?null:cur.split(',').map(Number);}
   for(const k in DIRS){const nx=x+DIRS[k][0],ny=y+DIRS[k][1],key=nx+','+ny;if(prev.has(key))continue;const t=tileAt(st,map,nx,ny);
-   const ok=walkable(st,map,nx,ny)&&((t!=='D'&&t!=='P')||goalFn(nx,ny));if(!ok)continue;prev.set(key,x+','+y);q.push([nx,ny]);}}return null;}
+   const ok=walkable(st,map,nx,ny)&&((t!=='D'&&t!=='P')||goalFn(nx,ny))&&!(avoid&&avoid.has(key)&&!goalFn(nx,ny));if(!ok)continue;prev.set(key,x+','+y);q.push([nx,ny]);}}return null;}
 function aiChoose(st,p,now){const n=p.needs;const r=rng(st,p);const opts=[];
  const humans=st.order.filter(x=>!st.players[x].ai);
 
@@ -311,6 +317,7 @@ function aiChoose(st,p,now){const n=p.needs;const r=rng(st,p);const opts=[];
  if(avail('sleep')&&n.energy<45)opts.push({a:'sleep',map:home,w:100-n.energy+(n.energy<30?60:0)});
  if(avail('eat'))opts.push({a:'eat',map:has(p,'kitchen')&&r<.6?home:'b:diner',w:90-n.energy+(n.energy<30?50:0)});
  if(avail('work')&&n.energy>30&&(has(p,'desk')||isOpen(st,'office',now)))opts.push({a:'work',map:has(p,'desk')&&(r<.6||!isOpen(st,'office',now))?home:'b:office',w:p.coins<40?70:25});
+ if(p.inv.some(t=>ITEMS[t]))opts.push({a:'build',map:home,w:55});
  if(avail('play'))opts.push({a:'play',map:(has(p,'console')||has(p,'arcade'))&&r<.5?home:'b:arcade',w:90-n.mood});
  if(aiWant(p))opts.push({a:'shop',map:'b:mart',w:p.inv.length?5:45});
  if(p.edu<GRAD_AT&&p.studied!==st.day&&n.energy>25&&isOpen(st,'school',now))opts.push({a:'study',map:'b:school',w:50});
@@ -326,6 +333,7 @@ function aiTick(st,p,now){if(p.busy||now-p.lastStep<170)return;
  if(!p.goal)p.goal=aiChoose(st,p,now);const G=p.goal;if(!G){return;}
  if(++G.steps>260){p.goal=null;return;}
  if(p.pos.map==='h'+p.lot&&p.inv.length)aiBuild(st,p);
+ if(G.a==='build'&&p.pos.map===G.map){aiBuild(st,p);p.goal={a:'exit',map:'town',steps:200};p.lastStep=now;return;}
  if(G.a==='shop'&&p.pos.map==='b:mart'){const L=PUB_LAYOUT.mart,adj=ch=>{const s=[];L.forEach((r,y)=>[...r].forEach((c,x)=>{if(c===ch)s.push({x,y});}));return(x,y)=>s.some(q=>Math.abs(q.x-x)+Math.abs(q.y-y)===1);};
   if(!G.picked){const t=aiWant(p);if(!t){p.goal={a:'exit',map:'town',steps:200};return;}if(adj('U')(p.pos.x,p.pos.y)){doAction(st,p.id,'shop',now,'f:'+t);if(p.needs.energy<50&&p.coins>=ITEMS[t].c+18)p.cart.push('coffee');G.picked=true;p.lastStep=now;return;}
    const n2=bfs(st,'b:mart',p.pos.x,p.pos.y,adj('U'));if(n2)step(st,p.id,n2[0]-p.pos.x,n2[1]-p.pos.y,now);else p.goal=null;return;}
@@ -340,7 +348,7 @@ function aiTick(st,p,now){if(p.busy||now-p.lastStep<170)return;
  else if(m==='town'){const sp=TOWN.spots.filter(s=>s.action===G.a);goalFn=(x,y)=>sp.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)===1);}
  else if(m[0]==='b'){const L=PUB_LAYOUT[m.slice(2)],sp=[];L.forEach((row,y)=>[...row].forEach((c,x)=>{if(PUB_SPOT[c]&&PUB_SPOT[c].action===G.a)sp.push({x,y});}));if(!sp.length){p.goal={a:'exit',map:'town',steps:200};return;}goalFn=(x,y)=>sp.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)===1);}
  else{const it=st.players[ownerOfMap(st,m)].items.filter(i=>ITEMS[i.t].a===G.a);if(!it.length){p.goal=null;return;}goalFn=(x,y)=>it.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)===1);}
- const nxt=bfs(st,m,p.pos.x,p.pos.y,goalFn);if(!nxt){p.goal=null;p.lastStep=now;return;}
+ const occ=new Set(st.order.filter(i=>i!==p.id&&st.players[i].pos.map===m).map(i=>st.players[i].pos.x+','+st.players[i].pos.y));const nxt=bfs(st,m,p.pos.x,p.pos.y,goalFn,occ)||bfs(st,m,p.pos.x,p.pos.y,goalFn);if(!nxt){p.goal=null;p.lastStep=now;return;}
  step(st,p.id,nxt[0]-p.pos.x,nxt[1]-p.pos.y,now);}
 const AI_PREF=['kitchen','desk','plant','couch','console','lamp','garden','cafe','arcade'];
 function aiBuild(st,p){while(p.inv.length){if(buy(st,p.id,p.inv[0],null,null)!=='ok'){p.inv.shift();}}}
@@ -449,7 +457,7 @@ function ui(){if(!st)return;const p=st.players[me];if(!p)return;
  $('meName').textContent=`${E.moodE(p)} ${p.name} & agent`;$('coinLbl').textContent=`🪙 ${p.coins}  🚪 ${p.visits}`;$('eduLbl').textContent=p.edu>=E.GRAD_AT?`Graduated 🎓 (Work pays +${Math.round((E.GRAD_PAY-1)*100)}%)`:`🎓 Education ${p.edu}/${E.GRAD_AT}${p.studied===st.day?' (studied today)':' · study at the School'}`;
  const cols={energy:'#ffd34d',mood:'#ff9ecb',social:'#8ecbff'};$('needs').innerHTML=E.NEEDS.map(n=>`<div class="small">${n[0].toUpperCase()+n.slice(1)} ${p.needs[n]}</div><div class="bar"><i style="width:${p.needs[n]}%;background:${cols[n]}"></i></div>`).join('');
  const inHome=p.pos.map==='h'+p.lot;$('buildCard').style.opacity=inHome&&st.phase==='day'?1:.5;$('buildHint').textContent=(p.inv.length?'':'Buy furniture at Seak Mart (Furniture aisle). ')+(inHome?'Pick an item from your bag, then tap a free floor tile.':'Go inside your house to place items.');
- $('tiredLbl').style.display=p.needs.energy<30?'block':'none';$('tiredLbl').textContent=p.needs.energy<15?'😪 Exhausted: Mood slipping fast. Eat or sleep!':'😪 Tired: Mood slipping. Eat or sleep soon.';
+ $('tiredLbl').style.display=p.needs.energy<30||(p.rested>now())?'block':'none';$('tiredLbl').textContent=p.needs.energy<15?'😪 Exhausted: Mood slipping fast. Eat or sleep!':'😪 Tired: Mood slipping. Eat or sleep soon.';if(p.rested>now()&&p.needs.energy>=30)$('tiredLbl').textContent='😌 Well rested — slept in your own bed';
  $('rewardLbl').textContent=`💼 Shift streak ${p.streak}${p.star?' · 🏅 Star Employee':''} (Great Shift = Energy & Mood ≥ 60 when you work)`+(p.hat?'  '+p.hat:'')+(p.gifts.length?`  🎁×${p.gifts.length}`:'');
  {const opts=[...new Set(p.gifts)].map(k=>[k,E.catItem(k).e+' '+E.catItem(k).n.replace(' (gift)','')+' ×'+p.gifts.filter(x=>x===k).length]).concat([...new Set(p.inv)].map(t=>['f:'+t,E.ITEMS[t].e+' '+E.ITEMS[t].n+' (furniture) ×'+p.inv.filter(x=>x===t).length])).concat([5,10,20].filter(n=>p.coins>=n).map(n=>['coins:'+n,`🪙 ${n} coins`+(n===5?` (${E.COIN_GIFT_CAP-(p.coinDay===st.day?p.coinGiven:0)} left today)`:'')]));
   $('giftRow').style.display=opts.length?'block':'none';const sel=$('giftSel'),cur=sel.value,h=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');if(sel.dataset.h!==h){sel.innerHTML=h;sel.dataset.h=h;if(opts.some(o=>o[0]===cur))sel.value=cur;}}
@@ -464,7 +472,7 @@ function martPanel(p){const inMart=p.pos.map==='b:mart';$('martCard').style.disp
  const keys=[];aisles.forEach(ai=>{if(ai==='U')Object.keys(E.ITEMS).forEach(t=>keys.push('f:'+t));else Object.keys(E.CAT).filter(k=>E.CAT[k].aisle===ai).forEach(k=>keys.push(k));});
  const html=keys.map(k=>{const it=E.catItem(k);const d=it.fx?Object.entries(it.fx).map(([n,v])=>`+${v} ${n}`).join(' '):it.gift?`gift: +${it.gift} Social both`:it.watch?'exact clock + opening times, +5 Mood':it.car?'parks at home; fast on roads, no Energy drain, +10 Mood':it.house?(it.house==='villa'?'move to the hilltop (one only)':'bigger home, more space'):it.hat?'hat':it.color?'agent color':'furniture → bag';return`<button data-k="${k}">${it.e} ${it.n} <b>${it.c}🪙</b><br><span class="small">${d}</span></button>`;}).join('');
  const box=$('martItems');if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.querySelectorAll('button').forEach(b=>b.onclick=()=>send({t:'do',action:'shop',arg:b.dataset.k}));}
- const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0);$('cartBox').innerHTML=p.cart.length?`Cart: ${p.cart.map(k=>E.catItem(k).e).join(' ')} · total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}`:'Cart is empty.';}
+ const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0);$('cartBox').innerHTML=p.cart.length?`🛒 <b>Unpaid</b> (can't use until checkout): <span id="unpaid" style="opacity:.45;filter:grayscale(1)">${p.cart.map(k=>E.catItem(k).e+' '+E.catItem(k).n).join(', ')}</span> · total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}`:'Cart is empty.';}
 function actionBar(){const p=st&&st.players[me];const box=$('actbar');if(!p||st.phase!=='day'){box.innerHTML='';return;}
  const t=now();let html='';if(p.busy){const left=Math.ceil((p.busy.until-t)/1000);html=`<span class="pill">${E.ACTIONS[p.busy.a].e} ${E.ACTIONS[p.busy.a].label}… ${Math.max(0,left)}s</span>`;}
  else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give '+(($('giftSel').value||'').startsWith('coins:')?'🪙'+$('giftSel').value.slice(6):($('giftSel').value&&E.catItem($('giftSel').value))?E.catItem($('giftSel').value).e:'gift')+' to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');

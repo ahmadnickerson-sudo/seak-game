@@ -36,3 +36,9 @@
 ## Contest (due Oct 30, 11:59 PM PT)
 - Port/rebuild in ChatGPT Work to match the mission; keep room codes, no logins.
 - Submission: title, cover image, description, public link.
+
+## Done (Oct 10 batch)
+- Sleep raises Mood; own-bed Well rested bonus.
+- No two agents on one tile (door/stuck pass-through, AI routes around).
+- All activities ≤20s real (Work/Sleep 20, Study 15, rest ≤10).
+- Interior layout pass: wide aisles, clear door zones, roomier School.

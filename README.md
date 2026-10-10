@@ -39,7 +39,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 ## Rules
 | Spot | Action | Effect |
 |---|---|---|
-| Bed (every house starts with one) | Sleep | +18 Energy (+12 without own bed); halved if a noisy hangout is next door |
+| Bed (every house starts with one) | Sleep | +18 Energy (+12 without a bed) and +4 Mood; own bed = Well rested: +8 more Energy, +6 more Mood; halved if a noisy hangout is next door |
 | Diner counter (walk-in Diner) / home Kitchen | Eat/Cook | +10 / +14 Energy; smaller meal for each other agent inside the Diner; eating at the same time = +5 Social |
 | Office desk / home Desk | Work | +15 / +22 coins, −6 Energy, −7 Mood. Graduates ×1.6. **Great Shift** (Energy & Mood ≥ 60): +50% coins, +10% more per streak step (max +100%); 3 in a row = 🏅 Star Employee |
 | School desk (walk-in School) | Study | −5 Energy, one class per day; 3 classes = Graduated 🎓 |
@@ -56,6 +56,9 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 **End of week:** score = average needs + 10 × visits + 1 per 10 leftover coins. Titles: Best Host, Most Rested, Town Architect, Richest, plus 🏅 Star Employee badges and 🥇🥈🥉 trophies.
 
 - **Real-time days:** each day is ~2½ min. Actions take a few seconds (your agent is busy) and then cool down ~12 s, so you get several actions a day but must choose. Overnight: Energy −22, Mood −18 (+decor), Social −18, +10 coins.
+- **Timing (real time):** Work 20s, Sleep 20s, Study 15s, Eat/Hang/Play 8s; cooldown 15s (Work 12s).
+- **No tile sharing:** two agents can't occupy one tile (server-enforced). Door tiles are always passable, entrants land one tile inside (offset if taken), and a blocked walker slips past after ~1s. AI pathfinding routes around occupied tiles.
+- **Interiors:** desks/counters/cabinets/aisles laid out with 2-tile walkways, each station reachable from 2+ sides, and a clear 3×2 zone inside every door (tested).
 - **Collisions:** a crowded diner gives smaller meals; eating at the same time as someone = shared meal (+Social); hanging out together stacks Social; a hangout in your house or a neighbor's (same row) halves the Sleep of anyone sleeping there; a Plaza party (2+) disturbs sleepers in the bottom-row houses; several visitors at once = packed house bonus.
 
 

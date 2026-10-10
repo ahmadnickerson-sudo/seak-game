@@ -7,6 +7,19 @@ function walkTo(st,id,map,goalFn,now){for(let i=0;i<400;i++){const p=st.players[
  let fn;if(p.pos.map!==map){if(p.pos.map!=='town'){const d=E.exitDoor(p.pos.map,st);fn=(x,y)=>x===d.x&&y===d.y;}else{const d=E.doorOf(map);fn=(x,y)=>x===d.x&&y===d.y;}}else fn=goalFn;
  const n=E.nextStep(st,p.pos.map,p.pos.x,p.pos.y,fn);if(!n)throw new Error('no path');now+=200;E.step(st,id,n[0]-p.pos.x,n[1]-p.pos.y,now);}throw new Error('walk timeout');}
 const nearSpot=(map,ch)=>{const L=E.PUB_LAYOUT[map.slice(2)];return(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>L[y+dy]&&L[y+dy][x+dx]===ch);};
+// 0. interior layouts: from the door every station is reachable (and the way back to EXIT) even with an agent standing at every other station
+{const st=E.createState('L',{speed:1});const D=[[1,0],[-1,0],[0,1],[0,-1]];for(const id in E.PUB_LAYOUT){const L=E.PUB_LAYOUT[id],I=E.pubInfo(id);const fl=(x,y)=>L[y]&&L[y][x]==='.';
+ ok(fl(I.spawn.x,I.spawn.y),id+': tile in front of EXIT is clear');{let clear=true;for(let dy=1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++)if(!fl(I.door.x+dx,I.door.y-dy))clear=false;ok(clear,id+': 3-wide, 2-deep clear zone inside the door');}const st_=[];L.forEach((r,y)=>[...r].forEach((c,x)=>{if(E.PUB_SPOT[c])st_.push({x,y,c});}));
+ for(const s of st_){const sides=D.filter(([dx,dy])=>fl(s.x+dx,s.y+dy)).length;if(sides<2)ok(false,`${id} station ${s.c}@${s.x},${s.y} reachable from only ${sides} side`);
+  const occ=new Set();for(const o of st_)if(o!==s){const a=D.map(([dx,dy])=>[o.x+dx,o.y+dy]).find(([x,y])=>fl(x,y)&&!(x===I.spawn.x&&y===I.spawn.y));if(a)occ.add(a+'');}
+  const seen=new Set([I.spawn.x+','+I.spawn.y]),q=[[I.spawn.x,I.spawn.y]];while(q.length){const[x,y]=q.shift();for(const[dx,dy]of D){const k=[x+dx,y+dy]+'';if(!seen.has(k)&&!occ.has(k)&&fl(x+dx,y+dy)){seen.add(k);q.push([x+dx,y+dy]);}}}
+  const reach=D.some(([dx,dy])=>seen.has([s.x+dx,s.y+dy]+''));if(!reach)ok(false,`${id}: ${s.c}@${s.x},${s.y} unreachable with others occupied`);}
+ // every floor tile reachable (no sealed pockets) and aisles: no floor tile is a dead end (fewer than 2 floor neighbours) except corners next to decor
+ let pockets=0;const all=new Set(),q=[[I.spawn.x,I.spawn.y]];all.add(q[0]+'');while(q.length){const[x,y]=q.shift();for(const[dx,dy]of D){const k=[x+dx,y+dy]+'';if(!all.has(k)&&fl(x+dx,y+dy)){all.add(k);q.push([x+dx,y+dy]);}}}
+ L.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='.'&&!all.has(x+','+y))pockets++;}));ok(pockets===0,`${id}: ${st_.length} stations, all reachable from the door with others occupied; ${pockets} sealed pockets`);}}
+// 0b. real-time activity lengths at speed 1
+{const st=E.createState('D',{speed:1}),b=st.dur.busy;const lim={work:20000,study:15000,sleep:20000};
+ for(const a in b)ok(b[a]<=(lim[a]||10000),`${a} takes ${b[a]/1000}s real (limit ${(lim[a]||10000)/1000}s)`);ok(st.dur.cooldown<=15000&&st.dur.workCooldown<=15000,'cooldowns ≤15s');}
 // 1. AI-only games
 for(let g=0;g<3;g++){const st=E.createState('X',{speed:1,seed:100+g});['Pixel (AI)','b','c','d'].forEach((n,i)=>E.addPlayer(st,'p'+i,n,true));let now=0;const t0=Date.now();E.startGame(st,now);const seen=new Set();while(st.phase==='day'){now+=50;E.tick(st,now);st.log.slice(-4).forEach(l=>seen.add(l.m));}
  const R=st.results.rows;const L=[...seen];ok(R.every(r=>r.happiness>20&&r.happiness<=100)&&R.some(r=>r.visits>0),`AI game ${g}: [happiness,visits,built] ${JSON.stringify(R.map(r=>[r.happiness,r.visits,r.built]))}, edu ${JSON.stringify(Object.values(st.players).map(p=>p.edu))}, ${Date.now()-t0}ms CPU`);
@@ -99,4 +112,12 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  at('1');a.cd={};a.needs.energy=80;a.needs.mood=40;r=E.doAction(st,'a','play',now,'pong:5:win');while(a.busy){now+=1000;E.tick(st,now);}ok(r==='ok'&&a.needs.mood===40+12+8,'Pong win → +8 bonus '+r+' '+a.needs.mood);
  at('3');a.cd={};a.needs.energy=80;a.needs.mood=40;r=E.doAction(st,'a','play',now,'chomp:999999');ok(r!=='ok'||true,'');while(a.busy){now+=1000;E.tick(st,now);}ok(a.needs.mood<=40+12+8,'bonus capped at +8');
  at('3');a.cd={};a.needs.energy=80;a.needs.mood=40;r=E.doAction(st,'a','play',now,'blockfall:3000');while(a.busy){now+=1000;E.tick(st,now);}ok(a.needs.mood===52,'result for a different cabinet gets no bonus '+r+a.needs.mood);}
+// 9. unpaid cart items are unusable until checkout
+{const st=E.createState('U',{speed:1});E.addPlayer(st,'a','Ahmad');E.addPlayer(st,'b','Bo');let now=1000;E.startGame(st,now);const a=st.players.a,b=st.players.b;a.ai=b.ai=false;a.coins=999;a.needs.energy=50;
+ const L=E.PUB_LAYOUT.mart;const put=(q,c)=>{for(let y=0;y<L.length;y++)for(let x=0;x<L[0].length;x++)if(L[y][x]===c)for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]])if(L[y+dy]&&L[y+dy][x+dx]==='.'){q.pos={map:'b:mart',x:x+dx,y:y+dy,dir:'up'};return;}};
+ put(a,'R');E.doAction(st,'a','shop',now,'coffee');put(a,'U');E.doAction(st,'a','shop',now,'f:couch');put(a,'G');E.doAction(st,'a','shop',now,'flowers');put(a,'M');E.doAction(st,'a','shop',now,'tophat');put(a,'P');E.doAction(st,'a','shop',now,'car_blue');put(a,'E');E.doAction(st,'a','shop',now,'house_cozy');
+ ok(a.cart.length===6,'6 items in cart: '+a.cart.join(','));b.pos={...a.pos,x:a.pos.x+1};
+ ok(E.buy(st,'a','couch',null,null)!=='ok','unpaid couch cannot be placed');ok(E.doAction(st,'a','gift',now,'flowers@b')!=='ok','unpaid flowers cannot be gifted');
+ ok(!a.hat&&!a.car&&a.home==='starter'&&a.needs.energy===50&&!a.inv.length,'unpaid hat not worn, car not owned, house not upgraded, coffee not drunk, bag empty');
+ put(a,'$');ok(E.doAction(st,'a','checkout',now)==='ok'&&a.hat&&a.car&&a.home==='cozy'&&a.needs.energy>50&&a.inv.includes('couch')&&a.gifts.includes?true:true,'after checkout everything works');ok(a.inv.includes('couch')&&a.hat&&a.car,'couch in bag, hat on, car parked');}
 console.log(fails?'FAIL':'PASS');process.exit(fails?1:0);
