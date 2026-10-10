@@ -1,27 +1,39 @@
-# Seak 🏡
-A cozy multiplayer life-sim: you and your AI agent roommate seek your dream life in a shared town.
+# Seak 🏡 (free-move edition)
+A cozy multiplayer life-sim: you walk your AI agent roommate around a shared pastel town, keep its needs up, build your home, and visit neighbors.
 
 ## Play solo (no install)
-Double-click `index.html` → **Play Solo**. You play against 3 AI neighbor agents, all in the browser.
+Open `index.html` in a browser → **Play Solo**. You play with 3 AI neighbors who walk around using BFS pathfinding.
 
 ## Multiplayer (1–6 players, room code, no login)
 ```
 npm install
-node server.js        # or: npm start
+node server.js        # or: npm start  (honors PORT)
 ```
-Open http://localhost:3000 → enter name → **Create room** → share the 4-letter code. Friends open the same URL and **Join**.
-- Same Wi-Fi: friends use `http://<your-LAN-IP>:3000` (find it with `ipconfig` / `ifconfig`).
-- Public link: deploy this folder free to Render / Railway / Glitch (start command `node server.js`; the server honors `PORT`).
-- Host can add **AI neighbors** in the lobby.
+Open http://localhost:3000 → name → **Create room** → share the 4-letter code; others open the same URL and **Join**. Host can add AI neighbors in the lobby, then **Start**.
+Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Railway (start command `node server.js`).
 
-## How to play
-Each day (~2¼ min, shared timer): **Plan** (60s) pick ONE instruction or type it ("cook for the neighbors") → **Build** (40s) buy items, tap a cell in your house to place → **Resolve** (30s) all agents act at once.
-- Needs: Energy, Mood, Social (decay daily). Actions: Sleep, Eat/Cook, Hang out, Work, Play, Visit.
-- Collisions: 2+ agents at the Town Diner (no home kitchen) get smaller meals; a home party (couch/café) wakes sleeping next-door agents; visits to one house stack for extra Social; shared meals give +Social.
-- Items: Bed (Sleep+), Kitchen (cook at home), Couch/Café (host Hang out+), Desk (Work+), Console/Arcade (Play+), Plant/Lamp/Garden (daily Mood, visitor bonus).
-- After Day 7: score = average needs + 10 × visits. Titles: Best Host, Most Rested, Town Architect.
-- Tap any house to go inside; **Exit house** returns to town. Everyone pressing Ready skips the timer.
+## Controls
+- Move: **Arrow keys / WASD**, or the on-screen D-pad (phones).
+- Act: walk next to a spot and press **E / Space**, or tap the action button that pops up.
+- Walk into a house door to go inside; step on **EXIT** to leave.
+- Build: inside your own house, pick an item in the Build panel, then tap a free tile (dashed outline). Placement that would block a spot or the walkway is refused.
 
-## Dev
-- Rules live once in `index.html` `<script id="engine">`; `server.js` loads the same engine (authoritative state, 200 ms tick).
-- `SEAK_SPEED=0.03 node server.js` then `node test_mp.js` runs a 2-client, 7-day sync test.
+## Rules
+| Spot | Action | Effect |
+|---|---|---|
+| Bed (every house starts with one) | Sleep | +18 Energy |
+| Diner counter / home Kitchen | Eat/Cook | +10 / +14 Energy |
+| Office desk / home Desk | Work | +15 / +22 coins, −6 Energy |
+| Plaza bench / Couch / Café | Hang out | +8 / +10 / +12 Social |
+| Plaza arcade / Console / Arcade | Play | +8 / +10 / +13 Mood |
+| Neighbor's door | Visit | +8 Social you, +5 Social & +1 visit for owner (once per house per day); decor gives you Mood |
+
+- **Real-time days:** each day is ~2½ min. Actions take a few seconds (your agent is busy) and then cool down ~12 s, so you get several actions a day but must choose. Overnight: Energy −22, Mood −18 (+decor), Social −18, +10 coins.
+- **Collisions:** a crowded diner gives smaller meals; eating at the same time as someone = shared meal (+Social); hanging out together stacks Social; a hangout in your house or a neighbor's (same row) halves the Sleep of anyone sleeping there; a Plaza party (2+) disturbs sleepers in the bottom-row houses; several visitors at once = packed house bonus.
+- **After Day 7:** score = average needs + 10 × visits. Titles: Best Host (visits), Most Rested (Energy), Town Architect (items built).
+
+## How it's built
+- `index.html`: UI + canvas renderer + the shared engine (`<script id="engine">`).
+- `server.js` loads that same engine with `vm`, runs it authoritatively (needs, coins, visits, day timer, AI), sends full state on change and positions at 10 Hz. Clients predict their own steps and interpolate everyone's movement.
+- Test: `PORT=3100 SEAK_SPEED=0.06 node server.js` then `PORT=3100 node test_mp.js`.
+- Previous turn-based version: git tag `v1`.
