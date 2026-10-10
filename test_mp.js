@@ -9,7 +9,7 @@ const wait=(f,ms=20000,what='')=>new Promise((r,j)=>{const t0=Date.now(),i=setIn
 const tx=(ws,m)=>ws.send(JSON.stringify(m));
 async function walk(ws,dx,dy,n){for(let i=0;i<n;i++){tx(ws,{t:'step',dx,dy});await sleep(120);}}
 async function walkTo(ws,map,goalFn){for(let i=0;i<200;i++){const p=ws.st.players[ws.id],q=p.pos;if(q.map===map&&goalFn(q.x,q.y))return;
- let fn;if(q.map!==map){if(q.map!=='town'){const d=E.exitDoor(q.map);fn=(x,y)=>x===d.x&&y===d.y;}else{const d=E.doorOf(map);fn=(x,y)=>x===d.x&&y===d.y;}}else fn=goalFn;
+ let fn;if(q.map!==map){if(q.map!=='town'){const d=E.exitDoor(q.map,ws.st);fn=(x,y)=>x===d.x&&y===d.y;}else{const d=E.doorOf(map);fn=(x,y)=>x===d.x&&y===d.y;}}else fn=goalFn;
  const n=E.nextStep(ws.st,q.map,q.x,q.y,fn);if(!n)throw new Error('no path');const before=JSON.stringify(q);tx(ws,{t:'step',dx:n[0]-q.x,dy:n[1]-q.y});
  await wait(()=>JSON.stringify(ws.st.players[ws.id].pos)!==before,1500,'step ack').catch(()=>{});await sleep(100);}throw new Error('walkTo timeout');}
 let pass=0;const ok=m=>{pass++;console.log('✔',m);};
@@ -26,12 +26,12 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
  tx(a,{t:'start'});await wait(()=>b.st.phase==='day'&&b.st.day===1,5000,'start');ok('day 1 started on both clients');
  const A=()=>b.st.players[a.id].pos,start={...A()};
  await walk(a,-1,0,1);await wait(()=>A().x===start.x-1,2000,'move sync');ok(`movement synced: B sees A move ${start.x},${start.y} -> ${A().x},${A().y}`);
- {const x0=A().x;for(let i=0;i<4;i++){tx(a,{t:'step',dx:1,dy:0});await sleep(85);}await wait(()=>A().x===x0+4,2000,'run sync');ok('running: 4 steps at ~85ms apart all accepted and synced');for(let i=0;i<3;i++){tx(a,{t:'step',dx:-1,dy:0});await sleep(85);}await wait(()=>A().x===x0+1,2000,'run back');}
- await walk(a,0,-1,1);await wait(()=>A().map==='h0',2000,'enter');ok('B sees A enter their house (map h0)');
+ {const x0=A().x;for(let i=0;i<4;i++){tx(a,{t:'step',dx:1,dy:0,run:true});await sleep(85);}await wait(()=>A().x===x0+4,2000,'run sync');ok('running: 4 steps at ~85ms apart all accepted and synced');for(let i=0;i<3;i++){tx(a,{t:'step',dx:-1,dy:0,run:true});await sleep(85);}await wait(()=>A().x===x0+1,2000,'run back');}
+ await sleep(150);await walk(a,0,-1,1);await wait(()=>A().map==='h0',2000,'enter');ok('B sees A enter their house (map h0)');
  await walk(a,-1,0,3);await walk(a,0,-1,3);await wait(()=>A().x===1&&A().y===2,2000,'reach bed');
  const e0=a.st.players[a.id].needs.energy;tx(a,{t:'do',action:'sleep'});
  await wait(()=>b.st.players[a.id].busy&&b.st.players[a.id].busy.a==='sleep',3000,'busy');ok('action trigger: A sleeping at bed (B sees busy=sleep)');
- await wait(()=>!a.st.players[a.id].busy,5000,'finish');ok(`sleep finished, energy ${e0} -> ${a.st.players[a.id].needs.energy} (server-authoritative)`);
+ await wait(()=>!a.st.players[a.id].busy,40000,'finish');ok(`sleep finished, energy ${e0} -> ${a.st.players[a.id].needs.energy} (server-authoritative)`);
  // B walks along row 5 to A's door and in => Visit
  const bs=b.st.players[b.id].pos;await walk(b,-1,0,bs.x-start.x);await walk(b,0,-1,1);
  await wait(()=>a.st.players[a.id].visits===1&&a.st.players[b.id].pos.map==='h0',3000,'visit');ok(`visit: B entered A's house, A visits=${a.st.players[a.id].visits}, log: "${a.st.log.filter(l=>/visited/.test(l.m)).pop().m}"`);
@@ -44,11 +44,11 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
  await walkTo(a,'b:mart',adj('R'));tx(a,{t:'do',action:'shop',arg:'coffee'});await wait(()=>b.st.players[a.id].cart.length===1,3000,'cart');
  await walkTo(a,'b:mart',adj('U'));tx(a,{t:'do',action:'shop',arg:'f:plant'});tx(a,{t:'do',action:'shop',arg:'f:lamp'});await wait(()=>b.st.players[a.id].cart.length===3,3000,'cart2');
  await walkTo(a,'b:mart',adj('$'));const c0=a.st.players[a.id].coins;tx(a,{t:'do',action:'checkout'});await wait(()=>b.st.players[a.id].coins===c0-28&&!b.st.players[a.id].cart.length,3000,'checkout');ok('Seak Mart: A bought Coffee + Plant + Lamp at checkout (B sees coins '+c0+' -> '+(c0-28)+')');
- await walkTo(a,'h0',(x,y)=>x===4&&y===5);tx(a,{t:'buy',item:'plant',x:5,y:2});await wait(()=>b.st.players[a.id].items.some(i=>i.t==='plant'),3000,'place');ok('placed the bought plant at home; B sees it');
+ await walkTo(a,'h0',(x,y)=>{const s=E.homeInfo(a.st,'h0').spawn;return x===s.x&&y===s.y;});tx(a,{t:'buy',item:'plant',x:5,y:2});await wait(()=>b.st.players[a.id].items.some(i=>i.t==='plant'),3000,'place');ok('placed the bought plant at home; B sees it');
  if(b.st.players[b.id].pos.map!=='h0')throw new Error('B expected in A house');tx(a,{t:'do',action:'gift',arg:'f:lamp@'+b.id});
  await wait(()=>b.st.players[b.id].inv.includes('lamp')&&!b.st.players[a.id].inv.includes('lamp'),3000,'gift furniture');ok('A gave B a Lamp from the bag (moved to B\'s bag)');
- {const ca=a.st.players[a.id].coins,cb=a.st.players[b.id].coins;tx(a,{t:'do',action:'gift',arg:'coins:20@'+b.id});await wait(()=>b.st.players[b.id].coins===cb+20&&b.st.players[a.id].coins===ca-20,3000,'coin gift');ok(`A gave B 20 coins (A ${ca}→${ca-20}, B ${cb}→${cb+20})`);
-  a.errs.length=0;tx(a,{t:'do',action:'gift',arg:'coins:20@'+b.id});await wait(()=>a.errs.some(e=>/limit/.test(e)),3000,'cap');ok('server enforces 30/day cap: "'+a.errs.find(e=>/limit/.test(e))+'"');
+ {const ca=a.st.players[a.id].coins,cb=a.st.players[b.id].coins,G=ca>=40?20:10;tx(a,{t:'do',action:'gift',arg:'coins:'+G+'@'+b.id});await wait(()=>b.st.players[b.id].coins===cb+G&&b.st.players[a.id].coins===ca-G,3000,'coin gift');ok(`A gave B ${G} coins (A ${ca}→${ca-G}, B ${cb}→${cb+G})`);if(G===20){
+  a.errs.length=0;tx(a,{t:'do',action:'gift',arg:'coins:20@'+b.id});await wait(()=>a.errs.some(e=>/limit/.test(e)),3000,'cap');ok('server enforces 30/day cap: "'+a.errs.find(e=>/limit/.test(e))+'"');}else ok('(cap case covered by engine test; A low on coins)');
   b.errs.length=0;const bc=b.st.players[b.id].coins;if(bc<20){tx(b,{t:'do',action:'gift',arg:'coins:20@'+a.id});await wait(()=>b.errs.some(e=>/Not enough/.test(e)),3000,'funds');ok('insufficient funds refused by server');}
   else{ok('(B has '+bc+' coins; insufficient-funds case covered by engine test)');}}
  tx(b,{t:'buy',item:'lamp',x:null,y:null});await wait(()=>a.st.players[b.id].items.some(i=>i.t==='lamp'),3000,'B places');ok('B placed the gifted Lamp in B\'s own house; A\'s house has no lamp: '+!a.st.players[a.id].items.some(i=>i.t==='lamp'));

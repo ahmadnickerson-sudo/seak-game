@@ -18,7 +18,7 @@ wss.on('connection',ws=>{ws.id='p'+(nextId++);
    ws.room=room;room.clients.add(ws);ws.send(JSON.stringify({t:'welcome',id:ws.id,code:room.st.code}));broadcast(room);return;}
   const room=ws.room;if(!room)return;const st=room.st;let r='ok';
   if(m.t==='say'){E.chat(st,ws.id,m.text,Date.now());return;}
-  if(m.t==='step'){E.step(st,ws.id,m.dx|0,m.dy|0,now);return;}// positions go out in the 10Hz 'pos' broadcast
+  if(m.t==='step'){E.step(st,ws.id,m.dx|0,m.dy|0,now,!!m.run);return;}// positions go out in the 10Hz 'pos' broadcast
   if(m.t==='do')r=E.doAction(st,ws.id,String(m.action),now,m.arg==null?null:String(m.arg));else if(m.t==='buy')r=E.buy(st,ws.id,String(m.item),m.x==null?null:m.x|0,m.y==null?null:m.y|0);
   else if(m.t==='start')E.startGame(st,now);else if(m.t==='bot'){if(st.phase==='lobby')E.addPlayer(st,'bot'+(nextId++),['Pixel','Juno','Byte','Mochi','Nova','Kiwi','Ziggy'][st.order.length%7]+' (AI)',true);}
   if(r!=='ok')err(r);E.tick(st,now);broadcast(room);});

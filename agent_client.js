@@ -27,12 +27,12 @@ function goalFor(place){const t=String(place||'').trim().toLowerCase();const pub
  if(pub[t]){const map='b:'+t,L=E.PUB_LAYOUT[t],ch=pub[t];return{map,fn:(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>L[y+dy]&&L[y+dy][x+dx]===ch)};}
  if(t==='plaza'){const sp=E.TOWN.spots.filter(s=>s.place==='plaza');return{map:'town',fn:(x,y)=>sp.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)===1)};}
  if(t==='home'||t==='bed'){const p=P(),bed=p.items.find(i=>i.t==='bed')||{x:1,y:1};return{map:'h'+p.lot,fn:(x,y)=>Math.abs(x-bed.x)+Math.abs(y-bed.y)===1};}
- if(t.startsWith('house ')){const who=t.slice(6);const q=Object.values(st.players).find(q=>q.name.toLowerCase().startsWith(who));if(!q)return null;return{map:'h'+q.lot,fn:(x,y)=>x===E.ISPAWN.x&&y===E.ISPAWN.y};}
+ if(t.startsWith('house ')){const who=t.slice(6);const q=Object.values(st.players).find(q=>q.name.toLowerCase().startsWith(who));if(!q)return null;return{map:'h'+q.lot,fn:(x,y)=>{const s=E.homeInfo(st,q.lot).spawn;return x===s.x&&y===s.y;}};}
  const m=t.match(/^(\d+)\s*,\s*(\d+)$/);if(m)return{map:'town',fn:(x,y)=>x===+m[1]&&y===+m[2]};return null;}
 async function walkTo(place){const g=goalFor(place);if(!g){out({ev:'error',msg:'unknown place '+place});return false;}walking++;
  try{for(let i=0;i<400;i++){const p=P();if(!p||st.phase!=='day'){await sleep(300);continue;}if(p.busy){await sleep(200);continue;}const q=p.pos;
   if(q.map===g.map&&g.fn(q.x,q.y)){out({ev:'arrived',place,pos:q});return true;}
-  let fn;if(q.map!==g.map){if(q.map!=='town'){const d=E.exitDoor(q.map);fn=(x,y)=>x===d.x&&y===d.y;}else{const d=E.doorOf(g.map);fn=(x,y)=>x===d.x&&y===d.y;}}else fn=g.fn;
+  let fn;if(q.map!==g.map){if(q.map!=='town'){const d=E.exitDoor(q.map,st);fn=(x,y)=>x===d.x&&y===d.y;}else{const d=E.doorOf(g.map);fn=(x,y)=>x===d.x&&y===d.y;}}else fn=g.fn;
   const n=E.nextStep(st,q.map,q.x,q.y,fn);if(!n){out({ev:'error',msg:'no path to '+place});return false;}
   const before=JSON.stringify(q);send({t:'step',dx:n[0]-q.x,dy:n[1]-q.y});
   const t0=Date.now();for(let k=0;k<40&&JSON.stringify(P().pos)===before;k++)await sleep(running?10:50);const gap=(running?83:150)-(Date.now()-t0);if(gap>0)await sleep(gap);}
