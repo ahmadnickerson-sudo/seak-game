@@ -9,7 +9,7 @@ async function session(fileUrl,fn){const ch=spawn('google-chrome',['--headless=n
  ws.on('message',d=>{const m=JSON.parse(d);if(m.id&&pend[m.id])pend[m.id](m);if(m.method==='Runtime.exceptionThrown')errs.push(m.params.exceptionDetails.exception?.description||m.params.exceptionDetails.text);if(m.method==='Runtime.consoleAPICalled'&&m.params.type==='error')errs.push(JSON.stringify(m.params.args));});
  const cmd=(method,params={})=>new Promise(r=>{const i=++id;pend[i]=r;ws.send(JSON.stringify({id:i,method,params}));});
  const ev=async e=>(await cmd('Runtime.evaluate',{expression:e,returnByValue:true})).result.result.value;
- await cmd('Runtime.enable');await cmd('Page.enable');await cmd('Page.navigate',{url:fileUrl});await sleep(900);
+ await cmd('Runtime.enable');await cmd('Page.enable');await cmd('Page.navigate',{url:fileUrl});await sleep(1500);
  const api={cmd,ev,errs,shot:async f=>{const r=await cmd('Page.captureScreenshot',{format:'png'});fs.writeFileSync(f,Buffer.from(r.result.data,'base64'));},
   menuVisible:()=>ev(`(()=>{const m=document.getElementById('menu'),g=document.getElementById('game');return (m.offsetHeight>0&&getComputedStyle(m).display!=='none')||(g.offsetHeight>0&&getComputedStyle(g).display!=='none')})()`),
   key:async(k,code)=>{await cmd('Input.dispatchKeyEvent',{type:'keyDown',key:k,code});await sleep(60);await cmd('Input.dispatchKeyEvent',{type:'keyUp',key:k,code});await sleep(200);}};

@@ -18,6 +18,15 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - Walk into a house door to go inside; step on **EXIT** to leave.
 - Build: inside your own house, pick an item in the Build panel, then tap a free tile (dashed outline). Placement that would block a spot or the walkway is refused.
 
+## What's new (free-move v2)
+- Town doubled to 68×46 tiles: roads, lanes, side paths, trees, and dashed **Open lots** for future locations.
+- Walk-in buildings: **Town Diner** (counters), **Office** (desks), **School** (desks), **Arcade** (cabinets). Walk through the door to go in, EXIT to leave. The Plaza keeps benches and the fountain.
+- **School:** Study at a school desk (one class per day, −5 Energy). After 3 classes you graduate 🎓 and Work pays 60% more. Shown in the HUD.
+- **Work** now costs Mood (−7) as well as Energy.
+- **Jump:** press J or tap 🦘 Jump. Cosmetic, synced in multiplayer; happy AIs jump too.
+- **Pinky** (pink AI neighbor; first AI added in multiplayer): works at the Office, plays at the Arcade, studies, visits your house, talks when you press E next to her (+4 Social each), and sometimes walks over to offer a hangout (press E to accept: both Hang out, +12 Social).
+- A crowded diner now means other agents *inside* the diner: smaller meals.
+
 ## Rules
 | Spot | Action | Effect |
 |---|---|---|
@@ -35,5 +44,5 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 ## How it's built
 - `index.html`: UI + canvas renderer + the shared engine (`<script id="engine">`).
 - `server.js` loads that same engine with `vm`, runs it authoritatively (needs, coins, visits, day timer, AI), sends full state on change and positions at 10 Hz. Clients predict their own steps and interpolate everyone's movement.
-- Test: `PORT=3100 SEAK_SPEED=0.06 node server.js` then `PORT=3100 node test_mp.js`. Keyboard/solo test: `node test_keys.js`. Reopen test (persistent profile, reload, renamed copy, bad saved data): `node test_reopen.js`.
+- Test: `PORT=3100 SEAK_SPEED=0.06 node server.js` then `PORT=3100 node test_mp.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Engine test (buildings, school, Pinky, AI games): `node test_engine.js`.
 - Previous turn-based version: git tag `v1`.
