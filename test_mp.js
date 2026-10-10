@@ -3,7 +3,7 @@
 const WebSocket=require('ws');const URL='ws://localhost:'+(process.env.PORT||3000);
 const fs=require('fs'),vm=require('vm');const ectx={module:{exports:{}},globalThis:{}};vm.runInNewContext(fs.readFileSync(__dirname+'/index.html','utf8').match(/<script id="engine">([\s\S]*?)<\/script>/)[1],ectx);const E=ectx.module.exports;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const mk=n=>new Promise(r=>{const ws=new WebSocket(URL);ws.st=null;ws.errs=[];ws.emotes=[];ws.on('message',d=>{const m=JSON.parse(d);if(m.t==='emote')ws.emotes.push(m.id);if(m.t==='welcome')ws.id=m.id;if(m.t==='state')ws.st=m.state;
+const mk=n=>new Promise(r=>{const ws=new WebSocket(URL);ws.st=null;ws.errs=[];ws.emotes=[];ws.on('message',d=>{const m=JSON.parse(d);if(m.t==='emote')ws.emotes.push(m.id);if(m.t==='arcmsg')(ws.arc=ws.arc||[]).push(m);if(m.t==='welcome')ws.id=m.id;if(m.t==='state')ws.st=m.state;
  if(m.t==='pos'&&ws.st)for(const id in m.p){const[a,x,y,dir]=m.p[id];if(ws.st.players[id])ws.st.players[id].pos={map:a,x,y,dir};}if(m.t==='err'){ws.errs.push(m.msg);console.log(n,'err:',m.msg);}});ws.on('open',()=>r(ws));});
 const wait=(f,ms=20000,what='')=>new Promise((r,j)=>{const t0=Date.now(),i=setInterval(()=>{if(f()){clearInterval(i);r();}else if(Date.now()-t0>ms){clearInterval(i);j(new Error('timeout: '+what));}},10);});
 const tx=(ws,m)=>ws.send(JSON.stringify(m));
@@ -52,6 +52,8 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
   b.errs.length=0;const bc=b.st.players[b.id].coins;if(bc<20){tx(b,{t:'do',action:'gift',arg:'coins:20@'+a.id});await wait(()=>b.errs.some(e=>/Not enough/.test(e)),3000,'funds');ok('insufficient funds refused by server');}
   else{ok('(B has '+bc+' coins; insufficient-funds case covered by engine test)');}}
  tx(b,{t:'buy',item:'lamp',x:null,y:null});await wait(()=>a.st.players[b.id].items.some(i=>i.t==='lamp'),3000,'B places');ok('B placed the gifted Lamp in B\'s own house; A\'s house has no lamp: '+!a.st.players[a.id].items.some(i=>i.t==='lamp'));
+ {tx(a,{t:'arcmsg',to:b.id,data:{b:[1,2]}});await sleep(200);ok(!(b.arc||[]).length,'pong relay refused until both have Pong open');tx(a,{t:'arc',game:'pong'});tx(b,{t:'arc',game:'pong'});await wait(()=>a.st.players[b.id].arc==='pong'&&b.st.players[a.id].arc==='pong',3000,'arc flags');ok('both see each other at Pong (pairing flag synced)');
+  tx(a,{t:'arcmsg',to:b.id,data:{b:[10,20],l:150,r:150,sl:1,sr:0}});tx(b,{t:'arcmsg',to:a.id,data:{pad:120}});await wait(()=>(b.arc||[]).some(m=>m.from===a.id&&m.data.sl===1)&&(a.arc||[]).some(m=>m.data.pad===120),3000,'relay');ok('Pong frames relayed host→guest and paddle guest→host');tx(a,{t:'arc',game:null});tx(b,{t:'arc',game:null});}
  let days=new Set();await wait(()=>{days.add(a.st.day);return a.st.phase==='results'&&b.st.phase==='results';},150000,'7 days');ok('played through days '+[...days].join(','));
  if(JSON.stringify(a.st.results)!==JSON.stringify(b.st.results))throw new Error('results desync');ok('results identical on both clients: '+JSON.stringify(a.st.results));
  console.log(`PASS (${pass} checks)`);process.exit(0);})().catch(e=>{console.error('FAIL',e.message);process.exit(1);});

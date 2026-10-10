@@ -23,7 +23,7 @@ let running=false,E,ws,me=null,st=null,auto=flags.includes('--auto'),queue=Promi
 async function loadEngine(){const html=await (await fetch(U.origin+'/')).text();const src=html.match(/<script id="engine">([\s\S]*?)<\/script>/)[1];const c={module:{exports:{}},globalThis:{}};vm.runInNewContext(src,c);return c.module.exports;}
 const send=m=>ws&&ws.readyState===1&&ws.send(JSON.stringify(m));
 const P=()=>st&&st.players[me];
-function goalFor(place){const t=String(place||'').trim().toLowerCase();const pub={diner:'C',office:'W',school:'K',arcade:'A',mart:'$'};
+function goalFor(place){const t=String(place||'').trim().toLowerCase();const pub={diner:'C',office:'W',school:'K',arcade:'2',mart:'$'};
  if(pub[t]){const map='b:'+t,L=E.PUB_LAYOUT[t],ch=pub[t];return{map,fn:(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>L[y+dy]&&L[y+dy][x+dx]===ch)};}
  if(t==='plaza'){const sp=E.TOWN.spots.filter(s=>s.place==='plaza');return{map:'town',fn:(x,y)=>sp.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)===1)};}
  if(t==='home'||t==='bed'){const p=P(),bed=p.items.find(i=>i.t==='bed')||{x:1,y:1};return{map:'h'+p.lot,fn:(x,y)=>Math.abs(x-bed.x)+Math.abs(y-bed.y)===1};}

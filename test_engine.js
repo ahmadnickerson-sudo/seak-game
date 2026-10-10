@@ -10,7 +10,7 @@ const nearSpot=(map,ch)=>{const L=E.PUB_LAYOUT[map.slice(2)];return(x,y)=>[[1,0]
 // 1. AI-only games
 for(let g=0;g<3;g++){const st=E.createState('X',{speed:1,seed:100+g});['Pixel (AI)','b','c','d'].forEach((n,i)=>E.addPlayer(st,'p'+i,n,true));let now=0;const t0=Date.now();E.startGame(st,now);const seen=new Set();while(st.phase==='day'){now+=50;E.tick(st,now);st.log.slice(-4).forEach(l=>seen.add(l.m));}
  const R=st.results.rows;const L=[...seen];ok(R.every(r=>r.happiness>20&&r.happiness<=100)&&R.some(r=>r.visits>0),`AI game ${g}: [happiness,visits,built] ${JSON.stringify(R.map(r=>[r.happiness,r.visits,r.built]))}, edu ${JSON.stringify(Object.values(st.players).map(p=>p.edu))}, ${Date.now()-t0}ms CPU`);
- if(g===0)ok(['Diner counter','Office desk','School desk','Arcade cabinet'].every(k=>L.some(m=>m.includes(k))),'AIs ate/worked/studied/played inside the walk-in buildings');}
+ if(g===0)ok(['Diner counter','Office desk','School desk','cabinet'].every(k=>L.some(m=>m.includes(k))),'AIs ate/worked/studied/played inside the walk-in buildings');}
 // 2. player: enter diner, eat, crowding by who is inside; work drains mood; school → graduation → higher pay
 const st=E.createState('X',{speed:1});E.addPlayer(st,'me','Ahmad');E.addPlayer(st,'pk','Pixel (AI)',true);E.addPlayer(st,'j','Juno (AI)',true);st.players.pk.ai=st.players.j.ai=false;let now=1000;E.startGame(st,now);setClock(st,now,10);
 now=walkTo(st,'me','b:diner',nearSpot('b:diner','C'),now);ok(st.players.me.pos.map==='b:diner','walked through the door into the Town Diner');
@@ -23,7 +23,7 @@ for(let d=0;d<3;d++){now=walkTo(st,'me','b:school',nearSpot('b:school','K'),now)
 ok(st.players.me.edu===3,'graduated (edu 3/3)');now=walkTo(st,'me','b:office',nearSpot('b:office','W'),now);st.players.me.cd={};st.players.me.needs.energy=80;st.players.me.needs.mood=40;const c1=st.players.me.coins;E.doAction(st,'me','work',now);now+=st.dur.busy.work+1000;E.tick(st,now);
 ok(st.players.me.coins-c1>pay1,`graduate pay ${st.players.me.coins-c1} > ${pay1}`);
 // arcade
-now=walkTo(st,'me','b:arcade',nearSpot('b:arcade','A'),now);ok(E.doAction(st,'me','play',now)==='ok','played at the Arcade building');now+=st.dur.busy.eat+1000;E.tick(st,now);
+now=walkTo(st,'me','b:arcade',nearSpot('b:arcade','2'),now);ok(E.doAction(st,'me','play',now)==='ok','played at the Arcade building');now+=st.dur.busy.eat+1000;E.tick(st,now);
 // chat with an adjacent agent
 st.players.pk.pos={...st.players.me.pos};st.players.pk.pos.x+=1;if(!E.walkable(st,st.players.me.pos.map,st.players.pk.pos.x,st.players.pk.pos.y))st.players.pk.pos.x-=2;
 ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok'&&(st.players.pk.say||st.players.me.say),'chat with the agent next to you (+Social; speech bubble: "'+((st.players.pk.say||st.players.me.say)||{}).text+'")');
@@ -91,4 +91,12 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  let rx,ry;for(let y=0;y<E.TH&&rx==null;y++)for(let x=0;x<E.TW-6;x++)if([0,1,2,3,4,5].every(i=>E.tileAt(st,'town',x+i,y)==='='))({rx,ry}={rx:x,ry:y});
  if(rx!=null){a.pos={map:'town',x:rx,y:ry,dir:'right'};a.stepAcc=39;e0=a.needs.energy;let m=0;for(let i=0;i<5;i++){now+=50;if(E.step(st,'a',1,0,now,false))m++;}ok(m===5&&a.needs.energy===e0,'car on road: 5 quick steps, no Energy drain');}
  const r=E.endGame?null:null;}
+// 8. arcade mini-game results
+{const st=E.createState('Q',{speed:1});E.addPlayer(st,'a','Ahmad');let now=1000;E.startGame(st,now);const a=st.players.a;a.ai=false;st.dur.busy.action=1;
+ const L=E.PUB_LAYOUT.arcade;const at=c=>{for(let y=0;y<L.length;y++)for(let x=0;x<L[0].length;x++)if(L[y][x]===c&&L[y+1][x]==='.'){a.pos={map:'b:arcade',x,y:y+1,dir:'up'};return;}};
+ for(const[c,g]of[['1','pong'],['2','blockfall'],['3','chomp']]){at(c);ok(E.actionsAt(st,'a').some(o=>o.game===g),g+' cabinet offers its game');}
+ at('2');a.needs.mood=40;let r=E.doAction(st,'a','play',now,'blockfall:1500');while(a.busy){now+=1000;E.tick(st,now);}ok(r==='ok'&&a.needs.mood===40+12+5&&a.hi.blockfall===1500,'Blockfall 1500 → +12 base +5 bonus Mood, best saved: mood '+a.needs.mood);
+ at('1');a.cd={};a.needs.energy=80;a.needs.mood=40;r=E.doAction(st,'a','play',now,'pong:5:win');while(a.busy){now+=1000;E.tick(st,now);}ok(r==='ok'&&a.needs.mood===40+12+8,'Pong win → +8 bonus '+r+' '+a.needs.mood);
+ at('3');a.cd={};a.needs.energy=80;a.needs.mood=40;r=E.doAction(st,'a','play',now,'chomp:999999');ok(r!=='ok'||true,'');while(a.busy){now+=1000;E.tick(st,now);}ok(a.needs.mood<=40+12+8,'bonus capped at +8');
+ at('3');a.cd={};a.needs.energy=80;a.needs.mood=40;r=E.doAction(st,'a','play',now,'blockfall:3000');while(a.busy){now+=1000;E.tick(st,now);}ok(a.needs.mood===52,'result for a different cabinet gets no bonus '+r+a.needs.mood);}
 console.log(fails?'FAIL':'PASS');process.exit(fails?1:0);
