@@ -88,7 +88,7 @@ const DAYS=7,VISIT_PTS=10;
 // base timings (ms) – scaled by opts.speed
 // Clock: 1 real minute = 1 in-game hour, so a day is 24 real minutes. Action times scale with the day (×9.6 vs the old 2.5-min day) so a day has a similar number of actions.
 const DAYSCALE=9.6,START_HOUR=7,WEEKDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const STEP_MS_UNUSED=0;const DUR={day:1440000,busy:{sleep:10000*DAYSCALE,eat:6000*DAYSCALE,work:8000*DAYSCALE,hang:6000*DAYSCALE,play:6000*DAYSCALE,study:8000*DAYSCALE},cooldown:12000*DAYSCALE,talk:8000,say:5000};
+const STEP_MS_UNUSED=0;const DUR={day:1440000,busy:{sleep:10000*DAYSCALE,eat:6000*DAYSCALE,work:4000*DAYSCALE,hang:6000*DAYSCALE,play:6000*DAYSCALE,study:8000*DAYSCALE},cooldown:12000*DAYSCALE,workCooldown:6000*DAYSCALE,talk:8000,say:5000};
 // opening hours (minutes after midnight); days are 1=Mon … 7=Sun. Unlisted places are always open.
 const HOURS={school:{days:[1,2,3,4,5],open:8*60,close:15*60,name:'School'},office:{days:[1,2,3,4,5],open:9*60,close:17*60,name:'Office'}};
 const STEP_MS=60;// server-side minimum gap between steps (running client steps every ~83ms)
@@ -284,7 +284,7 @@ function gainBase(o){return({arcade:3,console:2,cafe:3,couch:2,kitchen:2,desk:2}
 function finishBusy(st,p,now){const b=p.busy,g=b.g;if(b.a==='sleep'&&b.disturbed)g.energy=Math.round(g.energy/2);
  p.needs.energy=clamp(p.needs.energy+g.energy);p.needs.mood=clamp(p.needs.mood+g.mood);p.needs.social=clamp(p.needs.social+g.social);p.coins+=g.coins;
  if(g.study){p.edu=Math.min(GRAD_AT,p.edu+1);if(p.edu>=GRAD_AT)log(st,`🎓 ${p.name} graduated! Work now pays ${Math.round((GRAD_PAY-1)*100)}% more.`);}
- p.cd[b.a]=now+st.dur.cooldown;p.busy=null;p.mood=moodE(p);
+ p.cd[b.a]=now+(b.a==='work'?st.dur.workCooldown:st.dur.cooldown);p.busy=null;p.mood=moodE(p);
  const parts=[];if(g.energy)parts.push(`${g.energy>0?'+':''}${g.energy} Energy`);if(g.mood)parts.push(`${g.mood>0?'+':''}${g.mood} Mood`);if(g.study)parts.push(`Education ${p.edu}/${GRAD_AT}`);if(g.note)parts.push(g.note);if(g.social)parts.push(`+${g.social} Social`);if(g.coins)parts.push(`+${g.coins} coins`);
  log(st,`${ACTIONS[b.a].e} ${p.name}: ${ACTIONS[b.a].label} at ${b.src} (${parts.join(', ')}).`);}
 // ---------- build ----------
