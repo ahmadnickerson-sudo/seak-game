@@ -1,5 +1,5 @@
 // Headless multiplayer test. Run: SEAK_SPEED=0.06 node server.js  then  node test_mp.js
-// Covers: create/join, jump emote sync, walk-in Diner + eat inside, Seak Mart purchase, movement sync between clients, an action trigger (Sleep at bed), a visit, full 7 days, synced results.
+// Covers: create/join, running (fast steps accepted), walk-in Diner + eat inside, Seak Mart purchase, movement sync between clients, an action trigger (Sleep at bed), a visit, full 7 days, synced results.
 const WebSocket=require('ws');const URL='ws://localhost:'+(process.env.PORT||3000);
 const fs=require('fs'),vm=require('vm');const ectx={module:{exports:{}},globalThis:{}};vm.runInNewContext(fs.readFileSync(__dirname+'/index.html','utf8').match(/<script id="engine">([\s\S]*?)<\/script>/)[1],ectx);const E=ectx.module.exports;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -25,9 +25,9 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
  const b=await mk('B');tx(b,{t:'join',code,name:'Juno'});await wait(()=>b.st&&a.st.order.length===2,5000,'join');ok('B joined, both see 2 players');
  tx(a,{t:'start'});await wait(()=>b.st.phase==='day'&&b.st.day===1,5000,'start');ok('day 1 started on both clients');
  const A=()=>b.st.players[a.id].pos,start={...A()};
- tx(a,{t:'emote'});await wait(()=>b.emotes.includes(a.id),2000,'emote');ok('jump emote from A reached B');
  await walk(a,-1,0,1);await wait(()=>A().x===start.x-1,2000,'move sync');ok(`movement synced: B sees A move ${start.x},${start.y} -> ${A().x},${A().y}`);
- await walk(a,1,0,1);await walk(a,0,-1,1);await wait(()=>A().map==='h0',2000,'enter');ok('B sees A enter their house (map h0)');
+ {const x0=A().x;for(let i=0;i<4;i++){tx(a,{t:'step',dx:1,dy:0});await sleep(85);}await wait(()=>A().x===x0+4,2000,'run sync');ok('running: 4 steps at ~85ms apart all accepted and synced');for(let i=0;i<3;i++){tx(a,{t:'step',dx:-1,dy:0});await sleep(85);}await wait(()=>A().x===x0+1,2000,'run back');}
+ await walk(a,0,-1,1);await wait(()=>A().map==='h0',2000,'enter');ok('B sees A enter their house (map h0)');
  await walk(a,-1,0,3);await walk(a,0,-1,3);await wait(()=>A().x===1&&A().y===2,2000,'reach bed');
  const e0=a.st.players[a.id].needs.energy;tx(a,{t:'do',action:'sleep'});
  await wait(()=>b.st.players[a.id].busy&&b.st.players[a.id].busy.a==='sleep',3000,'busy');ok('action trigger: A sleeping at bed (B sees busy=sleep)');
@@ -47,6 +47,10 @@ let pass=0;const ok=m=>{pass++;console.log('✔',m);};
  await walkTo(a,'h0',(x,y)=>x===4&&y===5);tx(a,{t:'buy',item:'plant',x:5,y:2});await wait(()=>b.st.players[a.id].items.some(i=>i.t==='plant'),3000,'place');ok('placed the bought plant at home; B sees it');
  if(b.st.players[b.id].pos.map!=='h0')throw new Error('B expected in A house');tx(a,{t:'do',action:'gift',arg:'f:lamp@'+b.id});
  await wait(()=>b.st.players[b.id].inv.includes('lamp')&&!b.st.players[a.id].inv.includes('lamp'),3000,'gift furniture');ok('A gave B a Lamp from the bag (moved to B\'s bag)');
+ {const ca=a.st.players[a.id].coins,cb=a.st.players[b.id].coins;tx(a,{t:'do',action:'gift',arg:'coins:20@'+b.id});await wait(()=>b.st.players[b.id].coins===cb+20&&b.st.players[a.id].coins===ca-20,3000,'coin gift');ok(`A gave B 20 coins (A ${ca}→${ca-20}, B ${cb}→${cb+20})`);
+  a.errs.length=0;tx(a,{t:'do',action:'gift',arg:'coins:20@'+b.id});await wait(()=>a.errs.some(e=>/limit/.test(e)),3000,'cap');ok('server enforces 30/day cap: "'+a.errs.find(e=>/limit/.test(e))+'"');
+  b.errs.length=0;const bc=b.st.players[b.id].coins;if(bc<20){tx(b,{t:'do',action:'gift',arg:'coins:20@'+a.id});await wait(()=>b.errs.some(e=>/Not enough/.test(e)),3000,'funds');ok('insufficient funds refused by server');}
+  else{ok('(B has '+bc+' coins; insufficient-funds case covered by engine test)');}}
  tx(b,{t:'buy',item:'lamp',x:null,y:null});await wait(()=>a.st.players[b.id].items.some(i=>i.t==='lamp'),3000,'B places');ok('B placed the gifted Lamp in B\'s own house; A\'s house has no lamp: '+!a.st.players[a.id].items.some(i=>i.t==='lamp'));
  let days=new Set();await wait(()=>{days.add(a.st.day);return a.st.phase==='results'&&b.st.phase==='results';},150000,'7 days');ok('played through days '+[...days].join(','));
  if(JSON.stringify(a.st.results)!==JSON.stringify(b.st.results))throw new Error('results desync');ok('results identical on both clients: '+JSON.stringify(a.st.results));

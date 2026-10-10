@@ -22,7 +22,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 #actbar button{background:#fff;border:3px solid var(--pink);font-size:14px}.pill{background:#fff;border-radius:12px;padding:8px 12px;font-weight:700}
 kbd{background:var(--pink);border-radius:5px;padding:0 5px;font-size:12px}
 #dpad{position:absolute;left:10px;bottom:10px;display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:3px;opacity:.85}
-#jumpBtn{position:absolute;left:170px;bottom:14px;background:#fffc;font-size:14px}
+#runBtn{position:absolute;left:170px;bottom:14px;background:#fffc;font-size:14px}#runBtn.on{background:#ffe14a}
 #dpad button{padding:0;font-size:20px;background:#fffc}
 #side{overflow:auto;display:flex;flex-direction:column;gap:8px}
 .bar{height:12px;background:#eee;border-radius:8px;overflow:hidden}.bar>i{display:block;height:100%;transition:width .4s}
@@ -54,16 +54,16 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
     <div class="row" style="margin-top:8px"><input id="codeIn" placeholder="CODE" maxlength="4" style="text-transform:uppercase"><button id="joinBtn">Join</button></div>
     <div id="mpMsg" class="small"></div></div>
   <details class="card" style="text-align:left"><summary><b>How to play</b></summary>
-  <p>Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Press <b>J</b> to jump. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (3 classes, one per day, to graduate: Work then pays 60% more), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
+  <p>Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (3 classes, one per day, to graduate: Work then pays 60% more), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
   <p>Each day lasts ~2½ minutes. Needs drop overnight. Watch out: a crowded diner means smaller meals, and noisy hangouts next door ruin a neighbor's sleep. After 7 days: score = average needs + 10 × visits + 1 point per 10 leftover coins.</p>
-  <p><b>Shopping &amp; gifts:</b> Walk into <b>Seak Mart</b>, add items at the aisles, and pay at the checkout. Furniture goes into your bag; place it at home in build mode. To <b>gift</b> flowers, a plushie, or furniture, pick it in the 🎁 Gift selector, stand next to another player or agent, and press <b>E</b>. You both get +8 Social (+12 for a plushie). Gifted furniture moves from your bag to theirs, and they can only place it in their own house. AI neighbors place gifted furniture next time they're home.</p></details>
+  <p><b>Shopping &amp; gifts:</b> Walk into <b>Seak Mart</b>, add items at the aisles, and pay at the checkout. Furniture goes into your bag; place it at home in build mode. To <b>gift</b> flowers, a plushie, or furniture, pick it in the 🎁 Gift selector, stand next to another player or agent, and press <b>E</b>. You both get +8 Social (+12 for a plushie). Gifted furniture moves from your bag to theirs, and they can only place it in their own house. Gifts work on anyone: other players, invited agents, and AI neighbors. Flowers and plushies are used up when given. AI neighbors place gifted furniture next time they're home, but they don't give gifts themselves. You can also gift <b>coins</b> (5, 10 or 20) from the same selector: they move from your wallet to theirs and you both get +4 Social. To keep scores fair, you can give at most 30 coins per day.</p></details>
 </div>
 <div id="game">
   <div id="stage"><canvas id="cv" tabindex="0" style="outline:none"></canvas>
     <div id="topbar"><span id="dayLbl"></span><span id="whereLbl"></span><span id="codeLbl"></span><span id="timerLbl"></span></div>
     <div id="msg"></div>
     <div id="dpad"><span></span><button data-d="0,-1">▲</button><span></span><button data-d="-1,0">◀</button><span></span><button data-d="1,0">▶</button><span></span><button data-d="0,1">▼</button><span></span></div>
-    <button id="jumpBtn" title="Jump (J)">🦘 Jump</button>
+    <button id="runBtn" title="Run (hold Shift)">🏃 Run</button>
     <div id="actbar"></div></div>
   <div id="side">
     <div class="card" id="lobbyCard" style="display:none"><b>Lobby</b><div id="lobbyList"></div><div id="inviteBox" style="display:none;margin-top:8px"><div class="small">Invite link: friends open it to join</div><div class="row" style="margin-top:4px"><input id="inviteUrl" readonly style="flex:3;font-size:13px"><button id="copyBtn" style="flex:0">Copy</button><button id="shareBtn" style="flex:0;display:none">Share</button></div></div><div class="row" style="margin-top:8px"><button id="botBtn">+ AI neighbor</button><button id="startBtn">Start game ▶</button></div></div>
@@ -87,13 +87,14 @@ const MAX_PLAYERS=8;
 const DAYS=7,VISIT_PTS=10;
 // base timings (ms) – scaled by opts.speed
 const DUR={day:150000,busy:{sleep:10000,eat:6000,work:8000,hang:6000,play:6000,study:8000},cooldown:12000,talk:8000,say:5000};
-const STEP_MS=90;
+const STEP_MS=60;// server-side minimum gap between steps (running client steps every ~83ms)
 // ---------- maps ----------
 const TW=68,TH=46,IW=9,IH=7,IDOOR={x:4,y:6},ISPAWN={x:4,y:5};
 const TOP_Y=4,BOT_Y=38;
 // house lots: [x, top row?]; lots 6-7 are the east end of each row
 const HOUSE_DEF=[[8,1],[24,1],[44,1],[8,0],[24,0],[44,0],[58,1],[58,0]];
 // open lots: empty grass areas reserved for future locations (drawn as dashed "Open lot" outlines)
+const COIN_GIFT_CAP=30;
 const SCHOOL_LOT={x:18,y:12,w:13,h:7},GRAD_AT=3,GRAD_PAY=1.6;
 const ARCADE_LOT={x:50,y:26,w:13,h:8};
 const MART_LOT={x:55,y:12,w:9,h:7};
@@ -189,7 +190,7 @@ function actionsAt(st,id){const p=st.players[id];if(!p)return[];const out=[],see
  // chat: talk to any adjacent player or agent
  st.order.map(x=>st.players[x]).filter(q=>q!==p&&!q.busy&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>out.unshift({action:'talk',src:q.name.replace(' (AI)',''),target:q.id}));
  // gifts: hand one to any adjacent agent
- if((p.gifts&&p.gifts.length)||(p.inv&&p.inv.length))st.order.map(x=>st.players[x]).filter(q=>q!==p&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>out.unshift({action:'gift',src:q.name.replace(' (AI)',''),target:q.id}));
+ if((p.gifts&&p.gifts.length)||(p.inv&&p.inv.length)||(!p.ai&&p.coins>=5))st.order.map(x=>st.players[x]).filter(q=>q!==p&&q.pos.map===p.pos.map&&Math.abs(q.pos.x-p.pos.x)+Math.abs(q.pos.y-p.pos.y)<=1).forEach(q=>{const g={action:'gift',src:q.name.replace(' (AI)',''),target:q.id};if((p.gifts&&p.gifts.length)||(p.inv&&p.inv.length))out.unshift(g);else out.push(g);});// coins-only: chat stays the E default
  return out;}
 const CHAT_LINES={tired:["Yawn… I could really use a nap 😴","So sleepy. Bed is calling me 🛏️"],bored:["I need some arcade time, like, now 👾","Wanna see my high score at the plaza? 🎮"],lonely:["I missed you! Let's hang out 🎉","It's been quiet today… stay a bit? 🥺"],broke:["Off to the Office, gotta earn some coins 💼","Saving up for a café counter ☕"],
  work:["Busy busy! Spreadsheets are fun, right? 📊"],play:["Shh, I'm about to beat the boss! 👾"],happy:["Hi {n}! Lovely day in Seak 🌸","Have you tried the diner yet? 🍔","Race you to the plaza! 🏃","Your house is looking cute, {n} 🏡","Best neighbors ever 💖"]};
@@ -211,6 +212,10 @@ function doAction(st,id,action,now,arg){const p=st.players[id];if(!p||st.phase!=
   let gk=null,tg=arg;if(arg&&arg.includes('@')){[gk,tg]=arg.split('@');}
   const o=actionsAt(st,id).find(o=>o.action==='gift'&&(!tg||o.target===tg));if(!o)return'Stand next to someone to give a gift';const q=st.players[o.target];
   if(!gk)gk=p.gifts[0]||(p.inv[0]?'f:'+p.inv[0]:null);if(!gk)return'Nothing to give';
+  if(gk.startsWith('coins:')){const n=+gk.slice(6);if(![5,10,20].includes(n))return'Coin gifts are 5, 10 or 20';if(p.ai)return'AI neighbors do not give coins';
+   const given=p.coinDay===st.day?p.coinGiven:0;if(given+n>COIN_GIFT_CAP)return`Daily coin-gift limit reached: you can give ${COIN_GIFT_CAP-given} more coins today (max ${COIN_GIFT_CAP}/day)`;
+   if(p.coins<n)return`Not enough coins (you have ${p.coins})`;p.coins-=n;q.coins+=n;p.coinDay=st.day;p.coinGiven=given+n;
+   p.needs.social=clamp(p.needs.social+4);q.needs.social=clamp(q.needs.social+4);if(q.ai)say(st,q,`${n} coins? You're too kind, ${p.name}! 🪙`,now);log(st,`🪙 ${p.name} gave ${q.name} ${n} coins (+4 Social each).`);return'ok';}
   if(gk.startsWith('f:')){const t=gk.slice(2),i=p.inv.indexOf(t);if(i<0)return'That item is not in your bag';p.inv.splice(i,1);q.inv.push(t);const G=8;
    p.needs.social=clamp(p.needs.social+G);q.needs.social=clamp(q.needs.social+G);if(q.ai)say(st,q,`A ${ITEMS[t].n}? I'll put it in my house! Thanks ${p.name} 💖`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${ITEMS[t].e} ${ITEMS[t].n} for their home (+${G} Social each).`);return'ok';}
   const gi=p.gifts.indexOf(gk);if(gi<0)return'That gift is not in your bag';const k=p.gifts.splice(gi,1)[0],it=catItem(k);
@@ -284,7 +289,6 @@ function aiChoose(st,p,now){const n=p.needs;const r=rng(st,p);const opts=[];
  // buy something when inside own house later
  return o?{a:o.a,map:o.map,steps:0}:null;}
 function aiTick(st,p,now){if(p.busy||now-p.lastStep<170)return;
- if((p.needs.mood+p.needs.social)/2>65&&rng(st,p)<0.015)emote(st,p.id,now);
 
  if(!p.goal)p.goal=aiChoose(st,p,now);const G=p.goal;if(!G){return;}
  if(++G.steps>260){p.goal=null;return;}
@@ -318,18 +322,16 @@ function tick(st,now){if(st.phase!=='day')return;for(const id of st.order){const
  if(now>=st.dayEnd)endDay(st,now);}
 function scores(st){const rows=st.order.map(id=>{const p=st.players[id],h=Math.round((p.needs.energy+p.needs.mood+p.needs.social)/3);return{id,name:p.name,color:p.color,happiness:h,visits:p.visits,coins:p.coins,coinPts:Math.floor(p.coins/10),star:p.star,bestStreak:p.bestStreak,score:h+p.visits*VISIT_PTS+Math.floor(p.coins/10),energy:p.needs.energy,built:p.built};}).sort((a,b)=>b.score-a.score);
  const top=k=>rows.slice().sort((a,b)=>b[k]-a[k])[0];return{rows,winner:rows[0]&&rows[0].name,bestHost:top('visits').name,mostRested:top('energy').name,architect:top('built').name,richest:top('coins').name};}
-// jump emote: cosmetic only, not while busy, at most every 500ms
-function emote(st,id,now){const p=st.players[id];if(!p||st.phase!=='day'||p.busy||now-(p.jump||0)<500)return false;p.jump=now;return true;}
 function chat(st,id,text,now){const p=st.players[id];if(!p||st.phase==='results')return false;text=String(text||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,80);if(!text||(p.lastSay&&now-p.lastSay<1000))return false;p.lastSay=now;say(st,p,text,now);log(st,`💬 ${p.name}: “${text}”`);return true;}
-function positions(st){const o={};for(const id of st.order){const q=st.players[id].pos;o[id]=[q.map,q.x,q.y,q.dir,st.players[id].jump||0];}return o;}
-const E={chat,MAX_PLAYERS,adjLots,CAT,AISLES,catItem,pubInfo,exitDoor,PUB_LAYOUT,PUB_SPOT,PUB_DECOR,PUB_W,PUB_H,mapSize,doorOf,GRAD_AT,GRAD_PAY,nextStep:bfs,NEEDS,ACTIONS,ITEMS,COLORS,DAYS,VISIT_PTS,DUR,TOWN,TW,TH,IW,IH,IDOOR,ISPAWN,createState,addPlayer,emote,removePlayer,startGame,step,actionsAt,doAction,buy,canPlace,tick,scores,positions,tileAt,walkable,itemAt,ownerOfMap,moodE,has,cdLeft};
+function positions(st){const o={};for(const id of st.order){const q=st.players[id].pos;o[id]=[q.map,q.x,q.y,q.dir];}return o;}
+const E={COIN_GIFT_CAP,chat,MAX_PLAYERS,adjLots,CAT,AISLES,catItem,pubInfo,exitDoor,PUB_LAYOUT,PUB_SPOT,PUB_DECOR,PUB_W,PUB_H,mapSize,doorOf,GRAD_AT,GRAD_PAY,nextStep:bfs,NEEDS,ACTIONS,ITEMS,COLORS,DAYS,VISIT_PTS,DUR,TOWN,TW,TH,IW,IH,IDOOR,ISPAWN,createState,addPlayer,removePlayer,startGame,step,actionsAt,doAction,buy,canPlace,tick,scores,positions,tileAt,walkable,itemAt,ownerOfMap,moodE,has,cdLeft};
 if(typeof module!=='undefined'&&module.exports)module.exports=E;root.SeakEngine=E;
 })(typeof globalThis!=='undefined'?globalThis:this);
 </script>
 <script id="client">
 (function(){
 const E=window.SeakEngine,$=s=>document.getElementById(s);
-let jumpSeen={},jumpAt={};let st=null,me=null,mode=null,ws=null,offset=0,selItem=null,lastLocalStep=0,held=null,heldSince=0,vis={},msgT=0;
+let runToggle=false,shiftDown=false;let st=null,me=null,mode=null,ws=null,offset=0,selItem=null,lastLocalStep=0,held=null,heldSince=0,vis={},msgT=0;
 const cv=$('cv'),ctx=cv.getContext('2d');
 // localStorage can throw on file:// in some browser privacy settings; never let that stop the game
 const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
@@ -348,7 +350,6 @@ window.addEventListener('error',e=>{const m=$('mpMsg');if(m)m.textContent='Error
 $('soloBtn').onclick=()=>{if(st)return;window.__seakPlaying=true;mode='solo';st=E.createState('SOLO');me='me';E.addPlayer(st,'me',nm());['Pixel','Juno','Byte'].forEach((n,i)=>E.addPlayer(st,'ai'+i,n+' (AI)',true));show();E.startGame(st,now());ui();
  setInterval(()=>{E.tick(st,now());},100);};
 function send(msg){if(mode==='solo'){const t=now();let r='ok';
-  if(msg.t==='emote')E.emote(st,me,t);
   if(msg.t==='do')r=E.doAction(st,me,msg.action,t,msg.arg);else if(msg.t==='buy')r=E.buy(st,me,msg.item,msg.x,msg.y);else if(msg.t==='start')E.startGame(st,t);
   else if(msg.t==='bot')E.addPlayer(st,'ai'+Date.now(),['Pixel','Juno','Byte','Mochi','Nova','Kiwi','Ziggy'][st.order.length%7]+' (AI)',true);
   if(r!=='ok')flash(r);ui();}
@@ -359,8 +360,7 @@ function connect(first){ws=new WebSocket((location.protocol==='https:'?'wss://':
  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='err'){$('mpMsg').textContent=m.msg;flash(m.msg);return;}
   if(m.t==='welcome'){me=m.id;mode='online';window.__seakPlaying=true;}
   if(m.t==='state'){offset=m.now-Date.now();const mine=st&&st.players[me]&&st.players[me].pos;st=m.state;keepMine(mine);if($('menu').style.display!=='none')show();ui();}
-  if(m.t==='emote'&&st&&st.players[m.id]&&m.id!==me)st.players[m.id].jump=m.at;
-  if(m.t==='pos'&&st){const mine=st.players[me]&&{...st.players[me].pos};for(const id in m.p){const q=st.players[id];if(!q)continue;const[a,x,y,d,j]=m.p[id];q.pos={map:a,x,y,dir:d};if(id!==me||!q.jump||j>q.jump)q.jump=j;}keepMine(mine);}};}
+  if(m.t==='pos'&&st){const mine=st.players[me]&&{...st.players[me].pos};for(const id in m.p){const q=st.players[id];if(!q)continue;const[a,x,y,d]=m.p[id];q.pos={map:a,x,y,dir:d};}keepMine(mine);}};}
 function keepMine(mine){// client-side prediction: keep our own position unless the server disagrees for a while
  const p=st.players[me];if(!p||!mine)return;const s=p.pos;if(Date.now()-lastLocalStep<400&&s.map===mine.map&&Math.abs(s.x-mine.x)+Math.abs(s.y-mine.y)<=3)p.pos=mine;}
 // ---------- invite links: <origin>/?room=CODE (server mode only) ----------
@@ -375,28 +375,27 @@ $('joinBtn').onclick=()=>{const c=$('codeIn').value.trim().toUpperCase();if(!/^[
 function show(){$('menu').style.display='none';$('game').style.display='grid';if(document.activeElement)document.activeElement.blur();resize();cv.focus();ui();}
 // ---------- input ----------
 const KEYMAP={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
-function jump(){if(!st||st.phase!=='day')return;const p=st.players[me];if(!p||p.busy)return;if(E.emote(st,me,now())&&mode==='online')ws.send(JSON.stringify({t:'emote'}));}
 const KEYS={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]};
 function dirOf(e){return KEYMAP[e.code]||KEYS[(e.key||'').toLowerCase()]||null;}
 const inMenu=()=>$('menu').style.display!=='none';
 addEventListener('keydown',e=>{if(!st||inMenu())return;if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&e.target.id!=='cv')e.target.blur();
  const d=dirOf(e);if(d){held=d;e.preventDefault();tryStep();}
  const k=(e.key||'').toLowerCase();if(e.code==='KeyE'||e.code==='Space'||k==='e'||k===' '){e.preventDefault();const a=E.actionsAt(st,me)[0];if(a)doAct(a);}
- if(e.code==='KeyJ'||k==='j'){e.preventDefault();jump();}
  if(e.code==='Escape'){selItem=null;ui();}});
 addEventListener('keyup',e=>{const d=dirOf(e);if(d&&held&&held[0]===d[0]&&held[1]===d[1])held=null;});
 addEventListener('blur',()=>{held=null;});
 document.querySelectorAll('#dpad button').forEach(b=>{const d=b.dataset.d.split(',').map(Number);
  b.addEventListener('pointerdown',e=>{e.preventDefault();held=d;tryStep();});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>{if(held===d)held=null;}));});
-const WALK_MS=150;
-function tryStep(){if(!st||!held||st.phase!=='day')return;const t=Date.now();if(t-lastLocalStep<WALK_MS)return;const p=st.players[me];if(!p)return;
+const WALK_MS=150,RUN_MS=83;
+function tryStep(){if(!st||!held||st.phase!=='day')return;const t=Date.now();const ms=(shiftDown||runToggle)?RUN_MS:WALK_MS;if(t-lastLocalStep<ms)return;id_ms=ms;const p=st.players[me];if(!p)return;
  const before=p.pos.map;const ok=E.step(st,me,held[0],held[1],now());if(ok){lastLocalStep=t;if(mode==='online')ws.send(JSON.stringify({t:'step',dx:held[0],dy:held[1]}));if(p.pos.map!==before){selItem=null;ui();}}
  else if(mode==='online'){/* still send facing */}}
 // ---------- side UI ----------
 const shop=$('shop');for(const k in E.ITEMS){const it=E.ITEMS[k],b=document.createElement('button');b.dataset.i=k;b.innerHTML=`${it.e} ${it.n} <b class="cnt"></b><br><span class="small">${it.tip}</span>`;
  b.onclick=()=>{selItem=selItem===k?null:k;ui();};shop.appendChild(b);}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#game button'))setTimeout(()=>cv.focus(),0);});
-$('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump();});
+$('runBtn').addEventListener('pointerdown',e=>{e.preventDefault();runToggle=!runToggle;$('runBtn').classList.toggle('on',runToggle);$('runBtn').textContent=runToggle?'🏃 Running':'🏃 Run';});
+addEventListener('keydown',e=>{if(e.key==='Shift')shiftDown=true;});addEventListener('keyup',e=>{if(e.key==='Shift')shiftDown=false;});addEventListener('blur',()=>{shiftDown=false;});
 $('startBtn').onclick=()=>send({t:'start'});$('botBtn').onclick=()=>send({t:'bot'});
 let lastUi='';
 function ui(){if(!st)return;const p=st.players[me];if(!p)return;
@@ -409,7 +408,7 @@ function ui(){if(!st)return;const p=st.players[me];if(!p)return;
  const cols={energy:'#ffd34d',mood:'#ff9ecb',social:'#8ecbff'};$('needs').innerHTML=E.NEEDS.map(n=>`<div class="small">${n[0].toUpperCase()+n.slice(1)} ${p.needs[n]}</div><div class="bar"><i style="width:${p.needs[n]}%;background:${cols[n]}"></i></div>`).join('');
  const inHome=p.pos.map==='h'+p.lot;$('buildCard').style.opacity=inHome&&st.phase==='day'?1:.5;$('buildHint').textContent=(p.inv.length?'':'Buy furniture at Seak Mart (Furniture aisle). ')+(inHome?'Pick an item from your bag, then tap a free floor tile.':'Go inside your house to place items.');
  $('rewardLbl').textContent=`💼 Shift streak ${p.streak}${p.star?' · 🏅 Star Employee':''} (Great Shift = Energy & Mood ≥ 60 when you work)`+(p.hat?'  '+p.hat:'')+(p.gifts.length?`  🎁×${p.gifts.length}`:'');
- {const opts=[...new Set(p.gifts)].map(k=>[k,E.catItem(k).e+' '+E.catItem(k).n.replace(' (gift)','')+' ×'+p.gifts.filter(x=>x===k).length]).concat([...new Set(p.inv)].map(t=>['f:'+t,E.ITEMS[t].e+' '+E.ITEMS[t].n+' (furniture) ×'+p.inv.filter(x=>x===t).length]));
+ {const opts=[...new Set(p.gifts)].map(k=>[k,E.catItem(k).e+' '+E.catItem(k).n.replace(' (gift)','')+' ×'+p.gifts.filter(x=>x===k).length]).concat([...new Set(p.inv)].map(t=>['f:'+t,E.ITEMS[t].e+' '+E.ITEMS[t].n+' (furniture) ×'+p.inv.filter(x=>x===t).length])).concat([5,10,20].filter(n=>p.coins>=n).map(n=>['coins:'+n,`🪙 ${n} coins`+(n===5?` (${E.COIN_GIFT_CAP-(p.coinDay===st.day?p.coinGiven:0)} left today)`:'')]));
   $('giftRow').style.display=opts.length?'block':'none';const sel=$('giftSel'),cur=sel.value,h=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');if(sel.dataset.h!==h){sel.innerHTML=h;sel.dataset.h=h;if(opts.some(o=>o[0]===cur))sel.value=cur;}}
  martPanel(p);
  [...shop.children].forEach(b=>{const n=p.inv.filter(t=>t===b.dataset.i).length;b.querySelector('.cnt').textContent=n?`×${n} in bag`:`${E.ITEMS[b.dataset.i].c}🪙 at Mart`;b.disabled=!inHome||st.phase!=='day'||!n;b.classList.toggle('sel',selItem===b.dataset.i);});
@@ -425,7 +424,7 @@ function martPanel(p){const inMart=p.pos.map==='b:mart';$('martCard').style.disp
  const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0);$('cartBox').innerHTML=p.cart.length?`Cart: ${p.cart.map(k=>E.catItem(k).e).join(' ')} · total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}`:'Cart is empty.';}
 function actionBar(){const p=st&&st.players[me];const box=$('actbar');if(!p||st.phase!=='day'){box.innerHTML='';return;}
  const t=now();let html='';if(p.busy){const left=Math.ceil((p.busy.until-t)/1000);html=`<span class="pill">${E.ACTIONS[p.busy.a].e} ${E.ACTIONS[p.busy.a].label}… ${Math.max(0,left)}s</span>`;}
- else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give '+(($('giftSel').value&&E.catItem($('giftSel').value))?E.catItem($('giftSel').value).e:'gift')+' to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');
+ else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give '+(($('giftSel').value||'').startsWith('coins:')?'🪙'+$('giftSel').value.slice(6):($('giftSel').value&&E.catItem($('giftSel').value))?E.catItem($('giftSel').value).e:'gift')+' to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');
  if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{const a=E.actionsAt(st,me)[i];if(a)doAct(a);});}}
 function doAct(a){if(a.action==='shop'){flash(`Pick items from the ${a.src} in the Seak Mart panel →`);$('martCard').scrollIntoView({block:'nearest'});return;}send({t:'do',action:a.action,arg:a.action==='gift'&&$('giftSel').value?$('giftSel').value+'@'+a.target:(a.target||null)});}
 // ---------- rendering ----------
@@ -439,7 +438,7 @@ function label(t,x,y,s=11,c='#3b3355'){ctx.font=`bold ${s}px system-ui`;ctx.text
 function visPos(id,q,t){let v=vis[id];if(!v||v.map!==q.map||Math.abs(v.tx-q.x)+Math.abs(v.ty-q.y)>2){v=vis[id]={map:q.map,fx:q.x,fy:q.y,tx:q.x,ty:q.y,t0:t};}
  else if(v.tx!==q.x||v.ty!==q.y){const c=cur(v,t);v.fx=c.x;v.fy=c.y;v.tx=q.x;v.ty=q.y;v.t0=t;}return cur(v,t);}
 function cur(v,t){const k=Math.min(1,(t-v.t0)/(id_ms));return{x:v.fx+(v.tx-v.fx)*k,y:v.fy+(v.ty-v.fy)*k};}
-const id_ms=WALK_MS;
+let id_ms=WALK_MS;
 function agent(x,y,col,bub,name,s,mine,hat){ctx.beginPath();ctx.ellipse(x,y+s*.9,s*.8,s*.3,0,0,7);ctx.fillStyle='#0002';ctx.fill();
  ctx.beginPath();ctx.arc(x,y,s,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=mine?4:2.5;ctx.strokeStyle=mine?'#ffe14a':'#fff';ctx.stroke();
  ctx.fillStyle='#3b3355';ctx.beginPath();ctx.arc(x-s*.35,y-s*.1,s*.13,0,7);ctx.arc(x+s*.35,y-s*.1,s*.13,0,7);ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#3b3355';ctx.beginPath();ctx.arc(x,y+s*.15,s*.3,.2,Math.PI-.2);ctx.stroke();
@@ -478,7 +477,7 @@ function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('
   label(`${o.name}'s home`+(oid===me?(selItem?` · placing ${E.ITEMS[selItem].n}`:' · build from the panel'):' · visiting'),MW*T/2,-10,Math.min(18,Math.max(12,T*.3)));}
  // agents
  st.order.map(id=>st.players[id]).filter(q=>q.pos.map===map).sort((a,b)=>a.pos.y-b.pos.y).forEach(q=>{const v=visPos(q.id,q.pos,t);const bub=q.busy?E.ACTIONS[q.busy.a].e:E.moodE(q);
-  if(q.jump&&q.jump!==jumpSeen[q.id]){jumpSeen[q.id]=q.jump;jumpAt[q.id]=t;}const jk=(t-(jumpAt[q.id]||0))/500,jy=jk>=0&&jk<1?Math.sin(Math.PI*jk)*T*.7:0;
+  const jy=0;
   agent((v.x+.5)*T,(v.y+.5)*T-jy-(q.busy&&q.busy.a==='sleep'?0:Math.abs(Math.sin(t/120))*(t-(vis[q.id].t0)<id_ms?3:0)),q.color,bub,q.name,T*.33,q.id===me,q.hat);});
  st.order.map(id=>st.players[id]).filter(q=>q.pos.map===map&&q.say&&now()<q.say.until).forEach(q=>{const v=visPos(q.id,q.pos,t);const x=(v.x+.5)*T,y=(v.y+.5)*T-T*1.25;
   ctx.font='bold 13px system-ui';const w=Math.min(260,ctx.measureText(q.say.text).width+18);rr(x-w/2,y-30,w,26,12,'#fff','#ff9ecb');ctx.beginPath();ctx.moveTo(x-6,y-4);ctx.lineTo(x,y+4);ctx.lineTo(x+6,y-4);ctx.fillStyle='#fff';ctx.fill();

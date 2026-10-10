@@ -12,12 +12,12 @@ node server.js        # or: npm start  (honors PORT)
 Open http://localhost:3000 → name → **Create room** → share the 4-letter code; others open the same URL and **Join**. Host can add AI neighbors in the lobby, then **Start**.
 **Invite link:** the lobby shows `<your-site>/?room=CODE` with Copy (and Share on phones). Opening it shows a simple *Join room CODE* screen (`#nameIn` + `#joinBtn`; add `&name=Pinky` to prefill the name). Bad, full, or already-started rooms show a clear message. Hidden when the page is opened as a file.
 
-**Agents / bots as players:** `node agent_client.js "https://your-site/?room=CODE" Pinky [--auto]` joins like a normal player over the same WebSocket. Commands on stdin: `status`, `go diner|office|school|arcade|mart|plaza|home|house <name>|x,y`, `do <action> [arg]`, `do gift <flowers|plush|f:item> <player>`, `say <text>`, `jump`, `place <item>`, `start`, `auto on|off`, `quit`. Events print as JSON lines.
+**Agents / bots as players:** `node agent_client.js "https://your-site/?room=CODE" Pinky [--auto]` joins like a normal player over the same WebSocket. Commands on stdin: `status`, `go diner|office|school|arcade|mart|plaza|home|house <name>|x,y`, `do <action> [arg]`, `do gift <flowers|plush|f:item|coins:5|coins:10|coins:20> <player>`, `say <text>`, `run on|off`, `place <item>`, `start`, `auto on|off`, `quit`. Events print as JSON lines.
 
 Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Railway (start command `node server.js`).
 
 ## Controls
-- Move: **Arrow keys / WASD**, or the on-screen D-pad (phones).
+- Move: **Arrow keys / WASD**, or the on-screen D-pad (phones). Hold **Shift** (or toggle 🏃 Run) to run.
 - Act: walk next to a spot and press **E / Space**, or tap the action button that pops up.
 - Walk into a house door to go inside; step on **EXIT** to leave.
 - Build: inside your own house, pick an item in the Build panel, then tap a free tile (dashed outline). Placement that would block a spot or the walkway is refused.
@@ -28,7 +28,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - Walk-in buildings: **Town Diner** (counters), **Office** (desks), **School** (desks), **Arcade** (cabinets). Walk through the door to go in, EXIT to leave. The Plaza keeps benches and the fountain.
 - **School:** Study at a school desk (one class per day, −5 Energy). After 3 classes you graduate 🎓 and Work pays 60% more. Shown in the HUD.
 - **Work** now costs Mood (−7) as well as Energy.
-- **Jump:** press J or tap 🦘 Jump. Cosmetic, synced in multiplayer; happy AIs jump too.
+- **Run:** hold Shift (or toggle 🏃 Run on phones) to move about 1.8× faster. No cost.
 - **Chat:** press E next to any player or agent: +4 Social each (AI neighbors answer with a speech bubble).
 - A crowded diner now means other agents *inside* the diner: smaller meals.
 - **Seak Mart** (walk-in store), **Great Shift streaks / Star Employee**, coins count toward the final score, **Richest** title, trophies on the results screen.
@@ -45,6 +45,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 | Neighbor's door | Visit | +8 Social for you, +5 Social & +1 visit for the owner (once per house per day); decor gives you Mood |
 | Seak Mart aisles → Checkout | Shop | Treats (Coffee +12 Energy, Donut), Fun (Movie +15 Mood, New game +20 Mood), Gifts (Flowers/Plushie), Furniture (all 10 build items → your bag), Cosmetics (Cap/Top hat/Crown, Mint/Gold paint). Pay at the checkout; leaving without paying puts the cart back |
 | Next to anyone with a gift or furniture in your bag | Give gift | Pick it in the 🎁 selector: Flowers +8 / Plushie +12 / furniture +8 Social for both. Furniture moves to their bag; they place it in their own home |
+| Next to anyone, with coins | Gift coins | 🎁 selector → 5 / 10 / 20 coins move to them, +4 Social both. Max 30 coins given per player per day. AIs don't give coins (they can receive) |
 | Next to any player/agent | Talk | +4 Social each (8 s cooldown) |
 
 **Building:** furniture is bought at Seak Mart and goes to your bag. Inside your house, pick it in the Build panel and tap a free tile.

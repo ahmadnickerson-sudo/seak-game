@@ -47,6 +47,12 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  ok(E.doAction(st,'me','gift',now,'f:arcade@pk')!=='ok','cannot gift furniture you do not have');
  const mine=me.items.length;ok(E.buy(st,'pk','lamp',null,null)==='ok'&&pk.items.some(i=>i.t==='lamp')&&me.items.length===mine,'recipient placed the Lamp in THEIR own house (giver\'s house unchanged)');
  me.gifts.push('flowers');ok(E.doAction(st,'me','gift',now,'flowers@pk')==='ok'&&me.inv.includes('plant'),'choosing flowers keeps the furniture in the bag');}
+// 4c. coin gifts: transfer, daily cap, insufficient funds, AIs don't give
+{const me=st.players.me,pk=st.players.pk;pk.pos={...me.pos};me.coins=100;const c1=pk.coins,s0=me.needs.social;
+ ok(E.doAction(st,'me','gift',now,'coins:10@pk')==='ok'&&me.coins===90&&pk.coins===c1+10&&me.needs.social===Math.min(100,s0+4),'gave 10 coins: 100→90, recipient +10, +4 Social');
+ ok(E.doAction(st,'me','gift',now,'coins:20@pk')==='ok','gave 20 more (30 today)');const r=E.doAction(st,'me','gift',now,'coins:5@pk');ok(r!=='ok'&&/limit/.test(r)&&me.coins===70,'daily cap 30 enforced: "'+r+'"');
+ me.coinDay=-1;me.coins=3;const r2=E.doAction(st,'me','gift',now,'coins:5@pk');ok(r2!=='ok'&&/Not enough coins/.test(r2),'insufficient funds: "'+r2+'"');
+ me.coins=50;ok(E.doAction(st,'me','gift',now,'coins:7@pk')!=='ok','only 5/10/20 allowed');pk.ai=true;me.pos={...pk.pos};ok(E.doAction(st,'pk','gift',now,'coins:5@me')!=='ok','AI neighbors cannot give coins');pk.ai=false;}
 // 5. End scoring
 {st.order.forEach((id,i)=>st.players[id].coins=[95,10,250][i]);const R=E.scores(st);const r=R.rows.find(x=>x.id==='j');
  ok(r.coinPts===25&&r.score===r.happiness+r.visits*10+25,'score adds +1 per 10 coins: Juno '+JSON.stringify({h:r.happiness,v:r.visits,coins:r.coins,score:r.score}));ok(R.richest==='Juno (AI)','Richest title → '+R.richest);}
