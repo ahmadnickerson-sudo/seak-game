@@ -31,7 +31,18 @@ kbd{background:var(--pink);border-radius:5px;padding:0 5px;font-size:12px}
 #results .card{max-width:440px;width:92%}.small{font-size:12px;opacity:.75}
 @media(max-width:800px){#game{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}#actbar{max-width:55%}}
 @media(hover:hover) and (pointer:fine) and (min-width:801px){#dpad{opacity:.55}}
-</style></head><body>
+</style>
+<script>
+// Show any load/runtime error as visible text so the page is never silently blank.
+window.__seakErr=function(msg){try{var b=document.getElementById('loadErr');if(!b){b=document.createElement('div');b.id='loadErr';b.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#fff0f3;border:2px solid #ff6fae;border-radius:12px;padding:10px;font:14px system-ui;color:#3b3355';(document.body||document.documentElement).appendChild(b);}
+ b.textContent='Seak hit an error: '+msg+' (try reloading; if it keeps happening, send this message).';var m=document.getElementById('menu');if(m&&!window.__seakPlaying)m.style.display='block';}catch(e){}};
+window.addEventListener('error',function(e){window.__seakErr((e.message||'script error')+(e.lineno?' @line '+e.lineno:''));});
+window.addEventListener('unhandledrejection',function(e){window.__seakErr(String(e.reason));});
+// Restored from back/forward cache or a discarded tab: start fresh instead of showing a frozen/blank page.
+window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();});
+</script>
+</head><body>
+<noscript><p style="padding:20px;font:16px system-ui">Seak needs JavaScript turned on.</p></noscript>
 <div id="menu">
   <h1>Seak</h1><p>A cozy life-sim where you and your AI agent seek your dream life together.</p>
   <div class="card"><input id="nameIn" placeholder="Your name" maxlength="12"></div>
@@ -223,15 +234,20 @@ const E=window.SeakEngine,$=s=>document.getElementById(s);
 let st=null,me=null,mode=null,ws=null,offset=0,selItem=null,lastLocalStep=0,held=null,heldSince=0,vis={},msgT=0;
 const cv=$('cv'),ctx=cv.getContext('2d');
 // localStorage can throw on file:// in some browser privacy settings; never let that stop the game
-const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
-$('nameIn').value=store.get('seakName')||'';
-const nm=()=>{const n=$('nameIn').value.trim()||'Player';store.set('seakName',n);return n;};
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+// Only the player name is saved (no game state is ever resumed). Validate it and clear anything bad.
+(function(){let n=store.get('seakName');if(n!=null&&(typeof n!=='string'||n.length>12||/[\u0000-\u001f<>]/.test(n))){store.del('seakName');n=null;}
+ try{for(const k of Object.keys(localStorage))if(k.startsWith('seak')&&k!=='seakName')store.del(k);}catch(e){}
+ $('nameIn').value=n||'';})();
+// Always start on the start screen.
+$('menu').style.display='block';$('game').style.display='none';$('results').style.display='none';
+const nm=()=>{const n=($('nameIn').value.replace(/[\u0000-\u001f<>]/g,'').trim()||'Player').slice(0,12);store.set('seakName',n);return n;};
 const now=()=>Date.now()+offset;
 if(location.protocol==='file:'){$('mpMsg').textContent='Run node server.js for multiplayer. Solo works offline!';['createBtn','joinBtn'].forEach(b=>$(b).disabled=true);}
 function flash(m){$('msg').textContent=m;$('msg').style.opacity=1;msgT=Date.now();}
 // ---------- solo ----------
 window.addEventListener('error',e=>{const m=$('mpMsg');if(m)m.textContent='Error: '+e.message;});
-$('soloBtn').onclick=()=>{if(st)return;mode='solo';st=E.createState('SOLO');me='me';E.addPlayer(st,'me',nm());['Pixel','Juno','Byte'].forEach((n,i)=>E.addPlayer(st,'ai'+i,n+' (AI)',true));show();E.startGame(st,now());ui();
+$('soloBtn').onclick=()=>{if(st)return;window.__seakPlaying=true;mode='solo';st=E.createState('SOLO');me='me';E.addPlayer(st,'me',nm());['Pixel','Juno','Byte'].forEach((n,i)=>E.addPlayer(st,'ai'+i,n+' (AI)',true));show();E.startGame(st,now());ui();
  setInterval(()=>{E.tick(st,now());},100);};
 function send(msg){if(mode==='solo'){const t=now();let r='ok';
   if(msg.t==='do')r=E.doAction(st,me,msg.action,t);else if(msg.t==='buy')r=E.buy(st,me,msg.item,msg.x,msg.y);else if(msg.t==='start')E.startGame(st,t);
@@ -242,7 +258,7 @@ function send(msg){if(mode==='solo'){const t=now();let r='ok';
 function connect(first){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
  ws.onopen=()=>ws.send(JSON.stringify(first));ws.onclose=()=>{$('mpMsg').textContent='Disconnected.';flash('Disconnected from server');};
  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='err'){$('mpMsg').textContent=m.msg;flash(m.msg);return;}
-  if(m.t==='welcome'){me=m.id;mode='online';}
+  if(m.t==='welcome'){me=m.id;mode='online';window.__seakPlaying=true;}
   if(m.t==='state'){offset=m.now-Date.now();const mine=st&&st.players[me]&&st.players[me].pos;st=m.state;keepMine(mine);if($('menu').style.display!=='none')show();ui();}
   if(m.t==='pos'&&st){const mine=st.players[me]&&{...st.players[me].pos};for(const id in m.p){const q=st.players[id];if(!q)continue;const[a,x,y,d]=m.p[id];q.pos={map:a,x,y,dir:d};}keepMine(mine);}};}
 function keepMine(mine){// client-side prediction: keep our own position unless the server disagrees for a while
@@ -306,7 +322,7 @@ function agent(x,y,col,bub,name,s,mine){ctx.beginPath();ctx.ellipse(x,y+s*.9,s*.
  ctx.fillStyle='#3b3355';ctx.beginPath();ctx.arc(x-s*.35,y-s*.1,s*.13,0,7);ctx.arc(x+s*.35,y-s*.1,s*.13,0,7);ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#3b3355';ctx.beginPath();ctx.arc(x,y+s*.15,s*.3,.2,Math.PI-.2);ctx.stroke();
  rr(x+s*.4,y-s*2.2,s*1.5,s*1.3,s*.5,'#fff','#ddd');emoji(bub,x+s*1.15,y-s*1.55,s*.85);label(name,x,y+s*1.9,Math.max(9,s*.6));}
 const TCOL={'.':'#c8f5d4','=':'#f3e6c9',',':'#ffe0ef'};
-function draw(){if(!st||!W){return;}const t=Date.now(),p=st.players[me];if(!p)return;const map=p.pos.map,isTown=map==='town';
+function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('stage').clientWidth)>1))resize();if(!st||!W){return;}const t=Date.now(),p=st.players[me];if(!p)return;const map=p.pos.map,isTown=map==='town';
  const MW=isTown?E.TW:E.IW,MH=isTown?E.TH:E.IH;T=isTown?Math.max(26,Math.min(52,Math.floor(Math.min(W/15,H/10)))):Math.floor(Math.min(W/(MW+.5),(H-80)/(MH+.3)));
  const mp=visPos(me,p.pos,t);cam.x=Math.max(0,Math.min(MW*T-W,(mp.x+.5)*T-W/2));cam.y=Math.max(0,Math.min(MH*T-H,(mp.y+.5)*T-H/2));
  if(MW*T<W)cam.x=(MW*T-W)/2;if(MH*T<H)cam.y=(MH*T-H)/2-(isTown?0:22);
