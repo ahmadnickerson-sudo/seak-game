@@ -13,14 +13,15 @@ function broadcast(room){const msg=JSON.stringify({t:'state',state:room.st,now:D
 wss.on('connection',ws=>{ws.id='p'+(nextId++);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw);}catch{return;}const now=Date.now();const err=msg=>ws.send(JSON.stringify({t:'err',msg}));
   if(m.t==='create'||m.t==='join'){let room;if(m.t==='create'){const c=code();room={st:E.createState(c,{speed:SPEED}),clients:new Set(),lastRev:-1};rooms.set(c,room);}
-   else{room=rooms.get(String(m.code||'').toUpperCase());if(!room)return err('Room not found');}
-   if(!E.addPlayer(room.st,ws.id,String(m.name||'Player')))return err(room.st.order.length>=6?'Room is full (6 max)':'Game already started');
+   else{room=rooms.get(String(m.code||'').toUpperCase());if(!room)return err(`Room ${String(m.code||'').toUpperCase()} not found. Check the code or ask the host for a new link.`);}
+   if(!E.addPlayer(room.st,ws.id,String(m.name||'Player')))return err(room.st.order.length>=E.MAX_PLAYERS?`Room is full (${E.MAX_PLAYERS} max)`:'That game has already started. Ask the host to make a new room.');
    ws.room=room;room.clients.add(ws);ws.send(JSON.stringify({t:'welcome',id:ws.id,code:room.st.code}));broadcast(room);return;}
   const room=ws.room;if(!room)return;const st=room.st;let r='ok';
+  if(m.t==='say'){E.chat(st,ws.id,m.text,Date.now());return;}
   if(m.t==='emote'){if(E.emote(st,ws.id,now)){const msg=JSON.stringify({t:'emote',id:ws.id,at:now});for(const c of room.clients)if(c.readyState===1)c.send(msg);}return;}
   if(m.t==='step'){E.step(st,ws.id,m.dx|0,m.dy|0,now);return;}// positions go out in the 10Hz 'pos' broadcast
   if(m.t==='do')r=E.doAction(st,ws.id,String(m.action),now,m.arg==null?null:String(m.arg));else if(m.t==='buy')r=E.buy(st,ws.id,String(m.item),m.x==null?null:m.x|0,m.y==null?null:m.y|0);
-  else if(m.t==='start')E.startGame(st,now);else if(m.t==='bot'){if(st.phase==='lobby')E.addPlayer(st,'bot'+(nextId++),(st.order.some(i=>st.players[i].pinky)?['Pixel','Juno','Byte','Mochi','Nova'][st.order.length%5]:'Pinky')+' (AI)',true);}
+  else if(m.t==='start')E.startGame(st,now);else if(m.t==='bot'){if(st.phase==='lobby')E.addPlayer(st,'bot'+(nextId++),['Pixel','Juno','Byte','Mochi','Nova','Kiwi','Ziggy'][st.order.length%7]+' (AI)',true);}
   if(r!=='ok')err(r);E.tick(st,now);broadcast(room);});
  ws.on('close',()=>{const room=ws.room;if(!room)return;room.clients.delete(ws);E.removePlayer(room.st,ws.id);if(!room.clients.size)rooms.delete(room.st.code);else broadcast(room);});});
 // game tick + state on change (needs/coins/visits/timer are server-authoritative)

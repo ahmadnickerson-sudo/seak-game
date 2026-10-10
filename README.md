@@ -4,12 +4,16 @@ A cozy multiplayer life-sim: you walk your AI agent roommate around a shared pas
 ## Play solo (no install)
 Open `index.html` in a browser → **Play Solo**. You play with 3 AI neighbors who walk around using BFS pathfinding.
 
-## Multiplayer (1–6 players, room code, no login)
+## Multiplayer (1–8 players incl. AI neighbors, room code, no login)
 ```
 npm install
 node server.js        # or: npm start  (honors PORT)
 ```
 Open http://localhost:3000 → name → **Create room** → share the 4-letter code; others open the same URL and **Join**. Host can add AI neighbors in the lobby, then **Start**.
+**Invite link:** the lobby shows `<your-site>/?room=CODE` with Copy (and Share on phones). Opening it shows a simple *Join room CODE* screen (`#nameIn` + `#joinBtn`; add `&name=Pinky` to prefill the name). Bad, full, or already-started rooms show a clear message. Hidden when the page is opened as a file.
+
+**Agents / bots as players:** `node agent_client.js "https://your-site/?room=CODE" Pinky [--auto]` joins like a normal player over the same WebSocket. Commands on stdin: `status`, `go diner|office|school|arcade|mart|plaza|home|house <name>|x,y`, `do <action> [arg]`, `say <text>`, `jump`, `place <item>`, `start`, `auto on|off`, `quit`. Events print as JSON lines.
+
 Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Railway (start command `node server.js`).
 
 ## Controls
@@ -19,12 +23,13 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - Build: inside your own house, pick an item in the Build panel, then tap a free tile (dashed outline). Placement that would block a spot or the walkway is refused.
 
 ## What's new (free-move v2)
+- Rooms hold up to 8 players (humans + AIs); 8 house lots (two new ones at the east end of each row).
 - Town doubled to 68×46 tiles: roads, lanes, side paths, trees, and dashed **Open lots** for future locations.
 - Walk-in buildings: **Town Diner** (counters), **Office** (desks), **School** (desks), **Arcade** (cabinets). Walk through the door to go in, EXIT to leave. The Plaza keeps benches and the fountain.
 - **School:** Study at a school desk (one class per day, −5 Energy). After 3 classes you graduate 🎓 and Work pays 60% more. Shown in the HUD.
 - **Work** now costs Mood (−7) as well as Energy.
 - **Jump:** press J or tap 🦘 Jump. Cosmetic, synced in multiplayer; happy AIs jump too.
-- **Pinky** (pink AI neighbor; first AI added in multiplayer): works at the Office, plays at the Arcade, studies, visits your house, talks when you press E next to her (+4 Social each), and sometimes walks over to offer a hangout (press E to accept: both Hang out, +12 Social).
+- **Chat:** press E next to any player or agent: +4 Social each (AI neighbors answer with a speech bubble).
 - A crowded diner now means other agents *inside* the diner: smaller meals.
 - **Seak Mart** (walk-in store), **Great Shift streaks / Star Employee**, coins count toward the final score, **Richest** title, trophies on the results screen.
 
@@ -40,7 +45,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 | Neighbor's door | Visit | +8 Social for you, +5 Social & +1 visit for the owner (once per house per day); decor gives you Mood |
 | Seak Mart aisles → Checkout | Shop | Treats (Coffee +12 Energy, Donut), Fun (Movie +15 Mood, New game +20 Mood), Gifts (Flowers/Plushie), Furniture (all 10 build items → your bag), Cosmetics (Cap/Top hat/Crown, Mint/Gold paint). Pay at the checkout; leaving without paying puts the cart back |
 | Next to anyone with a gift in your bag | Give gift | +8 (Flowers) / +12 (Plushie) Social for both |
-| Next to Pinky | Talk / accept hangout | +4 Social each / Hang out together +12 Social |
+| Next to any player/agent | Talk | +4 Social each (8 s cooldown) |
 
 **Building:** furniture is bought at Seak Mart and goes to your bag. Inside your house, pick it in the Build panel and tap a free tile.
 
@@ -53,5 +58,5 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 ## How it's built
 - `index.html`: UI + canvas renderer + the shared engine (`<script id="engine">`).
 - `server.js` loads that same engine with `vm`, runs it authoritatively (needs, coins, visits, day timer, AI), sends full state on change and positions at 10 Hz. Clients predict their own steps and interpolate everyone's movement.
-- Test: `PORT=3100 SEAK_SPEED=0.06 node server.js` then `PORT=3100 node test_mp.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Engine test (buildings, school, Pinky, AI games): `node test_engine.js`.
+- Test: `PORT=3100 SEAK_SPEED=0.06 node server.js` then `PORT=3100 node test_mp.js`. Invite/agent test (server at SEAK_SPEED=0.5): `PORT=3100 node test_invite.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Engine test (buildings, school, chat, gifts, Mart, rewards, AI games): `node test_engine.js`.
 - Previous turn-based version: git tag `v1`.

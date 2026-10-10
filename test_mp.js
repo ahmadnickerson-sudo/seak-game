@@ -13,7 +13,15 @@ async function walkTo(ws,map,goalFn){for(let i=0;i<200;i++){const p=ws.st.player
  const n=E.nextStep(ws.st,q.map,q.x,q.y,fn);if(!n)throw new Error('no path');const before=JSON.stringify(q);tx(ws,{t:'step',dx:n[0]-q.x,dy:n[1]-q.y});
  await wait(()=>JSON.stringify(ws.st.players[ws.id].pos)!==before,1500,'step ack').catch(()=>{});await sleep(100);}throw new Error('walkTo timeout');}
 let pass=0;const ok=m=>{pass++;console.log('✔',m);};
-(async()=>{const a=await mk('A');tx(a,{t:'create',name:'Ahmad'});await wait(()=>a.st,5000,'create');const code=a.st.code;ok('room created '+code);
+(async()=>{
+ // capacity: 8 clients in one room, 9th rejected
+ {const cs=[await mk('C1')];tx(cs[0],{t:'create',name:'Cap1'});await wait(()=>cs[0].st,5000,'cap create');const code=cs[0].st.code;
+  for(let i=2;i<=8;i++){const c=await mk('C'+i);c.on('message',()=>{});tx(c,{t:'join',code,name:'Cap'+i});cs.push(c);await wait(()=>c.id,3000,'cap join '+i);}
+  await wait(()=>cs.every(c=>c.st&&c.st.order.length===8),5000,'8 synced');const cols=new Set(Object.values(cs[0].st.players).map(p=>p.color)),lots=new Set(Object.values(cs[0].st.players).map(p=>p.lot+':'+p.pos.x+','+p.pos.y));
+  ok(`8 clients joined one room; all see 8 players, ${cols.size} distinct colors, ${lots.size} distinct lots/spawns`);if(cols.size!==8||lots.size!==8)throw new Error('colors/lots not distinct');
+  const c9=await mk('C9');tx(c9,{t:'join',code,name:'Cap9'});await wait(()=>c9.errs.includes('Room is full (8 max)'),3000,'9th rejected');ok('9th client rejected: "Room is full (8 max)"');
+  [...cs,c9].forEach(c=>c.close());await sleep(200);}
+ const a=await mk('A');tx(a,{t:'create',name:'Ahmad'});await wait(()=>a.st,5000,'create');const code=a.st.code;ok('room created '+code);
  const b=await mk('B');tx(b,{t:'join',code,name:'Juno'});await wait(()=>b.st&&a.st.order.length===2,5000,'join');ok('B joined, both see 2 players');
  tx(a,{t:'start'});await wait(()=>b.st.phase==='day'&&b.st.day===1,5000,'start');ok('day 1 started on both clients');
  const A=()=>b.st.players[a.id].pos,start={...A()};
