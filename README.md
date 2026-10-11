@@ -65,5 +65,5 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 ## How it's built
 - `index.html`: UI + canvas renderer + the shared engine (`<script id="engine">`).
 - `server.js` loads that same engine with `vm`, runs it authoritatively (needs, coins, visits, day timer, AI), sends full state on change and positions at 10 Hz. Clients predict their own steps and interpolate everyone's movement.
-- Test: `PORT=3100 SEAK_SPEED=0.06 node server.js` then `PORT=3100 node test_mp.js`. Invite/agent test (server at SEAK_SPEED=0.5): `PORT=3100 node test_invite.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Engine test (buildings, school, chat, gifts, Mart, rewards, AI games): `node test_engine.js`.
+- Test: `PORT=3100 SEAK_SPEED=0.01 node server.js` then `PORT=3100 node test_mp.js`. Invite/agent test (server at SEAK_SPEED=0.5): `PORT=3100 node test_invite.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Engine test (buildings, school, chat, gifts, Mart, rewards, AI games): `node test_engine.js`.
 - Previous turn-based version: git tag `v1`.

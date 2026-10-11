@@ -31,7 +31,10 @@ function state(){const s=E.createState('T');E.addPlayer(s,'eli','Eli');E.addPlay
  const s=E.createState('C');E.addPlayer(s,'p','P');E.startGame(s,1000);const p=s.players.p;
  p.pos={map:'b:mart',x:4,y:4,dir:'up'};p.cart=['coffee','coffee','f:couch'];
  assert.equal(E.doAction(s,'p','unshop',1100,'coffee'),'ok');assert.deepEqual(Array.from(p.cart),['coffee','f:couch']);
+ p.cart=['coffee','coffee','f:couch','coffee'];assert.equal(E.doAction(s,'p','unshopall',1150,'coffee'),'ok');assert.deepEqual(Array.from(p.cart),['f:couch'],'remove-line removes every unit of the selected item');
+ assert.notEqual(E.doAction(s,'p','unshopall',1175,'coffee'),'ok','cannot remove an item absent from cart');
+ assert.notEqual(E.doAction(s,'p','unshopall',1180,'not-a-real-item'),'ok','server rejects invalid item keys');
  assert.equal(E.doAction(s,'p','clearcart',1200,null),'ok');assert.equal(p.cart.length,0);
  p.pos={map:'town',x:1,y:1,dir:'up'};assert.notEqual(E.doAction(s,'p','unshop',1300,'coffee'),'ok','server validates cart removal against actual contents');
- console.log('PASS cart remove-one and clear-cart actions');
+ console.log('PASS cart remove-one, remove-all, validation, and clear-cart actions');
 }
