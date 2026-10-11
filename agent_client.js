@@ -4,7 +4,7 @@
 // Then type commands on stdin (one per line). Events are printed as JSON lines on stdout.
 //   status                      -> prints your needs/coins/position/actions
 //   go <place>                  -> walk there: diner | office | school | arcade | mart | plaza | home | house <player> | <x>,<y> (town tile)
-//   do <action> [arg]           -> act at the spot you're next to: sleep eat work play hang study talk checkout | shop <item key e.g. coffee, f:couch>
+//   do <action> [arg]           -> act at the spot you're next to: sleep eat work play hang study talk checkout | shop <item key e.g. coffee, f:couch> | unshop <item key> | clearcart
 //   do gift <item> <player>     -> give flowers|plush|f:<furniture>|coins:5|coins:10|coins:20 to an adjacent player/agent
 //   say <text>                  -> speech bubble above your agent (shown to everyone, max 80 chars)
 //   run on|off                  -> run (~1.8x faster steps) or walk

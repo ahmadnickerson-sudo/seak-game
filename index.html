@@ -163,7 +163,7 @@ function addPlayer(st,id,name,ai){if(st.players[id])return true;if(st.order.leng
   pos:{map:'town',x:h.exit.x,y:h.exit.y,dir:'down'},busy:null,cd:{},visited:{},lastStep:0,goal:null,mood:'🙂'};
  st.rev++;return true;}
 function removePlayer(st,id){const p=st.players[id];if(!p)return;if(st.phase==='lobby'){delete st.players[id];st.order=st.order.filter(x=>x!==id);
- st.order.forEach((x,i)=>{const q=st.players[x],h=TOWN.houses[i];q.lot=i;q.color=COLORS[i];q.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:'down'};});}else if(!p.ai){p.ai=true;p.name+=' (AI)';}st.rev++;}
+ st.order.forEach((x,i)=>{const q=st.players[x],h=TOWN.houses[i];q.lot=i;q.color=COLORS[i];q.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:'down'};});}else{delete st.players[id];st.order=st.order.filter(x=>x!==id);}st.rev++;}
 function log(st,m){st.log.push({d:st.day,m});if(st.log.length>80)st.log.shift();st.rev++;}
 const clamp=v=>Math.max(0,Math.min(100,Math.round(v)));
 function has(p,t){return p.items.some(i=>i.t===t);}
@@ -199,8 +199,8 @@ function step(st,id,dx,dy,now,run){st.now=now;const p=st.players[id];if(!p||st.p
  const t=tileAt(st,map,nx,ny);
  if(map==='town'&&t==='D'){const h=TOWN.houses.find(h=>h.door.x===nx&&h.door.y===ny);{const sp=entrySpot(st,'h'+h.lot,homeInfo(st,h.lot).spawn,id);p.pos={map:'h'+h.lot,x:sp.x,y:sp.y,dir:'up'};}const o=ownerOfMap(st,p.pos.map);if(o&&o!==id)visit(st,p,st.players[o],now);st.rev++;return true;}
  if(map==='town'&&t==='P'){const b=TOWN.buildings.find(b=>b.door.x===nx&&b.door.y===ny);const sp=entrySpot(st,'b:'+b.id,pubInfo(b.id).spawn,id);p.pos={map:'b:'+b.id,x:sp.x,y:sp.y,dir:'up'};st.rev++;return true;}
- if(map[0]==='b'&&t==='D'){const b=TOWN.buildings.find(b=>'b:'+b.id===map);if(p.cart&&p.cart.length){log(st,`🛒 ${p.name} left Seak Mart without paying, so the cart went back on the shelves.`);p.cart=[];}p.pos={map:'town',x:b.exit.x,y:b.exit.y,dir:'down'};st.rev++;return true;}
- if(map!=='town'&&t==='D'){const h=TOWN.houses[+map.slice(1)];p.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:h.y<TH/2?'down':'up'};st.rev++;return true;}
+ if(map[0]==='b'&&t==='D'){const b=TOWN.buildings.find(b=>'b:'+b.id===map);if(p.cart&&p.cart.length){log(st,`🛒 ${p.name} left Seak Mart without paying, so the cart went back on the shelves.`);p.cart=[];}p.pos={map:'town',x:b.exit.x,y:b.exit.y,dir:b.exit.y<b.door.y?'up':'down'};st.rev++;return true;}
+ if(map!=='town'&&t==='D'){const h=TOWN.houses[+map.slice(1)];p.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:h.exit.y<h.door.y?'up':'down'};st.rev++;return true;}
  p.pos.x=nx;p.pos.y=ny;return true;}
 function visit(st,p,o,now){const key=o.id;if(p.visited[key]===st.day){log(st,`🚪 ${p.name} dropped by ${o.name}'s again (visits count once per day).`);return;}
  p.visited[key]=st.day;o.visits++;let vs=8,os=5;const decor=Object.keys(DECOR).reduce((s,t)=>s+(has(o,t)?DECOR[t]:0),0);
@@ -239,6 +239,8 @@ function cdLeft(st,p,a,now){return Math.max(0,(p.cd[a]||0)-now);}
 function doAction(st,id,action,now,arg){st.now=now;const p=st.players[id];if(!p||st.phase!=='day')return'Not now';if(p.busy)return'Your agent is busy';
  if(action==='shop'){const o=actionsAt(st,id).filter(o=>o.action==='shop');if(!o.length)return'Walk up to an aisle';const it=catItem(arg);if(!it)return'Pick an item from the Seak Mart panel';
   if(!o.some(a=>a.aisle===it.aisle))return`That's in the ${AISLES[it.aisle]} aisle`;if(p.cart.length>=6)return'Cart is full (6 items)';const why=premiumBlock(st,p,it,p.cart);if(why)return why;p.cart.push(arg);st.rev++;return'ok';}
+  if(action==='unshop'){const key=String(arg||'');const i=p.cart.lastIndexOf(key);if(i<0)return'Item is not in your cart';p.cart.splice(i,1);st.rev++;return'ok';}
+  if(action==='clearcart'){p.cart=[];st.rev++;return'ok';}
  if(action==='checkout'){if(!actionsAt(st,id).some(o=>o.action==='checkout'))return'Walk up to the checkout';if(!p.cart.length)return'Your cart is empty';
   const total=p.cart.reduce((s,k)=>s+catItem(k).c,0);if(p.coins<total)return`Not enough coins (total ${total})`;{const prem=p.cart.filter(k=>CAT[k]&&(CAT[k].watch||CAT[k].car||CAT[k].house));for(const k of prem){const why=premiumBlock(st,p,CAT[k],[]);if(why){p.cart=p.cart.filter(x=>x!==k);return why+' (removed from cart)';}}}p.coins-=total;const names=[];
   for(const k of p.cart){const it=catItem(k);names.push(it.e+' '+it.n);if(it.fx)for(const n in it.fx)p.needs[n]=clamp(p.needs[n]+it.fx[n]);if(it.gift)p.gifts.push(k);if(it.hat)p.hat=it.hat;if(it.color)p.color=it.color;if(it.furn)p.inv.push(it.furn);if(it.watch){p.watch=true;p.needs.mood=clamp(p.needs.mood+5);}if(it.car){p.car=it.car;p.needs.mood=clamp(p.needs.mood+10);}if(it.house)upgradeHome(st,p,it.house,now);}
@@ -364,7 +366,7 @@ function tick(st,now){if(st.phase!=='day')return;const dt=Math.max(0,Math.min(50
  const hourMs=st.dur.day/24;for(const id of st.order){const p=st.players[id],rate=p.needs.energy<15?2:p.needs.energy<30?1:0;if(!rate){p.moodFrac=0;continue;}
   p.moodFrac=(p.moodFrac||0)+rate*dt/hourMs;if(p.moodFrac>=1){const d=Math.floor(p.moodFrac);p.moodFrac-=d;p.needs.mood=clamp(p.needs.mood-d);st.rev++;}}
  // closing time: show everyone out of closed buildings
- for(const id of st.order){const p=st.players[id];if(p.pos.map[0]!=='b')continue;const bid=p.pos.map.slice(2);if(isOpen(st,bid,now))continue;if(p.busy)finishBusy(st,p,now);const b=TOWN.buildings.find(b=>b.id===bid);p.pos={map:'town',x:b.exit.x,y:b.exit.y,dir:'down'};p.goal=null;log(st,`🔒 The ${HOURS[bid].name} closed (${clockText(st,now)}). ${p.name} was shown out.`);}for(const id of st.order){const p=st.players[id];if(p.busy&&now>=p.busy.until)finishBusy(st,p,now);if(p.ai)aiTick(st,p,now);}
+ for(const id of st.order){const p=st.players[id];if(p.pos.map[0]!=='b')continue;const bid=p.pos.map.slice(2);if(isOpen(st,bid,now))continue;if(p.busy)finishBusy(st,p,now);const b=TOWN.buildings.find(b=>b.id===bid);p.pos={map:'town',x:b.exit.x,y:b.exit.y,dir:b.exit.y<b.door.y?'up':'down'};p.goal=null;log(st,`🔒 The ${HOURS[bid].name} closed (${clockText(st,now)}). ${p.name} was shown out.`);}for(const id of st.order){const p=st.players[id];if(p.busy&&now>=p.busy.until)finishBusy(st,p,now);if(p.ai)aiTick(st,p,now);}
  if(now>=st.dayEnd)endDay(st,now);}
 function scores(st){const rows=st.order.map(id=>{const p=st.players[id],h=Math.round((p.needs.energy+p.needs.mood+p.needs.social)/3);return{id,name:p.name,color:p.color,happiness:h,visits:p.visits,home:HOME_TIERS[p.lot===VILLA_LOT?'villa':p.home].n,car:!!p.car,watch:!!p.watch,coins:p.coins,coinPts:Math.floor(p.coins/10),star:p.star,bestStreak:p.bestStreak,score:h+p.visits*VISIT_PTS+Math.floor(p.coins/10),energy:p.needs.energy,built:p.built};}).sort((a,b)=>b.score-a.score);
  const top=k=>rows.slice().sort((a,b)=>b[k]-a[k])[0];return{rows,winner:rows[0]&&rows[0].name,bestHost:top('visits').name,mostRested:top('energy').name,architect:top('built').name,richest:top('coins').name};}
@@ -402,7 +404,7 @@ function send(msg){if(mode==='solo'){const t=now();let r='ok';
  else if(ws&&ws.readyState===1)ws.send(JSON.stringify(msg));}
 // ---------- online ----------
 function connect(first){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
- ws.onopen=()=>ws.send(JSON.stringify(first));ws.onclose=()=>{$('mpMsg').textContent='Disconnected.';flash('Disconnected from server');};
+ ws.onopen=()=>ws.send(JSON.stringify(first));ws.onclose=()=>{$('mpMsg').textContent='Disconnected from multiplayer. Your game has stopped; this session cannot currently be resumed automatically. Ask the host to create a new room and rejoin its invite link. Solo mode will not start automatically.';flash('Disconnected — rejoin the same room');$('menu').style.display='flex';};
  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='err'){$('mpMsg').textContent=m.msg;flash(m.msg);return;}
   if(m.t==='arcmsg'){if(window.SeakArcade)window.SeakArcade.onMsg(m);return;}
   if(m.t==='welcome'){me=m.id;mode='online';window.__seakPlaying=true;}
@@ -472,7 +474,9 @@ function martPanel(p){const inMart=p.pos.map==='b:mart';$('martCard').style.disp
  const keys=[];aisles.forEach(ai=>{if(ai==='U')Object.keys(E.ITEMS).forEach(t=>keys.push('f:'+t));else Object.keys(E.CAT).filter(k=>E.CAT[k].aisle===ai).forEach(k=>keys.push(k));});
  const html=keys.map(k=>{const it=E.catItem(k);const d=it.fx?Object.entries(it.fx).map(([n,v])=>`+${v} ${n}`).join(' '):it.gift?`gift: +${it.gift} Social both`:it.watch?'exact clock + opening times, +5 Mood':it.car?'parks at home; fast on roads, no Energy drain, +10 Mood':it.house?(it.house==='villa'?'move to the hilltop (one only)':'bigger home, more space'):it.hat?'hat':it.color?'agent color':'furniture → bag';return`<button data-k="${k}">${it.e} ${it.n} <b>${it.c}🪙</b><br><span class="small">${d}</span></button>`;}).join('');
  const box=$('martItems');if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.querySelectorAll('button').forEach(b=>b.onclick=()=>send({t:'do',action:'shop',arg:b.dataset.k}));}
- const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0);$('cartBox').innerHTML=p.cart.length?`🛒 <b>Unpaid</b> (can't use until checkout): <span id="unpaid" style="opacity:.45;filter:grayscale(1)">${p.cart.map(k=>E.catItem(k).e+' '+E.catItem(k).n).join(', ')}</span> · total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}`:'Cart is empty.';}
+ const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0),groups={};p.cart.forEach(k=>groups[k]=(groups[k]||0)+1);
+  $('cartBox').innerHTML=p.cart.length?`🛒 <b>Unpaid</b> (can't use until checkout):<div>${Object.entries(groups).map(([k,n])=>{const it=E.catItem(k);return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0"><span style="flex:1">${it.e} ${it.n} · ${it.c}🪙</span><button data-cart="minus" data-k="${k}" aria-label="Remove one ${it.n}" style="min-width:38px;min-height:36px">−</button><b>${n}</b><button data-cart="plus" data-k="${k}" aria-label="Add one ${it.n}" ${p.cart.length>=6?'disabled':''} style="min-width:38px;min-height:36px">+</button><button data-cart="remove" data-k="${k}" aria-label="Remove ${it.n}" style="min-width:44px;min-height:36px">✕</button></div>`;}).join('')}</div><button data-cart="clear" style="min-height:40px">Clear cart</button><div>Total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}</div>`:'Cart is empty.';
+  $('cartBox').querySelectorAll('button[data-cart]').forEach(b=>b.onclick=()=>{const a=b.dataset.cart,k=b.dataset.k;if(a==='clear')send({t:'do',action:'clearcart'});else if(a==='plus')send({t:'do',action:'shop',arg:k});else send({t:'do',action:'unshop',arg:k});});}
 function actionBar(){const p=st&&st.players[me];const box=$('actbar');if(!p||st.phase!=='day'){box.innerHTML='';return;}
  const t=now();let html='';if(p.busy){const left=Math.ceil((p.busy.until-t)/1000);html=`<span class="pill">${E.ACTIONS[p.busy.a].e} ${E.ACTIONS[p.busy.a].label}… ${Math.max(0,left)}s</span>`;}
  else html=E.actionsAt(st,me).map((a,i)=>{const cd=E.cdLeft(st,p,a.action,t);return`<button data-a="${a.action}" ${cd?'disabled':''}>${i===0?'<kbd>E</kbd> ':''}${E.ACTIONS[a.action].e} ${a.action==='talk'?'Talk to '+a.src:a.action==='gift'?'Give '+(($('giftSel').value||'').startsWith('coins:')?'🪙'+$('giftSel').value.slice(6):($('giftSel').value&&E.catItem($('giftSel').value))?E.catItem($('giftSel').value).e:'gift')+' to '+a.src:a.action==='shop'?'Browse':E.ACTIONS[a.action].label}<span class="small"> · ${a.src}${cd?` (${Math.ceil(cd/1000)}s)`:''}</span></button>`;}).join('');
