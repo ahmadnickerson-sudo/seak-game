@@ -26,7 +26,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - Rooms hold up to 8 players (humans + AIs); 8 house lots (two new ones at the east end of each row).
 - Town doubled to 68×46 tiles: roads, lanes, side paths, trees, and dashed **Open lots** for future locations.
 - Walk-in buildings: **Town Diner** (counters), **Office** (desks), **School** (desks), **Arcade** (cabinets). Walk through the door to go in, EXIT to leave. The Plaza keeps benches and the fountain.
-- **School:** Study at a school desk (one class per day, −5 Energy). Attend on 5 different days (School is open Mon–Fri, so every weekday) to graduate 🎓; Work then pays 60% more. Progress shows in the HUD as “School N/5 days”.
+- **School:** Study at a school desk (one class per day, −5 Energy). Attend on 5 different days (School is open every day, Mon–Sun 8:00–15:00) to graduate 🎓; Work then pays 60% more. Progress shows in the HUD as “School N/5 days”.
 - **Work** now costs Mood (−7) as well as Energy.
 - **Run:** hold Shift (or toggle 🏃 Run on phones) to move about 1.8× faster. Walking costs ~1 Energy per 40 tiles, running 3×; can't run below 10 Energy. Below 30 Energy Mood slips slowly.
 - **Premium (Seak Mart):** ⌚ Watch 80 (exact clock + opening times, +5 Mood), 🚗 Car 200 (parks at home, faster + no Energy drain on roads, +10 Mood).

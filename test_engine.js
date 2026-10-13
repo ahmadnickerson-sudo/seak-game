@@ -74,7 +74,7 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  me.pos={map:'town',x:47,y:16,dir:'up'};me.busy=null;ok(!E.isOpen(st,'office',now)&&E.step(st,'me',0,-1,now+1)===false&&me.pos.map==='town','Office door refused at 07:00 (sign: "Closed — '+E.opensText(st,'office')+'")');
  setClock(st,now,10);now+=500;ok(E.step(st,'me',0,-1,now)===true&&me.pos.map==='b:office','Office open at 10:00 → walked in');
  setClock(st,now,17.01);now+=10;E.tick(st,now);ok(me.pos.map==='town'&&st.log.some(l=>/Office closed/.test(l.m)),'at 17:00 everyone inside is shown out');
- st.day=6;setClock(st,now,12);ok(!E.isOpen(st,'school',now)&&!E.isOpen(st,'office',now)&&E.isOpen(st,'diner',now),'Saturday noon: School/Office closed, Diner open');
+ st.day=6;setClock(st,now,12);ok(E.isOpen(st,'school',now)&&!E.isOpen(st,'office',now)&&E.isOpen(st,'diner',now),'Saturday noon: School open (daily), Office closed, Diner open');
  ok(E.isNight(st,now-st.dur.day*(12-23)/24)&&!E.isNight(st,now),'night 22:00–06:00');st.day=3;setClock(st,now,10);}
 // 5. End scoring
 {st.order.forEach((id,i)=>st.players[id].coins=[95,10,250][i]);const R=E.scores(st);const r=R.rows.find(x=>x.id==='j');
