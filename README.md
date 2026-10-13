@@ -53,7 +53,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 
 **Building:** furniture is bought at Seak Mart and goes to your bag. Inside your house, pick it in the Build panel and tap a free tile.
 
-**End of week:** score = average needs + 10 × visits + 1 per 10 leftover coins. Titles: Best Host, Most Rested, Town Architect, Richest, plus 🏅 Star Employee badges and 🥇🥈🥉 trophies.
+**End of week:** score = average needs + 10 × visits + 1 per 100 leftover coins. Titles: Best Host, Most Rested, Town Architect, Richest, plus 🏅 Star Employee badges and 🥇🥈🥉 trophies.
 
 - **Real-time days:** each day is ~2½ min. Actions take a few seconds (your agent is busy) and then cool down ~12 s, so you get several actions a day but must choose. Overnight: Energy −22, Mood −18 (+decor), Social −18, +10 coins.
 - **Timing (real time):** Work 20s, Sleep 20s, Study 15s, Eat/Hang/Play 8s; cooldown 15s (Work 12s).

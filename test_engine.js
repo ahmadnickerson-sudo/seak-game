@@ -76,7 +76,7 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  ok(E.isNight(st,now-st.dur.day*(12-23)/24)&&!E.isNight(st,now),'night 22:00–06:00');st.day=3;setClock(st,now,10);}
 // 5. End scoring
 {st.order.forEach((id,i)=>st.players[id].coins=[95,10,250][i]);const R=E.scores(st);const r=R.rows.find(x=>x.id==='j');
- ok(r.coinPts===25&&r.score===r.happiness+r.visits*10+25,'score adds +1 per 10 coins: Juno '+JSON.stringify({h:r.happiness,v:r.visits,coins:r.coins,score:r.score}));ok(R.richest==='Juno (AI)','Richest title → '+R.richest);}
+ ok(r.coinPts===2&&r.score===r.happiness+r.visits*10+2,'score adds +1 per 100 coins: Juno '+JSON.stringify({h:r.happiness,v:r.visits,coins:r.coins,score:r.score}));ok(R.richest==='Juno (AI)','Richest title → '+R.richest);}
 // 6. AI shoppers
 {const st2=E.createState('Y',{speed:1,seed:5});['Pixel (AI)','b','c'].forEach((n,i)=>E.addPlayer(st2,'q'+i,n,true));let t=0;E.startGame(st2,t);const seen=new Set();while(st2.phase==='day'&&st2.day<=3){t+=50;E.tick(st2,t);st2.log.slice(-4).forEach(l=>seen.add(l.m));}
  ok([...seen].some(m=>/checked out at Seak Mart/.test(m))&&Object.values(st2.players).some(p=>p.items.length>1),'AI neighbors shop at Seak Mart and place what they bought');}
