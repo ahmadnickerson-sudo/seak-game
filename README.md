@@ -20,13 +20,13 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - Move: **Arrow keys / WASD**, or the on-screen D-pad (phones). Hold **Shift** (or toggle 🏃 Run) to run.
 - Act: walk next to a spot and press **E / Space**, or tap the action button that pops up.
 - Walk into a house door to go inside; step on **EXIT** to leave.
-- Build: inside your own house, pick an item in the Build panel, then tap a free tile (dashed outline). Placement that would block a spot or the walkway is refused.
+- Build: inside your own house, pick an item in the Build panel, then tap a free tile (dashed outline). Placement that would block a spot or the walkway is refused. **Rearrange:** press on placed furniture and drag it (mouse or touch) to another tile: valid tiles glow green, an invalid target shows red and the item snaps back. Furniture someone is using can't be moved. Synced through the server as a `move` action.
 
 ## What's new (free-move v2)
 - Rooms hold up to 8 players (humans + AIs); 8 house lots (two new ones at the east end of each row).
 - Town doubled to 68×46 tiles: roads, lanes, side paths, trees, and dashed **Open lots** for future locations.
 - Walk-in buildings: **Town Diner** (counters), **Office** (desks), **School** (desks), **Arcade** (cabinets). Walk through the door to go in, EXIT to leave. The Plaza keeps benches and the fountain.
-- **School:** Study at a school desk (one class per day, −5 Energy). After 3 classes you graduate 🎓 and Work pays 60% more. Shown in the HUD.
+- **School:** Study at a school desk (one class per day, −5 Energy). Attend on 5 different days (School is open Mon–Fri, so every weekday) to graduate 🎓; Work then pays 60% more. Progress shows in the HUD as “School N/5 days”.
 - **Work** now costs Mood (−7) as well as Energy.
 - **Run:** hold Shift (or toggle 🏃 Run on phones) to move about 1.8× faster. Walking costs ~1 Energy per 40 tiles, running 3×; can't run below 10 Energy. Below 30 Energy Mood slips slowly.
 - **Premium (Seak Mart):** ⌚ Watch 80 (exact clock + opening times, +5 Mood), 🚗 Car 200 (parks at home, faster + no Energy drain on roads, +10 Mood).
@@ -41,8 +41,8 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 |---|---|---|
 | Bed (every house starts with one) | Sleep | +18 Energy (+12 without a bed) and +4 Mood; own bed = Well rested: +8 more Energy, +6 more Mood; halved if a noisy hangout is next door |
 | Diner counter (walk-in Diner) / home Kitchen | Eat/Cook | +10 / +14 Energy; smaller meal for each other agent inside the Diner; eating at the same time = +5 Social |
-| Office desk / home Desk | Work | +15 / +22 coins, −6 Energy, −7 Mood. Graduates ×1.6. **Great Shift** (Energy & Mood ≥ 60): +50% coins, +10% more per streak step (max +100%); 3 in a row = 🏅 Star Employee |
-| School desk (walk-in School) | Study | −5 Energy, one class per day; 3 classes = Graduated 🎓 |
+| Office desk / home Desk | Work | +16 (15 × 1.05) / +22 coins, −6 Energy, −7 Mood. Graduates ×1.6. **Great Shift** (Energy & Mood ≥ 60): +50% coins, +10% more per streak step (max +100%); 3 in a row = 🏅 Star Employee; every 10th Great Shift in a row (10, 20, 30…) pays a 🔥 streak bonus equal to that shift's pay (double coins) |
+| School desk (walk-in School) | Study | −5 Energy, one class per day; 5 school days = Graduated 🎓 |
 | Plaza bench / Couch / Café | Hang out | +8 / +10 / +12 Social; +3 per agent hanging out with you |
 | Arcade cabinet (walk-in Arcade) / Console / Arcade machine | Play | +12 / +10 / +13 Mood |
 | Neighbor's door | Visit | +8 Social for you, +5 Social & +1 visit for the owner (once per house per day); decor gives you Mood |
@@ -65,5 +65,5 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 ## How it's built
 - `index.html`: UI + canvas renderer + the shared engine (`<script id="engine">`).
 - `server.js` loads that same engine with `vm`, runs it authoritatively (needs, coins, visits, day timer, AI), sends full state on change and positions at 10 Hz. Clients predict their own steps and interpolate everyone's movement.
-- Test: `PORT=3100 SEAK_SPEED=0.01 node server.js` then `PORT=3100 node test_mp.js`. Invite/agent test (server at SEAK_SPEED=0.5): `PORT=3100 node test_invite.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Engine test (buildings, school, chat, gifts, Mart, rewards, AI games): `node test_engine.js`.
+- Test: `PORT=3100 SEAK_SPEED=0.01 node server.js` then `PORT=3100 node test_mp.js`. Invite/agent test (server at SEAK_SPEED=0.5): `PORT=3100 node test_invite.js`. Keyboard/solo test: `node test_keys.js`. Reopen test: `node test_reopen.js`. Furniture drag test: `node test_drag.js`. Engine test (buildings, school, chat, gifts, Mart, rewards, AI games): `node test_engine.js`.
 - Previous turn-based version: git tag `v1`.

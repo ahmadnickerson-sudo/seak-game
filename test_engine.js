@@ -31,9 +31,10 @@ st.players.pk.pos={map:'b:diner',x:8,y:5,dir:'up'};st.players.j.pos={map:'b:dine
 ok(E.doAction(st,'me','eat',now)==='ok'&&st.players.me.busy.g.energy<10,'crowded diner (2 others inside) gives a smaller meal: +'+st.players.me.busy.g.energy+' Energy');now+=st.dur.busy.eat+1000;E.tick(st,now);
 now=walkTo(st,'me','b:office',nearSpot('b:office','W'),now);st.players.me.needs.mood=50;const m0=st.players.me.needs.mood,c0=st.players.me.coins;ok(E.doAction(st,'me','work',now)==='ok','Work at Office desk');now+=st.dur.busy.work+1000;E.tick(st,now);
 const pay1=st.players.me.coins-c0;ok(st.players.me.needs.mood<m0,`Work drains Mood: ${m0} -> ${st.players.me.needs.mood}, paid ${pay1}`);
-for(let d=0;d<3;d++){now=walkTo(st,'me','b:school',nearSpot('b:school','K'),now);ok(E.doAction(st,'me','study',now)==='ok',`study session ${d+1} (day ${st.day})`);
+for(let d=0;d<5;d++){now=walkTo(st,'me','b:school',nearSpot('b:school','K'),now);ok(E.doAction(st,'me','study',now)==='ok',`study session ${d+1} (day ${st.day})`);
  if(d===0)ok(E.doAction(st,'me','study',now+st.dur.busy.study+1000)!=='ok','only one class per day');now+=st.dur.busy.work+1000;E.tick(st,now);st.dayEnd=now+1;now+=2;E.tick(st,now);setClock(st,now,10);}
-ok(st.players.me.edu===3,'graduated (edu 3/3)');now=walkTo(st,'me','b:office',nearSpot('b:office','W'),now);st.players.me.cd={};st.players.me.needs.energy=80;st.players.me.needs.mood=40;const c1=st.players.me.coins;E.doAction(st,'me','work',now);now+=st.dur.busy.work+1000;E.tick(st,now);
+ok(st.players.me.edu===5,'graduated (5/5 school days)');st.day=2;setClock(st,now,10);// back to a weekday so the Office is open
+now=walkTo(st,'me','b:office',nearSpot('b:office','W'),now);st.players.me.cd={};st.players.me.needs.energy=80;st.players.me.needs.mood=40;const c1=st.players.me.coins;E.doAction(st,'me','work',now);now+=st.dur.busy.work+1000;E.tick(st,now);
 ok(st.players.me.coins-c1>pay1,`graduate pay ${st.players.me.coins-c1} > ${pay1}`);
 // arcade
 now=walkTo(st,'me','b:arcade',nearSpot('b:arcade','2'),now);ok(E.doAction(st,'me','play',now)==='ok','played at the Arcade building');now+=st.dur.busy.eat+1000;E.tick(st,now);
@@ -43,8 +44,9 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
 // 3. Great Shift streak + Star Employee
 {const me=st.players.me;setClock(st,now,9.5);now=walkTo(st,'me','b:office',nearSpot('b:office','W'),now);me.edu=0;me.streak=0;me.star=false;const pays=[];
  for(let i=0;i<4;i++){me.cd={};if(i<3){me.needs.energy=90;me.needs.mood=90;}else{me.needs.mood=30;}const c=me.coins;E.doAction(st,'me','work',now);now+=st.dur.busy.work+1000;E.tick(st,now);pays.push(me.coins-c);}
- ok(pays[0]===23&&pays[1]===24&&pays[2]===26,'great shifts pay +50%, +60%, +70% (streak bonus): '+pays.slice(0,3).join(', '));
- ok(me.star&&st.log.some(l=>/Star Employee/.test(l.m)),'3 in a row → Star Employee badge + log');ok(me.streak===0&&pays[3]===15,'non-great shift (Mood 30) resets streak, pays base 15');}
+ ok(pays[0]===24&&pays[1]===25&&pays[2]===27,'great shifts pay +50%, +60%, +70% on 15.75 base (streak bonus): '+pays.slice(0,3).join(', '));
+ ok(me.star&&st.log.some(l=>/Star Employee/.test(l.m)),'3 in a row → Star Employee badge + log');ok(me.streak===0&&pays[3]===16,'non-great shift (Mood 30) resets streak, pays base 16 (15 × 1.05)');
+ {me.streak=9;me.cd={};me.needs.energy=90;me.needs.mood=90;const c=me.coins;E.doAction(st,'me','work',now);now+=st.dur.busy.work+1000;E.tick(st,now);const got=me.coins-c;ok(st.log.some(l=>/10-shift streak: \+\d+ bonus/.test(l.m))&&me.streak===10&&got===2*Math.round(15*1.05*2),`streak 10 pays double: ${got} = 32 shift + 32 bonus`);}}
 // 4. Seak Mart: shop, checkout, gifts, place furniture
 {const me=st.players.me;me.coins=200;me.needs.energy=40;
  now=walkTo(st,'me','b:mart',nearSpot('b:mart','R'),now);ok(E.doAction(st,'me','shop',now,'coffee')==='ok','added Coffee from Treats aisle');ok(E.doAction(st,'me','shop',now,'f:couch')!=='ok','cannot grab furniture from the Treats aisle');
@@ -120,4 +122,19 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
  ok(E.buy(st,'a','couch',null,null)!=='ok','unpaid couch cannot be placed');ok(E.doAction(st,'a','gift',now,'flowers@b')!=='ok','unpaid flowers cannot be gifted');
  ok(!a.hat&&!a.car&&a.home==='starter'&&a.needs.energy===50&&!a.inv.length,'unpaid hat not worn, car not owned, house not upgraded, coffee not drunk, bag empty');
  put(a,'$');ok(E.doAction(st,'a','checkout',now)==='ok'&&a.hat&&a.car&&a.home==='cozy'&&a.needs.energy>50&&a.inv.includes('couch')&&a.gifts.includes?true:true,'after checkout everything works');ok(a.inv.includes('couch')&&a.hat&&a.car,'couch in bag, hat on, car parked');}
+// 9. drag & drop furniture: moveItem follows placement rules, needs owner at home, refuses items in use
+{const st=E.createState('MV',{speed:1});E.addPlayer(st,'a','Ahmad');E.addPlayer(st,'b','Bo');let now=1000;E.startGame(st,now);const a=st.players.a,b=st.players.b;
+ const bed=a.items[0];a.pos={map:'town',x:1,y:1,dir:'down'};ok(E.moveItem(st,'a',bed.x,bed.y,2,2)!=='ok','move refused when not at home');
+ a.pos={map:'h'+a.lot,x:3,y:3,dir:'down'};const I=E.homeInfo(st,a.lot);let tgt=null;for(let y=1;y<I.h-1&&!tgt;y++)for(let x=1;x<I.w-1;x++)if(E.canMove(st,a,bed.x,bed.y,x,y)){tgt={x,y};break;}
+ const fx=bed.x,fy=bed.y;ok(tgt&&E.moveItem(st,'a',fx,fy,tgt.x,tgt.y)==='ok'&&bed.x===tgt.x&&bed.y===tgt.y,`bed moved ${fx},${fy} → ${tgt&&tgt.x},${tgt&&tgt.y}`);
+ ok(a.items.length===1,'still exactly one item');
+ ok(E.moveItem(st,'a',bed.x,bed.y,I.door.x,I.door.y)!=='ok'&&E.moveItem(st,'a',bed.x,bed.y,I.spawn.x,I.spawn.y)!=='ok'&&E.moveItem(st,'a',bed.x,bed.y,0,0)!=='ok','cannot drop on door, spawn tile or wall');
+ ok(E.moveItem(st,'a',bed.x,bed.y,a.pos.x,a.pos.y)!=='ok','cannot drop onto a player');
+ ok(E.moveItem(st,'b',bed.x,bed.y,1,1)!=='ok','other players cannot move your furniture');
+ a.pos={map:'h'+a.lot,x:bed.x+1,y:bed.y,dir:'left'};a.busy={a:'sleep',until:now+99999,g:{}};const bx=bed.x,by=bed.y;let free=null;for(let y=1;y<I.h-1&&!free;y++)for(let x=1;x<I.w-1;x++)if(E.canMove(st,a,bx,by,x,y)){free={x,y};break;}
+ ok(/using/.test(E.moveItem(st,'a',bx,by,free.x,free.y))&&bed.x===bx,'item in use (sleeping next to it) cannot be moved');a.busy=null;}
+// 10. Café counter hang-out also gives +5 Energy and +5 Mood
+{const st=E.createState('CF',{speed:1});E.addPlayer(st,'a','Ahmad');let now=1000;E.startGame(st,now);const a=st.players.a;a.items=[{t:'cafe',x:2,y:2}];a.pos={map:'h'+a.lot,x:3,y:2,dir:'left'};
+ a.needs.energy=50;a.needs.mood=50;a.needs.social=40;const r=E.doAction(st,'a','hang',now);now+=st.dur.busy.hang+1000;E.tick(st,now);
+ ok(r==='ok'&&a.needs.energy===55&&a.needs.mood===55&&a.needs.social>=50,`café hang: social ${a.needs.social}, energy ${a.needs.energy}, mood ${a.needs.mood}`);}
 console.log(fails?'FAIL':'PASS');process.exit(fails?1:0);
