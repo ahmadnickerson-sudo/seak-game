@@ -6,7 +6,9 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));let fails=0;const ok=(c,m)=>{co
 const mk=()=>new Promise(r=>{const ws=new WebSocket(URL);ws.errs=[];ws.pong=null;ws.ends=0;ws.on('message',d=>{const m=JSON.parse(d);if(m.t==='welcome'){ws.id=m.id;ws.code=m.code;}if(m.t==='state')ws.st=m.state;if(m.t==='err')ws.errs.push(m.msg);if(m.t==='pong')ws.pong=m;if(m.t==='pongEnd')ws.ends++;});ws.on('open',()=>r(ws));});
 const wait=(f,ms=5000)=>new Promise(r=>{const t0=Date.now(),i=setInterval(()=>{if(f()||Date.now()-t0>ms){clearInterval(i);r(f());}},10);});
 const tx=(ws,m)=>ws.send(JSON.stringify(m));
-(async()=>{const a=await mk();tx(a,{t:'create',name:'Ann'});await wait(()=>a.code);const b=await mk();tx(b,{t:'join',code:a.code,name:'Bo'});await wait(()=>b.id&&a.st&&a.st.order.length===2);
+const http=require('http');const hget=u=>new Promise(r=>http.get(URL.replace('ws:','http:')+u,res=>{let n=0;res.on('data',c=>n+=c.length);res.on('end',()=>r({code:res.statusCode,type:res.headers['content-type'],n}));}));
+(async()=>{{const b=await hget('/assets/furniture/bed.png');ok(b.code===200&&b.type==='image/png'&&b.n>1000,'server serves furniture art (static /assets/furniture)');const t=await hget('/assets/furniture/..%2f..%2fserver.js');ok(t.code===404,'no path traversal outside assets');}
+ const a=await mk();tx(a,{t:'create',name:'Ann'});await wait(()=>a.code);const b=await mk();tx(b,{t:'join',code:a.code,name:'Bo'});await wait(()=>b.id&&a.st&&a.st.order.length===2);
  tx(a,{t:'arc',game:'pong'});await sleep(150);tx(a,{t:'pongChallenge',to:b.id});ok(await wait(()=>a.errs.length,1500),'challenge refused while opponent has no Pong open');ok(!a.pong&&!b.pong,'no match started');
  tx(b,{t:'arc',game:'pong'});await sleep(150);tx(a,{t:'pongChallenge',to:b.id});ok(await wait(()=>a.pong&&b.pong),'challenge starts a match; both clients get server state');
  ok(a.pong.you==='a'&&b.pong.you==='b'&&a.pong.opp==='Bo'&&b.pong.opp==='Ann','roles + opponent names');
