@@ -146,4 +146,39 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
   const r=E.doAction(st,'a','play',now,sc);now+=st.dur.busy.play+50;E.tick(st,now);ok(r==='ok'&&a.needs.mood>=40+13+1,`${t}: played with bonus, mood ${a.needs.mood}`);
   ok(E.doAction(st,'a','play',now,sc)==='ok','replay immediately (no cooldown)');now+=st.dur.busy.play+50;E.tick(st,now);}
  a.items=[{t:'console',x:2,y:2}];a.cd={};a.busy=null;ok(E.doAction(st,'a','play',now)==='ok','console play');now+=st.dur.busy.play+50;E.tick(st,now);ok(E.doAction(st,'a','play',now)!=='ok','console keeps its cooldown');}
+// 12. Character batch 2: AI personalities, earned looks, social moments, pose spot sync
+{const st=E.createState('PZ',{speed:1});for(const n of['Pixel','Juno','Byte'])E.addPlayer(st,n,n+' (AI)',true);E.addPlayer(st,'h','Hu');let now=1000;E.startGame(st,now);
+ ok(st.players.Pixel.persona==='Pixel'&&st.players.Juno.persona==='Juno'&&st.players.Byte.persona==='Byte'&&!st.players.h.persona,'AI personalities assigned (Pixel/Juno/Byte), humans none');
+ ok(/worker/i.test(E.PERSONA.Pixel.tag)&&/social/i.test(E.PERSONA.Juno.tag)&&/gamer/i.test(E.PERSONA.Byte.tag),'personality tags');
+ // run AI-only days and compare what each personality chose
+ const cnt={Pixel:{},Juno:{},Byte:{}};const st2=E.createState('PY',{speed:0.05});for(const n of['Pixel','Juno','Byte'])E.addPlayer(st2,n,n+' (AI)',true);now=1000;E.startGame(st2,now);let minNeed=100;
+ for(let i=0;i<40000&&st2.phase==='day';i++){now+=50;E.tick(st2,now);for(const n in cnt){const p=st2.players[n];if(p.busy&&p.busy.until-now>st2.dur.busy[p.busy.a]-60)cnt[n][p.busy.a]=(cnt[n][p.busy.a]||0)+1;}}
+ for(const n in cnt){const p=st2.players[n];minNeed=Math.min(minNeed,Math.round((p.needs.energy+p.needs.mood+p.needs.social)/3));}
+ const sh=(n,ks)=>{const c=cnt[n],t=Object.values(c).reduce((a,b)=>a+b,0)||1;return ks.reduce((a,k)=>a+(c[k]||0),0)/t;};
+ console.log('  persona action mix',JSON.stringify(cnt));
+ ok(sh('Pixel',['work','study'])>sh('Juno',['work','study'])&&sh('Pixel',['work','study'])>sh('Byte',['work','study']),'Pixel works/studies most');
+ ok(sh('Juno',['hang','visit'])>sh('Pixel',['hang','visit'])&&sh('Juno',['hang','visit'])>sh('Byte',['hang','visit']),'Juno hangs out/visits most');
+ ok(sh('Byte',['play'])>sh('Pixel',['play'])&&sh('Byte',['play'])>sh('Juno',['play']),'Byte plays most');
+ ok(minNeed>=25,`personalities still survive their needs (lowest avg need ${minNeed})`);
+ // earned looks
+ const h=st.players.h;h.edu=0;h.streak=0;h.coins=40;let e=E.earnedLook(st,h);ok(!e.grad&&!e.tie&&e.trim===0,'no earned looks at start');
+ h.edu=99;h.streak=10;h.coins=120;e=E.earnedLook(st,h);ok(e.grad&&e.tie&&e.trim===1,'grad cap, tie at streak 10, silver trim at 100 coins');h.coins=300;ok(E.earnedLook(st,h).trim===2,'gold trim at 250 coins');
+ h.coins=5000;ok(E.leaderId(st)==='h'&&E.earnedLook(st,h).leader,'score leader gets the crown');for(const id of st.order)st.players[id].coins=40,st.players[id].visits=0,st.players[id].needs={energy:70,mood:70,social:60};ok(E.leaderId(st)===null,'no crown on a tie');
+ // wave when passing
+ for(const id of st.order){st.players[id].busy=null;st.players[id].pos={map:'town',x:1,y:1,dir:'down'};}
+ const a=st.players.h,b=st.players.Juno;a.pos={map:'town',x:30,y:22,dir:'right'};b.pos={map:'town',x:33,y:22,dir:'left'};a.lastStep=0;now+=5000;
+ ok(E.step(st,'h',1,0,now)&&a.fx&&a.fx.k==='wave'&&b.fx&&b.fx.k==='wave','wave emote when passing a nearby player (both)');
+ a.fx=b.fx=null;now+=1000;E.step(st,'h',-1,0,now);now+=1000;E.step(st,'h',1,0,now);ok(!a.fx,'wave not repeated for the same pair right away');
+ // high-five on coin gift
+ b.pos={map:'town',x:32,y:22,dir:'left'};a.pos={map:'town',x:31,y:22,dir:'right'};a.coins=50;a.cd={};const r=E.doAction(st,'h','gift',now,'coins:5@Juno');ok(r==='ok'&&a.fx.k==='five'&&b.fx.k==='five','high-five sparkle on both when gifting coins');
+ // hearts when hanging out together + busy spot for poses
+ const st3=E.createState('HG',{speed:1});E.addPlayer(st3,'x','X');E.addPlayer(st3,'y','Y');now=1000;E.startGame(st3,now);const X=st3.players.x,Y=st3.players.y;X.items=[{t:'couch',x:2,y:2},{t:'cafe',x:4,y:2}];X.pos={map:'h'+X.lot,x:3,y:2,dir:'left'};Y.pos={map:'h'+X.lot,x:4,y:3,dir:'up'};
+ ok(E.doAction(st3,'x','hang',now)==='ok'&&X.busy.at&&typeof X.busy.at.x==='number'&&X.busy.item,'busy carries the furniture spot + item (for sit poses)');
+ ok(E.doAction(st3,'y','hang',now)==='ok'&&X.fx&&X.fx.k==='hearts'&&Y.fx&&Y.fx.k==='hearts','hearts when hanging out together');}
+// 13. Furniture rotation: owner rotates 0→1→2→3→0, stays on its tile, survives a move, blocked when not home / in use, and sit poses get the facing
+{const st=E.createState('RT',{speed:1});E.addPlayer(st,'a','A');E.addPlayer(st,'b','B');let now=1000;E.startGame(st,now);const a=st.players.a,b=st.players.b;a.items=[{t:'bed',x:1,y:1},{t:'couch',x:4,y:2}];a.pos={map:'h'+a.lot,x:6,y:5,dir:'up'};
+ const it=a.items[1];ok((it.r|0)===0,'old items default to rotation 0');const seq=[];for(let i=0;i<4;i++){ok(E.rotateItem(st,'a',4,2)==='ok','rotate');seq.push(it.r);}ok(seq.join()==='1,2,3,0'&&it.x===4&&it.y===2,'rotation cycles 1,2,3,0 in place');
+ E.rotateItem(st,'a',4,2);ok(E.moveItem(st,'a',4,2,5,2)==='ok'&&it.r===1,'drag-move keeps rotation');ok(E.rotateItem(st,'a',9,9)!=='ok','nothing to rotate on an empty tile');
+ b.pos={map:'h'+a.lot,x:4,y:3,dir:'up'};ok(E.rotateItem(st,'b',5,2)!=='ok','visitors cannot rotate (only your own home)');
+ a.pos={map:'h'+a.lot,x:5,y:3,dir:'up'};ok(E.doAction(st,'a','hang',now)==='ok'&&a.busy.r===1,'busy carries the item rotation (sit pose faces it)');ok(E.rotateItem(st,'a',5,2)!=='ok','cannot rotate an item in use');}
 console.log(fails?'FAIL':'PASS');process.exit(fails?1:0);
