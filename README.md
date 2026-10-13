@@ -31,7 +31,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 - **Work** now costs Mood (−7) as well as Energy.
 - **Run:** hold Shift (or toggle 🏃 Run on phones) to move about 1.8× faster. Walking costs ~1 Energy per 40 tiles, running 3×; can't run below 10 Energy. Below 30 Energy Mood slips slowly.
 - **Premium (Seak Mart):** ⌚ Watch 80 (exact clock + opening times, +5 Mood), 🚗 Car 200 (parks at home, faster + no Energy drain on roads, +10 Mood).
-- **Arcade mini-games:** press E at a cabinet. Pong (2 paired cabinets = 2-player online, CPU fallback after 5s), Blockfall, Chomp Maze. Score bonus up to +8 Mood on top of the normal Play reward; best scores are logged. `node test_arcade.js` checks them in headless Chrome.
+- **Arcade mini-games:** press E at a cabinet in the walk-in Arcade (its door faces the street, south side) or at home. Seak Mart sells a Pong cabinet, Blockfall cabinet and Chomp Maze cabinet (45🪙 each) that launch their game at home; the older 👾 Arcade machine opens a game picker. Pong modes: 1P vs CPU, local 2P on one device (bottom paddle A/D or bottom half of the touchscreen, top paddle ←/→ or top half), and online 2P (Challenge a player who has Pong open; the server simulates ball+paddles and streams state, the top player sees a mirrored view; falls back to CPU if the opponent leaves or no one is picked within 10s). Score bonus up to +8 Mood on top of the normal Play reward; best scores are logged. No cooldown after arcade play. `node test_arcade.js` checks the games; `node test_pong_online.js` (with a server running) checks online Pong sync.
 - **Homes:** everyone starts in a Starter home (7×6). Real Estate desk: Cozy House 150 (9×7), Dream House 350 (11×8, +5 Mood per home sleep), Hilltop Villa 500 (13×9, only one, you move there). Not giftable.
 - **Chat:** press E next to any player or agent: +4 Social each (AI neighbors answer with a speech bubble).
 - A crowded diner now means other agents *inside* the diner: smaller meals.
@@ -45,7 +45,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 | Office desk / home Desk | Work | +16 (15 × 1.05) / +22 coins, −6 Energy, −7 Mood. Graduates ×1.6. **Great Shift** (Energy & Mood ≥ 60): +50% coins, +10% more per streak step (max +100%); 3 in a row = 🏅 Star Employee; every 10th Great Shift in a row (10, 20, 30…) pays a 🔥 streak bonus equal to that shift's pay (double coins) |
 | School desk (walk-in School) | Study | −5 Energy, one class per day; 5 school days = Graduated 🎓 |
 | Plaza bench / Couch / Café | Hang out | +8 / +10 / +12 Social; +3 per agent hanging out with you |
-| Arcade cabinet (walk-in Arcade) / Console / Arcade machine | Play | +12 / +10 / +13 Mood |
+| Arcade cabinet (walk-in Arcade) / Console / Arcade machine or home Pong/Blockfall/Chomp cabinet | Play | +12 / +10 / +13 Mood |
 | Neighbor's door | Visit | +8 Social for you, +5 Social & +1 visit for the owner (once per house per day); decor gives you Mood |
 | Seak Mart aisles → Checkout | Shop | Treats (Coffee +12 Energy, Donut), Fun (Movie +15 Mood, New game +20 Mood), Gifts (Flowers/Plushie), Furniture (all 10 build items → your bag), Cosmetics (Cap/Top hat/Crown, Mint/Gold paint). Pay at the checkout; leaving without paying puts the cart back |
 | Next to anyone with a gift or furniture in your bag | Give gift | Pick it in the 🎁 selector: Flowers +8 / Plushie +12 / furniture +8 Social for both. Furniture moves to their bag; they place it in their own home |
@@ -57,7 +57,7 @@ Same Wi-Fi: `http://<your-LAN-IP>:3000`. Public: deploy the folder to Render/Rai
 **End of week:** score = average needs + 10 × visits + 1 per 100 leftover coins. Titles: Best Host, Most Rested, Town Architect, Richest, plus 🏅 Star Employee badges and 🥇🥈🥉 trophies.
 
 - **Real-time days:** each day is ~2½ min. Actions take a few seconds (your agent is busy) and then cool down ~12 s, so you get several actions a day but must choose. Overnight: Energy −22, Mood −18 (+decor), Social −18, +10 coins.
-- **Timing (real time):** Work 20s, Sleep 20s, Study 15s, Eat/Hang/Play 8s; cooldown 15s (Work 12s).
+- **Timing (real time):** Work 20s, Sleep 20s, Study 15s, Eat/Hang/Play 8s; cooldown 15s (Work 12s; arcade cabinets, home cabinets and the Arcade machine have no cooldown, replay instantly; the console keeps it).
 - **No tile sharing:** two agents can't occupy one tile (server-enforced). Door tiles are always passable, entrants land one tile inside (offset if taken), and a blocked walker slips past after ~1s. AI pathfinding routes around occupied tiles.
 - **Interiors:** desks/counters/cabinets/aisles laid out with 2-tile walkways, each station reachable from 2+ sides, and a clear 3×2 zone inside every door (tested).
 - **Collisions:** a crowded diner gives smaller meals; eating at the same time as someone = shared meal (+Social); hanging out together stacks Social; a hangout in your house or a neighbor's (same row) halves the Sleep of anyone sleeping there; a Plaza party (2+) disturbs sleepers in the bottom-row houses; several visitors at once = packed house bonus.

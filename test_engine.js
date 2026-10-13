@@ -5,7 +5,7 @@ const setClock=(st,now,h)=>{st.dayStart=now-st.dur.day*h/24;st.dayEnd=st.dayStar
 let fails=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)fails++;};
 function walkTo(st,id,map,goalFn,now){for(let i=0;i<400;i++){const p=st.players[id];if(p.pos.map===map&&goalFn(p.pos.x,p.pos.y))return now;
  let fn;if(p.pos.map!==map){if(p.pos.map!=='town'){const d=E.exitDoor(p.pos.map,st);fn=(x,y)=>x===d.x&&y===d.y;}else{const d=E.doorOf(map);fn=(x,y)=>x===d.x&&y===d.y;}}else fn=goalFn;
- const n=E.nextStep(st,p.pos.map,p.pos.x,p.pos.y,fn);if(!n)throw new Error('no path');now+=200;E.step(st,id,n[0]-p.pos.x,n[1]-p.pos.y,now);}throw new Error('walk timeout');}
+ const n=E.nextStep(st,p.pos.map,p.pos.x,p.pos.y,fn);if(!n)throw new Error('no path');now+=200;E.step(st,id,n[0]-p.pos.x,n[1]-p.pos.y,now);}throw new Error("walk timeout "+JSON.stringify(st.players[id].pos)+" "+map);}
 const nearSpot=(map,ch)=>{const L=E.PUB_LAYOUT[map.slice(2)];return(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>L[y+dy]&&L[y+dy][x+dx]===ch);};
 // 0. interior layouts: from the door every station is reachable (and the way back to EXIT) even with an agent standing at every other station
 {const st=E.createState('L',{speed:1});const D=[[1,0],[-1,0],[0,1],[0,-1]];for(const id in E.PUB_LAYOUT){const L=E.PUB_LAYOUT[id],I=E.pubInfo(id);const fl=(x,y)=>L[y]&&L[y][x]==='.';
@@ -137,4 +137,13 @@ ok(E.actionsAt(st,'me')[0].action==='talk'&&E.doAction(st,'me','talk',now)==='ok
 {const st=E.createState('CF',{speed:1});E.addPlayer(st,'a','Ahmad');let now=1000;E.startGame(st,now);const a=st.players.a;a.items=[{t:'cafe',x:2,y:2}];a.pos={map:'h'+a.lot,x:3,y:2,dir:'left'};
  a.needs.energy=50;a.needs.mood=50;a.needs.social=40;const r=E.doAction(st,'a','hang',now);now+=st.dur.busy.hang+1000;E.tick(st,now);
  ok(r==='ok'&&a.needs.energy===55&&a.needs.mood===55&&a.needs.social>=50,`café hang: social ${a.needs.social}, energy ${a.needs.energy}, mood ${a.needs.mood}`);}
+// 11. Home arcade cabinets launch their mini-game; no cooldown after arcade play; generic Arcade machine accepts any game; console keeps cooldown
+{const st=E.createState('AC',{speed:1});E.addPlayer(st,'a','Ahmad');let now=1000;E.startGame(st,now);const a=st.players.a;
+ ok(['arcpong','arcblock','arcchomp'].every(t=>E.ITEMS[t]&&E.ITEMS[t].a==='play'&&E.ITEMS[t].c>=40&&E.ITEMS[t].c<=50),'Mart sells Pong/Blockfall/Chomp cabinets (~45)');
+ ok(new Set(['arcpong','arcblock','arcchomp'].map(t=>E.ITEMS[t].col)).size===3,'cabinets have distinct colors');
+ for(const[t,g]of[['arcpong','pong'],['arcblock','blockfall'],['arcchomp','chomp'],['arcade','pick']]){a.items=[{t,x:2,y:2}];a.pos={map:'h'+a.lot,x:3,y:2,dir:'left'};a.busy=null;a.cd={};
+  const o=E.actionsAt(st,'a').find(x=>x.action==='play');ok(o&&o.game===g,`${t} offers game ${g}`);a.needs.mood=40;const sc=g==='pick'?'chomp:40:win':`${g==='pick'?'pong':g}:${g==='blockfall'?900:g==='chomp'?40:4}`;
+  const r=E.doAction(st,'a','play',now,sc);now+=st.dur.busy.play+50;E.tick(st,now);ok(r==='ok'&&a.needs.mood>=40+13+1,`${t}: played with bonus, mood ${a.needs.mood}`);
+  ok(E.doAction(st,'a','play',now,sc)==='ok','replay immediately (no cooldown)');now+=st.dur.busy.play+50;E.tick(st,now);}
+ a.items=[{t:'console',x:2,y:2}];a.cd={};a.busy=null;ok(E.doAction(st,'a','play',now)==='ok','console play');now+=st.dur.busy.play+50;E.tick(st,now);ok(E.doAction(st,'a','play',now)!=='ok','console keeps its cooldown');}
 console.log(fails?'FAIL':'PASS');process.exit(fails?1:0);
