@@ -14,7 +14,7 @@ wss.on('connection',ws=>{ws.id='p'+(nextId++);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw);}catch{return;}const now=Date.now();const err=msg=>ws.send(JSON.stringify({t:'err',msg}));
   if(m.t==='create'||m.t==='join'){let room;if(m.t==='create'){const c=code();room={st:E.createState(c,{speed:SPEED}),clients:new Set(),lastRev:-1};rooms.set(c,room);}
    else{room=rooms.get(String(m.code||'').toUpperCase());if(!room)return err(`Room ${String(m.code||'').toUpperCase()} not found. Check the code or ask the host for a new link.`);}
-   if(!E.addPlayer(room.st,ws.id,String(m.name||'Player')))return err(room.st.order.length>=E.MAX_PLAYERS?`Room is full (${E.MAX_PLAYERS} max)`:'That game has already started. Ask the host to make a new room.');
+   if(!E.addPlayer(room.st,ws.id,String(m.name||'Player'),false,m.look))return err(room.st.order.length>=E.MAX_PLAYERS?`Room is full (${E.MAX_PLAYERS} max)`:'That game has already started. Ask the host to make a new room.');
    ws.room=room;room.clients.add(ws);ws.send(JSON.stringify({t:'welcome',id:ws.id,code:room.st.code}));broadcast(room);return;}
   const room=ws.room;if(!room)return;const st=room.st;let r='ok';
   // arcade: 'arc' marks which mini-game you have open (for Pong pairing); 'arcmsg' relays Pong frames to your partner
