@@ -6,8 +6,7 @@ function loadEngine(){const src=fs.readFileSync(HTML,'utf8').match(/<script id="
 const E=loadEngine();
 const SPEED=parseFloat(process.env.SEAK_SPEED||'1');// e.g. 0.03 for tests (scales day length, action time, cooldowns)
 const server=http.createServer((req,res)=>{if(req.url==='/'||req.url.startsWith('/index.html')||req.url.startsWith('/?')){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});fs.createReadStream(HTML).pipe(res);}
- else if(req.url==='/health'){res.end('ok');}
- else if(/^\/assets\/furniture\/[a-z0-9_-]+\.(png|json)$/.test(req.url.split('?')[0])){const f=path.join(__dirname,req.url.split('?')[0]);fs.readFile(f,(e,d)=>{if(e){res.writeHead(404);res.end('not found');return;}res.writeHead(200,{'Content-Type':f.endsWith('.png')?'image/png':'application/json','Cache-Control':'public, max-age=86400'});res.end(d);});}else{res.writeHead(404);res.end('not found');}});
+ else if(req.url==='/health'){res.end('ok');}else{res.writeHead(404);res.end('not found');}});
 const wss=new WebSocketServer({server});const rooms=new Map();let nextId=1;
 function code(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ';let c;do{c=Array.from({length:4},()=>A[Math.floor(Math.random()*A.length)]).join('');}while(rooms.has(c));return c;}
 function broadcast(room){const msg=JSON.stringify({t:'state',state:room.st,now:Date.now()});room.lastRev=room.st.rev;for(const c of room.clients)if(c.readyState===1)c.send(msg);}

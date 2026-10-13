@@ -832,26 +832,7 @@ function furnSprite(kind,col){const tw=iso.tw,th=iso.th,DPR=devicePixelRatio||1,
    shadow(.08,.25,.92,.78);box(.08,.28,.92,.75,0,1.0,'#c9a77a');for(let i=0;i<3;i++){const z=.12+i*.3;sface(.1,.9,.75,z,z+.22,'#f3e6c9');for(let j=0;j<5;j++)sface(.13+j*.155,.25+j*.155,.75,z+.02,z+.16,[col,shade(col,.8),'#ff6fae','#4aa8ff','#ffd34a'][(i+j)%5]);}box(.08,.28,.92,.75,.98,1.02,'#b08a5a');}
   else box(.15,.15,.85,.85,0,.3,col);
   return{cv:c,W:W0,H:H0,Hm};});}
-// ---- tropical furniture art (assets/furniture/*.png). Missing/failed images fall back to the code-drawn sprites ----
-// per kind: [image, width as a multiple of the tile diamond width, lift (in tile heights), screen tint for arcade variants]
-const FART_MAP={bed:['bed',1.2],couch:['couch',1.15],desk:['desk',1.05],kitchen:['kitchen',1.15],plant:['plant',.62],lamp:['lamp',.42],console:['console',1.1],cafe:['cafe',1.2],garden:['garden',1.25],
- arcade:['arcade',.62],arcpong:['arcade',.62,0,'#3ef0ff'],arcblock:['arcade',.62,0,'#ff8a3d'],arcchomp:['arcade',.62,0,'#ffd23f'],
- 'pub:1':['arcade',.62,0,'#3ef0ff'],'pub:2':['arcade',.62,0,'#ff8a3d'],'pub:3':['arcade',.62,0,'#ffd23f'],'pub:A':['arcade',.62],
- 'pub:C':['cafe',1.2],'pub:t':['booth',1.2],'pub:W':['desk',1.05],'pub:K':['schooldesk',.95],'pub:E':['desk',1.05],'pub:p':['plant',.62],
- 'pub:R':['shelf',.9],'pub:F':['shelf',.9],'pub:G':['shelf',.9],'pub:U':['shelf',.9],'pub:M':['shelf',.9],'pub:P':['shelf',.9]};
-const FART={};
-function fartImg(n){let a=FART[n];if(a)return a;a=FART[n]={img:new Image(),ok:false,bad:false,tint:{}};a.img.onload=()=>{a.ok=a.img.naturalWidth>0;};a.img.onerror=()=>{a.bad=true;};a.img.src='assets/furniture/'+n+'.png';return a;}
-Object.values(FART_MAP).forEach(m=>fartImg(m[0]));
-// home cabinet variants: the arcade sprite with its body colour-washed toward the cabinet's screen colour (cached per colour)
-function fartTinted(a,tc){if(!tc)return a.img;let c=a.tint[tc];if(c)return c;c=document.createElement('canvas');c.width=a.img.naturalWidth;c.height=a.img.naturalHeight;const g=c.getContext('2d');g.drawImage(a.img,0,0);
- g.globalCompositeOperation='source-atop';g.globalAlpha=.32;g.fillStyle=tc;g.fillRect(0,0,c.width,c.height);g.globalAlpha=1;g.globalCompositeOperation='source-over';return a.tint[tc]=c;}
-window.__seakArt={map:FART_MAP,state:()=>Object.fromEntries(Object.entries(FART).map(([k,v])=>[k,v.ok?'ok':v.bad?'failed':'loading']))};
-// draws the art for a furniture kind if loaded; returns false so the caller can fall back
-function drawFurnArt(kind,x,y,alpha,r,bad){const m=FART_MAP[kind];if(!m)return false;const a=FART[m[0]];if(!a||!a.ok)return false;
- const im=fartTinted(a,m[3]),w=2*iso.tw*m[1],h=w*im.height/im.width,c=ip(x+.5,y+.5),bot=ip(x+1,y+1).y+iso.th*(.12-(m[2]||0));
- ctx.save();if(alpha!=null)ctx.globalAlpha=alpha;ctx.translate(Math.round(c.x),0);if(r&1)ctx.scale(-1,1);ctx.drawImage(im,-w/2,bot-h,w,h);
- if(bad){ctx.globalCompositeOperation='source-atop';}ctx.restore();return true;}
-function drawFurn(kind,col,x,y,alpha,r){if(drawFurnArt(kind,x,y,alpha,r))return;const S=furnSprite(kind,col),o=ip(x,y);if(alpha!=null)ctx.globalAlpha=alpha;if(r&1){ctx.save();ctx.translate(Math.round(o.x),0);ctx.scale(-1,1);ctx.drawImage(S.cv,-iso.tw-1,Math.round(o.y-S.Hm-1),S.W,S.H);ctx.restore();}else ctx.drawImage(S.cv,Math.round(o.x-iso.tw-1),Math.round(o.y-S.Hm-1),S.W,S.H);
+function drawFurn(kind,col,x,y,alpha,r){const S=furnSprite(kind,col),o=ip(x,y);if(alpha!=null)ctx.globalAlpha=alpha;if(r&1){ctx.save();ctx.translate(Math.round(o.x),0);ctx.scale(-1,1);ctx.drawImage(S.cv,-iso.tw-1,Math.round(o.y-S.Hm-1),S.W,S.H);ctx.restore();}else ctx.drawImage(S.cv,Math.round(o.x-iso.tw-1),Math.round(o.y-S.Hm-1),S.W,S.H);
  if(r>=2&&alpha==null){const q=ip(x+.5,y+.5);ctx.fillStyle='#0000001a';ctx.beginPath();ctx.ellipse(q.x,q.y+iso.th*.35,iso.tw*.3,iso.th*.18,0,0,7);ctx.fill();}ctx.globalAlpha=1;}
 function onScreen(x,y,m){const q=ip(x+.5,y+.5);return q.x>-m&&q.x<W+m&&q.y>-m&&q.y<H+m*2;}
 function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('stage').clientWidth)>1))resize();if(!st||!W)return;const t=Date.now(),p=st.players[me];if(!p)return;const map=p.pos.map,isTown=map==='town',MS=E.mapSize(map,st),MW=MS.w,MH=MS.h;
