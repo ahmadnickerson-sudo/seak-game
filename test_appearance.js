@@ -11,11 +11,11 @@ function client(){const ws=new WebSocket('ws://127.0.0.1:'+PORT);const c={ws,st:
  a.ws.send(JSON.stringify({t:'bot'}));await sleep(600);
  const S=a.st,SB=b.st;ok(S&&SB&&S.order.length===4,'4 players in room');
  const pa=S.players[a.id],pb=S.players[b.id],pc=S.players[c.id],bot=S.order.map(i=>S.players[i]).find(p=>p.ai);
- ok(JSON.stringify(pa.look)===JSON.stringify(want),'host look kept exactly '+JSON.stringify(pa.look));
+ ok(Object.keys(want).every(k=>pa.look[k]===want[k]),'host look kept exactly '+JSON.stringify(pa.look));
  ok(pb.look.hair!=='<img onerror=1>'&&E.LOOK.hair.includes(pb.look.hair)&&E.LOOK.skin.includes(pb.look.skin)&&pb.look.acc==='none'&&pb.look.outfit==='#1fbfbf'&&!('extra' in pb.look),'bogus look sanitized (valid fields kept, bad ones defaulted) '+JSON.stringify(pb.look));
  ok(pc.look&&Object.keys(pc.look).every(k=>E.LOOK[k].includes(pc.look[k])),'old client without look gets a valid default '+JSON.stringify(pc.look));
  ok(bot&&bot.look&&E.LOOK.hair.includes(bot.look.hair),'server AI bot has a look');
- ok(JSON.stringify(SB.players[a.id].look)===JSON.stringify(want)&&JSON.stringify(c.st.players[b.id].look)===JSON.stringify(pb.look),'every client sees the same looks');
+ ok(Object.keys(want).every(k=>SB.players[a.id].look[k]===want[k])&&JSON.stringify(SB.players[a.id].look)===JSON.stringify(pa.look)&&JSON.stringify(c.st.players[b.id].look)===JSON.stringify(pb.look),'every client sees the same looks');
  // engine: solo AI signatures distinct
  const st=E.createState('S');E.addPlayer(st,'me','Me',false,want);['Pixel','Juno','Byte'].forEach((n,i)=>E.addPlayer(st,'ai'+i,n+' (AI)',true));const L=['ai0','ai1','ai2'].map(i=>JSON.stringify(st.players[i].look));
  ok(new Set(L).size===3&&L[0]===JSON.stringify(E.AI_LOOKS.Pixel)&&L[2]===JSON.stringify(E.AI_LOOKS.Byte),'Pixel, Juno, Byte have their own signature looks');
