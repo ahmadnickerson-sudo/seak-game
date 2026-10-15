@@ -96,7 +96,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
 <h3>Movement</h3><ul><li><b>Arrow keys or WASD move the way you see on screen:</b> ↑/W = up the screen, ↓/S = down, ←/A = left, →/D = right.</li><li>Press two keys (e.g. ↑ + →) to go straight along the map's grid lines.</li><li>Hold <b>Shift</b> to run (about 1.8× faster, costs more Energy). On phones use the on-screen pad and 🏃 Run.</li></ul>
 <h3>Interact: E / Space</h3><ul><li>Press <b>E</b> or <b>Space</b> (or tap the button at the bottom right) to use whatever you stand next to: a building spot (bed, desk, counter, aisle, cabinet), your furniture, or another player.</li><li>Next to a player: E talks, or gives your selected 🎁 gift. Walk into a door to enter; in your home, press <b>R</b> to rotate furniture.</li></ul>
 <h3>Joining or starting a room</h3><ul><li><b>Create room</b>, then share the invite link (or the 4-letter code). Friends open it, type a name and press <b>Join</b>.</li><li>Only the <b>host</b> (the creator) can press <b>Start</b>; add 🤖 AI neighbors before starting. The top bar shows who started.</li><li>After the game starts, new people can't join. If you get disconnected, reopen the link and press <b>Rejoin</b> (same browser, or the same name).</li></ul>
-<h3>Energy and Mood</h3><ul><li><b>Energy</b> drops when you walk or run, work and overnight (−22/day). Restore it with Sleep (best in your own bed), eating and coffee.</li><li><b>Mood</b> drops overnight (−18/day) and slips when Energy is under 30. Restore it with hanging out, arcade games, movies and decor.</li><li>⚠️ A warning appears when either falls <b>below 60</b>.</li><li><b>Great Shift:</b> work with Energy <i>and</i> Mood ≥ 60 for bonus coins. Streaks raise it, and every 10th in a row doubles that shift's pay. Below 60 the streak resets.</li></ul>
+<h3>Energy and Mood</h3><ul><li><b>Energy</b> drops when you walk or run, work and overnight (−22/day). Restore it with Sleep (best in your own bed), eating and coffee.</li><li><b>Mood</b> drops overnight (−18/day) and slips when Energy is under 30. Restore it with an <b>🍦 ice cream</b> from the stand on the east side of the town square (4 coins, +6 Mood), hanging out, arcade games, movies and decor.</li><li>⚠️ A warning appears when either falls <b>below 60</b>.</li><li><b>Great Shift:</b> work with Energy <i>and</i> Mood ≥ 60 for bonus coins. Streaks raise it, and every 10th in a row doubles that shift's pay. Below 60 the streak resets.</li></ul>
 <h3>Day cycle</h3><ul><li>One day is <b>24 real minutes</b> (1 minute = 1 in-game hour); Day 1 starts at 07:00. The <b>⏳ timer</b> at the top shows time left in the day.</li><li>The week is <b>7 days</b> (Mon–Sun). Office is open Mon–Fri 9–17, School daily 8–15. Each night you get +10 coins.</li><li><b>Final score</b> = happiness + 10 per visit + 1 per 100 coins. Highest score wins.</li></ul>
 <button id="helpClose" style="width:100%;margin-top:10px;position:sticky;bottom:0">Got it (Esc)</button></div></div>
 <div id="results"><div class="card"><h2>🏆 Week over!</h2><div id="resBody"></div><button onclick="location.reload()">Play again</button></div></div>
@@ -105,7 +105,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
 (function(root){
 // ================= Seak shared engine (browser solo + server.js) =================
 const NEEDS=['energy','mood','social'];
-const ACTIONS={sleep:{e:'😴',label:'Sleep'},eat:{e:'🍳',label:'Eat/Cook'},hang:{e:'🎉',label:'Hang out'},work:{e:'💼',label:'Work'},play:{e:'🎮',label:'Play'},visit:{e:'🚪',label:'Visit'},talk:{e:'💬',label:'Talk'},shop:{e:'🛒',label:'Shop'},checkout:{e:'🧾',label:'Checkout'},gift:{e:'🎁',label:'Give gift'},study:{e:'📚',label:'Study'},};
+const ACTIONS={sleep:{e:'😴',label:'Sleep'},eat:{e:'🍳',label:'Eat/Cook'},hang:{e:'🎉',label:'Hang out'},work:{e:'💼',label:'Work'},play:{e:'🎮',label:'Play'},visit:{e:'🚪',label:'Visit'},talk:{e:'💬',label:'Talk'},shop:{e:'🛒',label:'Shop'},checkout:{e:'🧾',label:'Checkout'},icecream:{e:'🍦',label:'Buy ice cream (4 🪙)'},gift:{e:'🎁',label:'Give gift'},study:{e:'📚',label:'Study'},};
 const ITEMS={bed:{n:'Bed',e:'🛏️',c:30,col:'#c9b6ff',a:'sleep',tip:'Sleep'},kitchen:{n:'Kitchen',e:'🍳',c:40,col:'#ffd29e',a:'eat',tip:'Cook +14 Energy'},couch:{n:'Couch',e:'🛋️',c:25,col:'#ff9ecb',a:'hang',tip:'Hang out +10'},desk:{n:'Desk',e:'🖥️',c:30,col:'#8ecbff',a:'work',tip:'Work +22 coins'},plant:{n:'Plant',e:'🪴',c:10,col:'#9ff0c8',a:null,tip:'Mood +2/day, decor'},lamp:{n:'Lamp',e:'💡',c:10,col:'#ffe48a',a:null,tip:'Mood +2/day, decor'},console:{n:'Game console',e:'🕹️',c:35,col:'#b0f0ff',a:'play',tip:'Play +10'},cafe:{n:'Café counter',e:'☕',c:50,col:'#e8c4a0',a:'hang',tip:'Hang out +12, +5 Energy & Mood, decor'},arcade:{n:'Arcade machine',e:'👾',c:45,col:'#ffb3b3',a:'play',tip:'Play +13, pick any game'},arcpong:{n:'Pong cabinet',e:'🏓',c:45,col:'#6f5cff',a:'play',game:'pong',tip:'Play Pong +13 (vs CPU / 2P)'},arcblock:{n:'Blockfall cabinet',e:'🧱',c:45,col:'#ff8a3d',a:'play',game:'blockfall',tip:'Play Blockfall +13'},arcchomp:{n:'Chomp Maze cabinet',e:'🟡',c:45,col:'#2fbf7f',a:'play',game:'chomp',tip:'Play Chomp Maze +13'},garden:{n:'Garden patch',e:'🌻',c:15,col:'#c8f59f',a:null,tip:'Mood +3/day, decor'}};
 const DECOR={plant:2,lamp:2,garden:3,cafe:1};
 const COLORS=['#ff6fae','#4aa8ff','#3fd08b','#ffb340','#a77bff','#ff7a5c','#1fbfbf','#9acd32'];
@@ -128,6 +128,7 @@ const HOUSE_DEF=[[8,1],[24,1],[44,1],[8,0],[24,0],[44,0],[58,1],[58,0]];
 const PLAZA_GRASS=[[21,27,3,2],[43,27,3,2],[21,32,4,2],[42,32,4,2],[30,27,2,2],[30,32,2,2],[36,27,2,2],[36,32,2,2],[39,30,3,2]];
 const PLAZA_TREES=[[22,28],[44,28],[22,32],[44,32],[31,28],[31,32],[36,28],[36,32]];
 const COIN_GIFT_CAP=30;
+const ICE_COST=4,ICE_MOOD=6;
 const SCHOOL_LOT={x:18,y:12,w:13,h:7},GRAD_AT=5,OFFICE_PAY=1.05,STREAK_BONUS_EVERY=10,CAFE_BOOST=5,GRAD_PAY=1.6;
 const ARCADE_LOT={x:50,y:26,w:13,h:8};
 const MART_LOT={x:55,y:12,w:9,h:7};
@@ -176,6 +177,8 @@ function buildTown(){const g=[];for(let y=0;y<TH;y++){g.push([]);for(let x=0;x<T
  for(let y=30;y<=31;y++)for(let x=27;x<=28;x++)set(x,y,'F');
  for(const [gx,gy,gw,gh] of PLAZA_GRASS)for(let y=gy;y<gy+gh;y++)for(let x=gx;x<gx+gw;x++)if(g[y][x]===',')set(x,y,'.');
  PLAZA_TREES.forEach(([x,y])=>set(x,y,'T'));
+ // ice cream stand: solid 2x1 counter on the east grass patch; serve from the tiles directly north/south of it (kept clear)
+ [[40,30],[41,30]].forEach(([x,y])=>{set(x,y,'I');spots.push({x,y,action:'icecream',place:'icecream'});});
  [[24,28],[27,28],[39,28],[42,28],[25,32]].forEach(([x,y])=>{set(x,y,'S');spots.push({x,y,action:'hang',place:'plaza',e:'🪑'});});
  // decor trees: seeded scatter, only where all 8 neighbours are plain grass (so trees never wall anything in) and outside open lots
  let r=12345;const rnd=()=>((r=(r*1103515245+12345)&0x7fffffff)/0x7fffffff);
@@ -267,7 +270,7 @@ function visit(st,p,o,now){const key=o.id;if(p.visited[key]===st.day){log(st,`�
 // spots adjacent to the player
 function actionsAt(st,id){const p=st.players[id];if(!p)return[];const out=[],seen=new Set();
  for(const k in DIRS){const x=p.pos.x+DIRS[k][0],y=p.pos.y+DIRS[k][1];
-  if(p.pos.map==='town'){const s=TOWN.spots.find(s=>s.x===x&&s.y===y);if(s&&!seen.has(s.action)){seen.add(s.action);out.push({action:s.action,place:s.place,src:s.place==='diner'?'Diner counter':s.place==='office'?'Office desk':s.place==='school'?'School desk':s.action==='play'?'Plaza arcade':'Plaza bench',x,y});}}
+  if(p.pos.map==='town'){const s=TOWN.spots.find(s=>s.x===x&&s.y===y);if(s&&!seen.has(s.action)){seen.add(s.action);out.push({action:s.action,place:s.place,src:s.place==='diner'?'Diner counter':s.place==='office'?'Office desk':s.place==='school'?'School desk':s.place==='icecream'?'Ice cream stand':s.action==='play'?'Plaza arcade':'Plaza bench',x,y});}}
   else if(p.pos.map[0]==='b'){const c=tileAt(st,p.pos.map,x,y),sp=PUB_SPOT[c];const key=sp&&(sp.action==='shop'?'shop'+c:sp.game?'play'+sp.game:sp.action);if(sp&&!seen.has(key)){seen.add(key);out.push({action:sp.action,place:p.pos.map.slice(2),src:sp.src,game:sp.game,aisle:sp.action==='shop'?c:undefined,x,y});}}
   else{const it=itemAt(st,p.pos.map,x,y);if(it&&ITEMS[it.t].a&&!seen.has(ITEMS[it.t].a+it.t)){seen.add(ITEMS[it.t].a+it.t);out.push({action:ITEMS[it.t].a,place:p.pos.map,item:it.t,r:it.r|0,src:ITEMS[it.t].n,game:ITEMS[it.t].game||(it.t==='arcade'?'pick':undefined),x,y});}}}
  // chat: talk to any adjacent player or agent
@@ -296,7 +299,9 @@ function cdLeft(st,p,a,now){return Math.max(0,(p.cd[a]||0)-now);}
 function doAction(st,id,action,now,arg){st.now=now;const p=st.players[id];if(!p||st.phase!=='day')return'Not now';if(p.busy)return'Your agent is busy';
  if(action==='shop'){const o=actionsAt(st,id).filter(o=>o.action==='shop');if(!o.length)return'Walk up to an aisle';const it=catItem(arg);if(!it)return'Pick an item from the Seak Mart panel';
   if(!o.some(a=>a.aisle===it.aisle))return`That's in the ${AISLES[it.aisle]} aisle`;if(p.cart.length>=6)return'Cart is full (6 items)';const why=premiumBlock(st,p,it,p.cart);if(why)return why;p.cart.push(arg);st.rev++;return'ok';}
-  if(action==='unshop'){const key=String(arg||'');const i=p.cart.lastIndexOf(key);if(i<0)return'Item is not in your cart';p.cart.splice(i,1);st.rev++;return'ok';}
+  if(action==='icecream'){if(!actionsAt(st,id).some(o=>o.action==='icecream'))return'Walk up to the ice cream stand';if(cdLeft(st,p,'icecream',now))return'One cone at a time!';if(p.coins<ICE_COST)return`An ice cream costs ${ICE_COST} coins`;
+  p.coins-=ICE_COST;p.needs.mood=clamp(p.needs.mood+ICE_MOOD);p.cd.icecream=now+st.dur.cooldown;setFx(st,p,'five',1500,now);p.say={text:'🍦 Yum!',until:now+st.dur.say};st.rev++;return'ok';}
+ if(action==='unshop'){const key=String(arg||'');const i=p.cart.lastIndexOf(key);if(i<0)return'Item is not in your cart';p.cart.splice(i,1);st.rev++;return'ok';}
   if(action==='unshopall'){const key=String(arg||'');if(!catItem(key))return'Invalid cart item';const count=p.cart.filter(k=>k===key).length;if(!count)return'Item is not in your cart';p.cart=p.cart.filter(k=>k!==key);st.rev++;return'ok';}
   if(action==='clearcart'){p.cart=[];st.rev++;return'ok';}
  if(action==='checkout'){if(!actionsAt(st,id).some(o=>o.action==='checkout'))return'Walk up to the checkout';if(!p.cart.length)return'Your cart is empty';
@@ -1008,6 +1013,12 @@ function grassTufts(x,y){const k=(x*13+y*7)%5;if(k===0){const q=ip(x+.5,y+.5);em
 // outer ring roads: dashed centre line (between the two lanes) on the far west/east roads
 function roadMark(x,y,MW){const u=x<=2?2:MW-2;if(x!==u||y%2)return;const a=ip(u,y+.2),b=ip(u,y+.8);ctx.strokeStyle='#e0b94a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
 function benchDraw(xx,yy){const q=ip(xx+.5,yy+.5);ctx.beginPath();ctx.ellipse(q.x,q.y+2,T*.42,T*.16,0,0,7);ctx.fillStyle='#0002';ctx.fill();isoBlock(xx+.12,yy+.3,.12,.4,T*.12,'#7a5230');isoBlock(xx+.76,yy+.3,.12,.4,T*.12,'#7a5230');isoBlock(xx+.08,yy+.28,.84,.44,T*.2,'#b98a5a');isoBlock(xx+.08,yy+.28,.84,.1,T*.45,'#a77a4c');}
+function iceStandDraw(x0,y0){const q=ip(x0+1,y0+.5);ctx.beginPath();ctx.ellipse(q.x,q.y+3,T*1.25,T*.5,0,0,7);ctx.fillStyle='#0002';ctx.fill();
+ isoBlock(x0+.05,y0+.15,1.9,.7,T*.5,'#f4e3c8');isoBlock(x0+.05,y0+.12,1.9,.76,T*.1,'#8a5a34');// counter + wood top
+ for(let i=0;i<4;i++)isoBlock(x0+.1+i*.45,y0+.2,.3,.2,T*.1,['#ff9ec7','#fff3a8','#9fe3c8','#d9b3ff'][i]);// tubs
+ isoBlock(x0+.04,y0+.14,.08,.08,T*1.05,'#8a5a34');isoBlock(x0+1.88,y0+.14,.08,.08,T*1.05,'#8a5a34');isoBlock(x0+.04,y0+.78,.08,.08,T*1.05,'#8a5a34');isoBlock(x0+1.88,y0+.78,.08,.08,T*1.05,'#8a5a34');// posts
+ {const Z=T*1.05,Z2=T*.85;for(let i=0;i<8;i++){const xa=x0+i*.25,xb=xa+.25,P=(x,y,z)=>{const r=ip(x,y);return[r.x,r.y-z];};const pts=[P(xa,y0-.05,Z),P(xb,y0-.05,Z),P(xb,y0+1.1,Z2),P(xa,y0+1.1,Z2)];ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=i%2?'#ffffff':'#ff5c8a';ctx.fill();ctx.strokeStyle='#0002';ctx.lineWidth=1;ctx.stroke();}}// striped awning
+ const c=ip(x0+1,y0+.5);emoji('🍦',c.x,c.y-T*1.55,T*.8);}
 function fountainDraw(x0,y0){const t=Date.now()/1000;const c=ip(x0+1,y0+1);const R=T*1.0,r=R*.5;
  const ell=(rx,ry,yy,col,st)=>{ctx.beginPath();ctx.ellipse(c.x,c.y+yy,rx,ry,0,0,7);ctx.fillStyle=col;ctx.fill();if(st){ctx.strokeStyle=st;ctx.lineWidth=1.5;ctx.stroke();}};
  ell(R*1.02,R*.52,3,'#0002');
@@ -1053,6 +1064,7 @@ function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('
  if(isTown){for(let yy=0;yy<MH;yy++)for(let xx=0;xx<MW;xx++){if(!onScreen(xx,yy,M))continue;const c=E.tileAt(st,'town',xx,yy);
    if(c==='T')add(xx+yy,()=>{const q=ip(xx+.5,yy+.5);ctx.beginPath();ctx.ellipse(q.x,q.y+2,T*.35,T*.16,0,0,7);ctx.fillStyle='#0002';ctx.fill();emoji('🌳',q.x,q.y-T*.45,T*.95);});
    else if(c==='S')add(xx+yy,()=>benchDraw(xx,yy));
+   else if(c==='I'){if(E.tileAt(st,'town',xx-1,yy)!=='I')add(xx+yy+1,()=>iceStandDraw(xx,yy));}
    else if(c==='F'){if(E.tileAt(st,'town',xx-1,yy)!=='F'&&E.tileAt(st,'town',xx,yy-1)!=='F')add(xx+yy+1.5,()=>fountainDraw(xx,yy));}
    else if('CWAK'.includes(c))add(xx+yy,()=>{const col={C:'#ffc28a',W:'#a9d0ff',S:'#ffb3d9',A:'#d6b3ff',F:'#9fdcff',K:'#c4ecb0'}[c],em={C:'🍳',W:'🖥️',S:'🪑',A:'👾',F:'⛲',K:'📚'}[c],q=ip(xx+.5,yy+.5);isoBlock(xx+.14,yy+.14,.72,.72,T*.3,col);emoji(em,q.x,q.y-T*.3,T*.45);});}
   E.TOWN.buildings.forEach(b=>{const sty=bStyle(b),z=(sty.wall+(sty.roof||0)+(sty.extra||0)+.55)*T;addSprite(add,b,makeSprite('b:'+b.id+':'+T,b,sty));
@@ -1124,6 +1136,7 @@ if(/auto/.test(location.hash)){$('nameIn').value='Ahmad';$('soloBtn').click();co
  st.order.slice(1).forEach(id=>{st.players[id].coins=200;['kitchen','plant','couch'].forEach(t=>{st.players[id].inv.push(t);E.buy(st,id,t,null,null);});});
  if(/mart/.test(location.hash)){p.pos={map:'b:mart',x:3,y:3,dir:'up'};p.hat='🎩';p.cart=['coffee','f:couch'];st.players.ai0.pos={map:'b:mart',x:7,y:5,dir:'up'};st.players.ai0.hat='👑';st.players.ai0.ai=false;st.players.ai0.say={text:'Ooh, new hats! 👑',until:9e15};st.players.ai1.pos={map:'b:mart',x:6,y:7,dir:'up'};st.players.ai1.ai=false;}
  else if(/results/.test(location.hash)){st.order.forEach((id,i)=>{const q=st.players[id];q.coins=40+i*37;q.visits=3-i%3;q.star=i===1;});st.day=7;st.dayEnd=0;}
+ else if(/ice/.test(location.hash)){p.pos={map:'town',x:40,y:31,dir:'up'};st.players.ai0.pos={map:'town',x:42,y:31,dir:'left'};st.players.ai0.ai=false;}
  else if(/diner/.test(location.hash)){p.pos={map:'b:diner',x:2,y:3,dir:'up'};st.players.ai0.pos={map:'b:diner',x:4,y:3,dir:'up'};st.players.ai1.pos={map:'b:diner',x:6,y:3,dir:'up'};st.players.ai0.ai=st.players.ai1.ai=false;st.players.ai0.say={text:'This diner is packed today! 🍔',until:9e15};}
  else if(/home/.test(location.hash)){p.pos={map:'h0',x:4,y:5,dir:'up'};st.players.ai0.pos={map:'h0',x:6,y:5,dir:'up'};st.players.ai0.ai=false;selItem='cafe';}
  else{p.pos={map:'town',x:11,y:17,dir:'up'};st.players.ai0.pos={map:'town',x:13,y:17,dir:'up'};st.players.ai0.say={text:'Hi Ahmad! Lovely day in Seak 🌸',until:9e15};st.players.ai0.ai=false;}
