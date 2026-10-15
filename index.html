@@ -245,6 +245,11 @@ function step(st,id,dx,dy,now,run){st.now=now;const p=st.players[id];if(!p||st.p
  if(map[0]==='b'&&t==='D'){const b=TOWN.buildings.find(b=>'b:'+b.id===map);if(p.cart&&p.cart.length){log(st,`🛒 ${p.name} left Seak Mart without paying, so the cart went back on the shelves.`);p.cart=[];}p.pos={map:'town',x:b.exit.x,y:b.exit.y,dir:b.exit.y<b.door.y?'up':'down'};st.rev++;return true;}
  if(map!=='town'&&t==='D'){const h=TOWN.houses[+map.slice(1)];p.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:h.exit.y<h.door.y?'up':'down'};st.rev++;return true;}
  p.pos.x=nx;p.pos.y=ny;return true;}
+// Candidate grid steps for a held direction. A single screen-direction key is a diagonal; if either axis step lands on a door/doorway tile
+// (and is walkable) that one is tried FIRST, so you walk through the door instead of sliding past it along the wall. Then the diagonal, then the axes.
+function stepTries(st,id,hd){const p=st.players[id];if(!p||!hd)return[];if(hd[0]===0||hd[1]===0)return[hd];const map=p.pos.map;
+ const isDoor=d=>{const x=p.pos.x+d[0],y=p.pos.y+d[1],t=tileAt(st,map,x,y);return(t==='D'||t==='P')&&walkable(st,map,x,y);};
+ const ax=[[hd[0],0],[0,hd[1]]],doors=ax.filter(isDoor);return[...doors,hd,...ax.filter(d=>!doors.includes(d))];}
 function visit(st,p,o,now){const key=o.id;if(p.visited[key]===st.day){log(st,`🚪 ${p.name} dropped by ${o.name}'s again (visits count once per day).`);return;}
  p.visited[key]=st.day;o.visits++;let vs=8,os=5;const decor=Object.keys(DECOR).reduce((s,t)=>s+(has(o,t)?DECOR[t]:0),0);
  const present=st.order.filter(x=>x!==p.id&&x!==o.id&&st.players[x].pos.map===p.pos.map&&st.players[x].visited[key]===st.day);
@@ -430,7 +435,7 @@ function scores(st){const rows=st.order.map(id=>{const p=st.players[id],h=Math.r
  const top=k=>rows.slice().sort((a,b)=>b[k]-a[k])[0];return{rows,winner:rows[0]&&rows[0].name,bestHost:top('visits').name,mostRested:top('energy').name,architect:top('built').name,richest:top('coins').name};}
 function chat(st,id,text,now){const p=st.players[id];if(!p||st.phase==='results')return false;text=String(text||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,80);if(!text||(p.lastSay&&now-p.lastSay<1000))return false;p.lastSay=now;say(st,p,text,now);log(st,`💬 ${p.name}: “${text}”`);return true;}
 function positions(st){const o={};for(const id of st.order){const q=st.players[id].pos;o[id]=[q.map,q.x,q.y,q.dir];}return o;}
-const E={ARC_GAMES,HOME_TIERS,VILLA_LOT,homeInfo,onRoadFor,premiumBlock,HOURS,clockMin,clockText,isNight,isOpen,opensText,WEEKDAYS,COIN_GIFT_CAP,chat,MAX_PLAYERS,adjLots,CAT,AISLES,catItem,pubInfo,exitDoor,PUB_LAYOUT,PUB_SPOT,PUB_DECOR,PUB_W,PUB_H,mapSize,doorOf,GRAD_AT,GRAD_PAY,nextStep:bfs,NEEDS,ACTIONS,ITEMS,COLORS,DAYS,VISIT_PTS,DUR,TOWN,TW,TH,IW,IH,IDOOR,ISPAWN,createState,addPlayer,removePlayer,startGame,step,actionsAt,doAction,buy,canPlace,canMove,moveItem,itemInUse,tick,scores,positions,tileAt,walkable,itemAt,ownerOfMap,moodE,has,cdLeft};
+const E={ARC_GAMES,HOME_TIERS,VILLA_LOT,homeInfo,onRoadFor,premiumBlock,HOURS,clockMin,clockText,isNight,isOpen,opensText,WEEKDAYS,COIN_GIFT_CAP,chat,MAX_PLAYERS,adjLots,CAT,AISLES,catItem,pubInfo,exitDoor,PUB_LAYOUT,PUB_SPOT,PUB_DECOR,PUB_W,PUB_H,mapSize,doorOf,GRAD_AT,GRAD_PAY,nextStep:bfs,stepTries,NEEDS,ACTIONS,ITEMS,COLORS,DAYS,VISIT_PTS,DUR,TOWN,TW,TH,IW,IH,IDOOR,ISPAWN,createState,addPlayer,removePlayer,startGame,step,actionsAt,doAction,buy,canPlace,canMove,moveItem,itemInUse,tick,scores,positions,tileAt,walkable,itemAt,ownerOfMap,moodE,has,cdLeft};
 Object.assign(E,{rotateItem,LOOK,AI_LOOKS,sanitizeLook,defaultLook,PERSONA,leaderId,earnedLook,TRIM_AT});if(typeof module!=='undefined'&&module.exports)module.exports=E;root.SeakEngine=E;
 })(typeof globalThis!=='undefined'?globalThis:this);
 </script>
@@ -554,7 +559,7 @@ let chordAt=0;// a brief grace after a key press so two keys pressed together re
 function tryStep(){if(!st||!held||st.phase!=='day')return;const t=Date.now();if(t-chordAt<45)return;const p=st.players[me];if(!p)return;const run=(shiftDown||runToggle)&&p.needs.energy>=10;const diag=held[0]!==0&&held[1]!==0;
  const car=!!p.car&&E.onRoadFor(st,p,held[0],held[1]);const ms=(car?(run?45:60):(run?RUN_MS:WALK_MS))*(diag?1.4:1);if(t-lastLocalStep<ms)return;id_ms=ms;
  // a diagonal (single screen-direction key) falls back to sliding along either axis when a wall or door blocks it
- const tries=diag?[held,[held[0],0],[0,held[1]]]:[held];let ok=false,used=held;const before=p.pos.map;
+ const tries=diag?E.stepTries(st,me,held):[held];let ok=false,used=held;const before=p.pos.map;
  for(const d of tries){const tgt={x:p.pos.x+d[0],y:p.pos.y+d[1]};ok=E.step(st,me,d[0],d[1],now(),run);used=d;
   if(!ok&&p.pos.map==='town'){const b=E.TOWN.buildings.find(b=>b.door.x===tgt.x&&b.door.y===tgt.y);if(b&&!E.isOpen(st,b.id,now())&&Date.now()-msgT>1500)flash(`🔒 ${b.name} is closed — ${E.opensText(st,b.id)}`);}
   if(ok)break;}
