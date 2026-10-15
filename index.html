@@ -34,6 +34,18 @@ kbd{background:var(--pink);border-radius:5px;padding:0 5px;font-size:12px}
 #results .card{max-width:480px;width:92%;max-height:92vh;overflow:auto}.small{font-size:12px;opacity:.75}
 @media(max-width:800px){#game{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}#actbar{max-width:55%}}
 @media(hover:hover) and (pointer:fine) and (min-width:801px){#dpad{opacity:.55}}
+#warnBar{position:absolute;top:84px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;gap:4px;align-items:center;pointer-events:none;max-width:92%;z-index:3}
+#warnBar div{background:#fff1c9;border:3px solid #ff9b1a;color:#7a3b00;border-radius:12px;padding:5px 12px;font-weight:800;font-size:14px;box-shadow:0 3px 0 #0002}#warnBar div.crit{background:#ffd9df;border-color:#e0334f;color:#8a0f25}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-120px);background:#fff3b0;border:3px solid #ff8a00;color:#5a2d00;padding:10px 18px;border-radius:16px;font-weight:800;font-size:16px;z-index:12;transition:transform .35s;pointer-events:none;box-shadow:0 5px 0 #0003}#toast.on{transform:translateX(-50%) translateY(0)}
+#giftRow.on{background:#fff3b0;border:3px solid #ff8a00;border-radius:12px;padding:6px 8px;font-weight:800;font-size:13px;opacity:1;animation:giftpulse 1.4s infinite}
+@keyframes giftpulse{50%{box-shadow:0 0 0 5px #ff8a0055}}
+#actbar button[data-a=gift]{background:#fff3b0;border-color:#ff8a00;font-weight:900;animation:giftpulse 1.4s infinite}
+#keyGuide{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#fffc;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:700;pointer-events:none;white-space:nowrap}
+#helpBtn2{position:absolute;top:44px;right:8px;z-index:4;padding:4px 10px;background:#fffd}
+#help{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:20}
+#help .card{max-width:560px;width:94%;max-height:90vh;overflow:auto;text-align:left}#help h2{margin:0 0 6px}#help h3{margin:12px 0 2px;font-size:16px;color:#c0307a}#help ul{margin:2px 0;padding-left:20px;font-size:14px}#help li{margin:2px 0}
+.aisleH{grid-column:1/-1;font-weight:800;font-size:13px;color:#7a3b9a;margin-top:4px}
+@media(max-width:800px){#keyGuide{display:none}}
 </style>
 <script>
 // Show any load/runtime error as visible text so the page is never silently blank.
@@ -50,32 +62,43 @@ window.addEventListener('pageshow',function(e){if(e.persisted)location.reload();
   <h1>Seak</h1><p>A cozy life-sim where you and your AI agent seek your dream life together.</p>
   <div class="card"><input id="nameIn" placeholder="Your name" maxlength="12"></div>
   <div class="card" id="lookCard"><div class="row" style="gap:10px;align-items:flex-start"><canvas id="lookPrev" width="96" height="120" style="width:96px;height:120px;flex:none;background:#f6efff;border-radius:12px"></canvas><div id="lookOpts" style="flex:1;text-align:left;font-size:13px"></div></div></div>
-  <div class="card" id="inviteHead" style="display:none"><b style="font-size:20px">🎟️ Join room <span id="inviteCode"></span></b><div class="small">Type your name above and press Join.</div></div>
+  <div class="card" id="inviteHead" style="display:none"><b style="font-size:20px">🎟️ Join room <span id="inviteCode"></span></b><div class="small" id="inviteStatus">Type your name above and press Join.</div><div class="row" style="margin-top:8px" id="inviteBtns"><button id="inviteNewBtn" style="display:none">Start a new room</button></div></div>
+  <div class="card" id="resumeCard" style="display:none"><b>↩️ Game in progress</b><div class="small" id="resumeTxt"></div><div class="row" style="margin-top:8px"><button id="resumeBtn">Rejoin</button><button id="resumeForget">Forget</button></div></div>
   <div class="card" id="soloCard"><button id="soloBtn" style="width:100%">🏡 Play Solo (with AI neighbors)</button></div>
+  <div class="card"><button id="helpBtn" style="width:100%">❓ How to play</button></div>
   <div class="card" id="mpCard"><b>Multiplayer</b> <span class="small">(1–8 players, needs the server)</span>
     <div class="row" style="margin-top:8px" id="createRow"><button id="createBtn">Create room</button></div>
     <div class="row" style="margin-top:8px"><input id="codeIn" placeholder="CODE" maxlength="4" style="text-transform:uppercase"><button id="joinBtn">Join</button></div>
     <div id="mpMsg" class="small"></div></div>
   <details class="card" style="text-align:left"><summary><b>How to play</b></summary>
-  <p><b>Timing:</b> Work and Sleep take 20s, School 15s, everything else 10s or less, then a short cooldown (≤15s); arcade games have no cooldown, so you can replay right away. <b>Looks you earn:</b> 🎓 cap after graduating, a tie + badge at a 10-shift streak, silver/gold outfit trim at 100/250 coins, and a 👑 glow for the current score leader. AI neighbors have personalities: Pixel 💼 hard worker, Juno 💬 social butterfly, Byte 🎮 gamer. <b>Arcade:</b> the walk-in Arcade (door on the street side) has Pong, Blockfall and Chomp Maze cabinets; Seak Mart also sells each as home furniture (🏓🧱🟡, 45🪙), and the classic 👾 Arcade machine lets you pick any game. <b>Pong:</b> vs CPU, 👥 Local 2P on one device (bottom A/D, top ←/→, or touch your half of the screen), or online 🌐 Challenge another player who has Pong open. Sleep restores Energy <i>and</i> Mood; sleeping in your <b>own bed</b> makes you 😌 Well rested (+8 Energy, +6 Mood). Agents can't stand on the same tile (doors are always open, and you slip past if stuck for over a second). Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walking costs a little Energy (about 1 per 40 tiles), running costs 3× that, and you can't run below 10 Energy. Below 30 Energy your Mood slowly slips 😪. <b>Premium aisle</b> at Seak Mart: a ⌚ Watch (80🪙, shows exact time and when Office/School open) and a 🚗 Car (200🪙, parks at home, fast and Energy-free on roads). <b>Real Estate desk</b>: upgrade your Starter home to a Cozy House (150🪙) or Dream House (350🪙, +Mood when you sleep), or buy the one-of-a-kind 🏯 Hilltop Villa (500🪙) and move there. These can't be gifted. <b>Arcade mini-games:</b> walk up to a cabinet in the Arcade and press E. 🏓 Pong (two cabinets: if someone is at the other one you play each other, otherwise the CPU steps in after 5s), 🧱 Blockfall (falling blocks: ◀ ▶ move, ▲ rotate, ▼ soft drop, Space drop) and 🟡 Chomp Maze (eat the dots, dodge the ghosts). Better scores give up to +8 extra Mood. Esc stops and collects. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (one class per day; attend on 5 different days to graduate: Work then pays 60% more. School is open every day), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
+  <p><b>Timing:</b> Work and Sleep take 20s, School 15s, everything else 10s or less, then a short cooldown (≤15s); arcade games have no cooldown, so you can replay right away. <b>Looks you earn:</b> 🎓 cap after graduating, a tie + badge at a 10-shift streak, silver/gold outfit trim at 100/250 coins, and a 👑 glow for the current score leader. AI neighbors have personalities: Pixel 💼 hard worker, Juno 💬 social butterfly, Byte 🎮 gamer. <b>Arcade:</b> the walk-in Arcade (door on the street side) has Pong, Blockfall and Chomp Maze cabinets; Seak Mart also sells each as home furniture (🏓🧱🟡, 45🪙), and the classic 👾 Arcade machine lets you pick any game. <b>Pong:</b> vs CPU, 👥 Local 2P on one device (bottom A/D, top ←/→, or touch your half of the screen), or online 🌐 Challenge another player who has Pong open. Sleep restores Energy <i>and</i> Mood; sleeping in your <b>own bed</b> makes you 😌 Well rested (+8 Energy, +6 Mood). Agents can't stand on the same tile (doors are always open, and you slip past if stuck for over a second). Walk your agent with <b>arrows/WASD</b> (or the on-screen pad). Hold <b>Shift</b> to run (about 1.8× faster), or tap the 🏃 <b>Run</b> button on phones to toggle it. Walking costs a little Energy (about 1 per 40 tiles), running costs 3× that, and you can't run below 10 Energy. Below 30 Energy your Mood slowly slips 😪. <b>Premium aisle</b> at Seak Mart (in-game coins only, no real money): a ⌚ Watch (80🪙, shows exact time and when Office/School open) and a 🚗 Car (200🪙, parks at home, fast and Energy-free on roads). <b>Real Estate desk</b>: upgrade your Starter home to a Cozy House (150🪙) or Dream House (350🪙, +Mood when you sleep), or buy the one-of-a-kind 🏯 Hilltop Villa (500🪙) and move there. These can't be gifted. <b>Arcade mini-games:</b> walk up to a cabinet in the Arcade and press E. 🏓 Pong (two cabinets: if someone is at the other one you play each other, otherwise the CPU steps in after 5s), 🧱 Blockfall (falling blocks: ◀ ▶ move, ▲ rotate, ▼ soft drop, Space drop) and 🟡 Chomp Maze (eat the dots, dodge the ghosts). Better scores give up to +8 extra Mood. Esc stops and collects. Walk up to a spot and press <b>E/Space</b> (or tap the button): bed = Sleep, desk/office = Work (costs Energy and Mood), school desk = Study (one class per day; attend on 5 different days to graduate: Work then pays 60% more. School is open every day), diner/kitchen = Eat, couch/café/plaza bench = Hang out, console/arcade = Play. Walk into a neighbor's door to <b>Visit</b> (once per house per day). Each action takes a few seconds and then cools down.</p>
   <p>Seak has a clock: <b>1 real minute = 1 in-game hour</b>, so each day lasts 24 minutes (Day 1 = Monday, starting at 7:00; Day 7 = Sunday). Nights (22:00–6:00) get dark. When your Energy drops below 30 your agent gets 😪 tired and slowly loses Mood (faster below 15), so eat or sleep. The <b>School</b> is open every day 8:00–15:00 and the <b>Office</b> Mon–Fri 9:00–17:00 (closed weekends); both are closed at night, and anyone inside at closing time is shown out. A desk at home works any time. The Diner, Arcade, Seak Mart and Plaza never close. Needs drop overnight. Watch out: a crowded diner means smaller meals, and noisy hangouts next door ruin a neighbor's sleep. After 7 days: score = average needs + 10 × visits + 1 point per 10 leftover coins.</p>
   <p><b>Shopping &amp; gifts:</b> Walk into <b>Seak Mart</b>, add items at the aisles, and pay at the checkout. Furniture goes into your bag; place it at home in build mode. To <b>gift</b> flowers, a plushie, or furniture, pick it in the 🎁 Gift selector, stand next to another player or agent, and press <b>E</b>. You both get +8 Social (+12 for a plushie). Gifted furniture moves from your bag to theirs, and they can only place it in their own house. Gifts work on anyone: other players, invited agents, and AI neighbors. Flowers and plushies are used up when given. AI neighbors place gifted furniture next time they're home, but they don't give gifts themselves. You can also gift <b>coins</b> (5, 10 or 20) from the same selector: they move from your wallet to theirs and you both get +4 Social. To keep scores fair, you can give at most 30 coins per day.</p></details>
 </div>
 <div id="game">
   <div id="stage"><canvas id="cv" tabindex="0" style="outline:none"></canvas>
-    <div id="topbar"><span id="dayLbl"></span><span id="whereLbl"></span><span id="codeLbl"></span><span id="timerLbl"></span></div>
-    <div id="msg"></div>
+    <div id="topbar"><span id="dayLbl"></span><span id="whereLbl"></span><span id="codeLbl"></span><span id="timerLbl"></span><span id="leftLbl"></span></div>
+    <div id="msg"></div><div id="warnBar"></div><button id="helpBtn2" title="How to play (?)">? Help</button>
+    <div id="keyGuide">↑ ↓ ← → / WASD move (screen directions) · Shift run · E/Space act · R rotate · ? help</div>
     <div id="dpad"><span></span><button data-d="0,-1">▲</button><span></span><button data-d="-1,0">◀</button><span></span><button data-d="1,0">▶</button><span></span><button data-d="0,1">▼</button><span></span></div>
     <button id="runBtn" title="Run (hold Shift)">🏃 Run</button>
     <div id="actbar"></div></div>
   <div id="side">
     <div class="card" id="lobbyCard" style="display:none"><b>Lobby</b><div id="lobbyList"></div><div id="inviteBox" style="display:none;margin-top:8px"><div class="small">Invite link: friends open it to join</div><div class="row" style="margin-top:4px"><input id="inviteUrl" readonly style="flex:3;font-size:13px"><button id="copyBtn" style="flex:0">Copy</button><button id="shareBtn" style="flex:0;display:none">Share</button></div></div><div class="row" style="margin-top:8px"><button id="botBtn">+ AI neighbor</button><button id="startBtn">Start game ▶</button></div></div>
-    <div class="card"><div class="row"><b id="meName"></b><span id="coinLbl" style="text-align:right"></span></div><div id="eduLbl" class="small" style="margin:4px 0"></div><div id="tiredLbl" class="small" style="display:none;color:#b0306a;font-weight:700;margin:4px 0"></div><div id="rewardLbl" class="small" style="margin:4px 0"></div><div id="giftRow" class="small" style="display:none;margin:4px 0">🎁 Gift to give (E next to someone): <select id="giftSel"></select></div><div id="needs"></div></div>
-    <div class="card" id="martCard" style="display:none"><b>🛒 Seak Mart</b> <span class="small" id="martHint"></span><div class="shop" id="martItems" style="margin-top:6px"></div><div id="cartBox" class="small" style="margin-top:6px"></div></div>
+    <div class="card"><div class="row"><b id="meName"></b><span id="coinLbl" style="text-align:right"></span></div><div id="eduLbl" class="small" style="margin:4px 0"></div><div id="tiredLbl" class="small" style="display:none;color:#b0306a;font-weight:700;margin:4px 0"></div><div id="rewardLbl" class="small" style="margin:4px 0"></div><div id="giftRow" class="small" style="display:none;margin:4px 0">🎁 <b>Give a gift:</b> pick one, stand next to a player and press E: <select id="giftSel"></select></div><div id="needs"></div></div>
+    <div class="card" id="martCard" style="display:none"><b>🛒 Seak Mart</b> <span class="small" id="martHint"></span><div class="shop" id="martItems" style="margin-top:6px"></div><div id="cartBox" class="small" style="margin-top:6px"></div><div class="small" id="aisleDir" style="margin-top:6px">Aisles: ☕ Treats · 🎟️ Fun · 🎁 Gifts · 🛋️ Furniture · 🎩 Cosmetics · ⌚ Premium (in-game coins only, no real money) · 🏡 Real Estate. All prices are in-game coins; Seak is completely free.</div></div>
     <div class="card" id="buildCard"><b>Build</b> <span class="small" id="buildHint"></span><div class="shop" id="shop" style="margin-top:6px"></div></div>
     <div class="card"><b>Town log</b><div id="log"></div></div>
   </div>
 </div>
+<div id="toast"></div>
+<div id="help"><div class="card"><h2>❓ How to play</h2>
+<h3>Movement</h3><ul><li><b>Arrow keys or WASD move the way you see on screen:</b> ↑/W = up the screen, ↓/S = down, ←/A = left, →/D = right.</li><li>Press two keys (e.g. ↑ + →) to go straight along the map's grid lines.</li><li>Hold <b>Shift</b> to run (about 1.8× faster, costs more Energy). On phones use the on-screen pad and 🏃 Run.</li></ul>
+<h3>Interact: E / Space</h3><ul><li>Press <b>E</b> or <b>Space</b> (or tap the button at the bottom right) to use whatever you stand next to: a building spot (bed, desk, counter, aisle, cabinet), your furniture, or another player.</li><li>Next to a player: E talks, or gives your selected 🎁 gift. Walk into a door to enter; in your home, press <b>R</b> to rotate furniture.</li></ul>
+<h3>Joining or starting a room</h3><ul><li><b>Create room</b>, then share the invite link (or the 4-letter code). Friends open it, type a name and press <b>Join</b>.</li><li>Only the <b>host</b> (the creator) can press <b>Start</b>; add 🤖 AI neighbors before starting. The top bar shows who started.</li><li>After the game starts, new people can't join. If you get disconnected, reopen the link and press <b>Rejoin</b> (same browser, or the same name).</li></ul>
+<h3>Energy and Mood</h3><ul><li><b>Energy</b> drops when you walk or run, work and overnight (−22/day). Restore it with Sleep (best in your own bed), eating and coffee.</li><li><b>Mood</b> drops overnight (−18/day) and slips when Energy is under 30. Restore it with hanging out, arcade games, movies and decor.</li><li>⚠️ A warning appears when either falls <b>below 60</b>.</li><li><b>Great Shift:</b> work with Energy <i>and</i> Mood ≥ 60 for bonus coins. Streaks raise it, and every 10th in a row doubles that shift's pay. Below 60 the streak resets.</li></ul>
+<h3>Day cycle</h3><ul><li>One day is <b>24 real minutes</b> (1 minute = 1 in-game hour); Day 1 starts at 07:00. The <b>⏳ timer</b> at the top shows time left in the day.</li><li>The week is <b>7 days</b> (Mon–Sun). Office is open Mon–Fri 9–17, School daily 8–15. Each night you get +10 coins.</li><li><b>Final score</b> = happiness + 10 per visit + 1 per 100 coins. Highest score wins.</li></ul>
+<button id="helpClose" style="width:100%;margin-top:10px;position:sticky;bottom:0">Got it (Esc)</button></div></div>
 <div id="results"><div class="card"><h2>🏆 Week over!</h2><div id="resBody"></div><button onclick="location.reload()">Play again</button></div></div>
 <!-- ===== Shared engine: used by the browser (solo) AND server.js (multiplayer) ===== -->
 <script id="engine">
@@ -176,9 +199,10 @@ function addPlayer(st,id,name,ai,look){if(st.players[id])return true;if(st.order
  const h=TOWN.houses[lot];
  st.players[id]={id,name:String(name||'Player').slice(0,12),ai:!!ai,color:COLORS[lot],lot,needs:{energy:70,mood:70,social:60},coins:40,items:[{t:'bed',x:1,y:1}],home:'starter',watch:false,car:null,stepAcc:0,visits:0,built:0,edu:0,studied:0,streak:0,bestStreak:0,star:false,inv:[],gifts:[],cart:[],hat:null,say:null,
   pos:{map:'town',x:h.exit.x,y:h.exit.y,dir:'down'},busy:null,cd:{},visited:{},lastStep:0,goal:null,mood:'🙂'};
+ if(!ai&&!st.host)st.host=id;
  {const base=String(name||'').replace(/ \(AI\)$/,'');st.players[id].look=ai&&AI_LOOKS[base]&&!look?{...AI_LOOKS[base]}:sanitizeLook(look,lot);if(ai&&PERSONA[base])st.players[id].persona=base;}
  st.rev++;return true;}
-function removePlayer(st,id){const p=st.players[id];if(!p)return;if(st.phase==='lobby'){delete st.players[id];st.order=st.order.filter(x=>x!==id);
+function removePlayer(st,id){const p=st.players[id];if(!p)return;if(st.phase==='lobby'){delete st.players[id];st.order=st.order.filter(x=>x!==id);if(st.host===id)st.host=st.order.find(x=>!st.players[x].ai)||null;
  st.order.forEach((x,i)=>{const q=st.players[x],h=TOWN.houses[i];q.lot=i;q.color=COLORS[i];q.pos={map:'town',x:h.exit.x,y:h.exit.y,dir:'down'};});}else{delete st.players[id];st.order=st.order.filter(x=>x!==id);}st.rev++;}
 function log(st,m){st.log.push({d:st.day,m});if(st.log.length>80)st.log.shift();st.rev++;}
 const clamp=v=>Math.max(0,Math.min(100,Math.round(v)));
@@ -204,9 +228,11 @@ function stepGap(st,p,dx,dy,run){const car=!!p.car&&onRoadFor(st,p,dx,dy);return
 // entrants land one tile further in (offset sideways if taken) so the doorway never clogs
 function entrySpot(st,map,sp,id){for(const[dx,dy]of[[0,-1],[-1,-1],[1,-1],[0,0],[-1,0],[1,0]]){const x=sp.x+dx,y=sp.y+dy;if(walkable(st,map,x,y)&&tileAt(st,map,x,y)==='.'&&!occupiedBy(st,map,x,y,id))return{x,y};}return sp;}
 function occupiedBy(st,map,x,y,exceptId){return st.order.some(i=>i!==exceptId&&st.players[i].pos.map===map&&st.players[i].pos.x===x&&st.players[i].pos.y===y);}
-function step(st,id,dx,dy,now,run){st.now=now;const p=st.players[id];if(!p||st.phase!=='day'||p.busy)return false;if(Math.abs(dx)+Math.abs(dy)!==1)return false;
- run=!!run&&p.needs.energy>=10;if(now-p.lastStep<stepGap(st,p,dx,dy,run))return false;const driving=!!p.car&&onRoadFor(st,p,dx,dy);const d=dx>0?'right':dx<0?'left':dy>0?'down':'up';p.pos.dir=d;
+function step(st,id,dx,dy,now,run){st.now=now;const p=st.players[id];if(!p||st.phase!=='day'||p.busy)return false;if(Math.abs(dx)>1||Math.abs(dy)>1||(dx===0&&dy===0))return false;const diag=dx!==0&&dy!==0;
+ run=!!run&&p.needs.energy>=10;if(now-p.lastStep<stepGap(st,p,dx,dy,run)*(diag?1.4:1))return false;const driving=!!p.car&&onRoadFor(st,p,dx,dy);const d=diag?(dy<0?(dx<0?'up':'right'):(dx>0?'down':'left')):dx>0?'right':dx<0?'left':dy>0?'down':'up';p.pos.dir=d;
  const nx=p.pos.x+dx,ny=p.pos.y+dy,map=p.pos.map;if(!walkable(st,map,nx,ny))return false;
+ // diagonal steps (screen-direction movement on the iso map): no door tiles, no cutting a corner through walls/furniture
+ if(diag){const plain=(x,y)=>walkable(st,map,x,y)&&'.=,'.includes(tileAt(st,map,x,y));if(!plain(nx,ny)||!plain(p.pos.x+dx,p.pos.y)||!plain(p.pos.x,p.pos.y+dy))return false;}
  // no two agents on one tile; doors are always passable, and you slip past after being stuck >1s
  if(tileAt(st,map,nx,ny)!=='D'&&occupiedBy(st,map,nx,ny,id)){const k=map+':'+nx+','+ny;if(p.blockK!==k||now-p.blockT>2500){p.blockK=k;p.blockT=now;}if(now-p.blockT<=1000)return false;}
  p.blockK=null;p.lastStep=now;
@@ -240,6 +266,7 @@ const CHAT_LINES={tired:["Yawn… I could really use a nap 😴","So sleepy. Bed
  work:["Busy busy! Spreadsheets are fun, right? 📊"],play:["Shh, I'm about to beat the boss! 👾"],happy:["Hi {n}! Lovely day in Seak 🌸","Have you tried the diner yet? 🍔","Race you to the plaza! 🏃","Your house is looking cute, {n} 🏡","Best neighbors ever 💖"]};
 function chatLine(st,q,p){const n=q.needs;const k=q.busy?(q.busy.a==='work'?'work':q.busy.a==='play'?'play':'happy'):n.energy<35?'tired':n.mood<40?'bored':n.social<40?'lonely':q.coins<30?'broke':'happy';
  const L=CHAT_LINES[k];return L[Math.floor(rng(st,q)*L.length)].replace('{n}',p.name);}
+function notify(st,q,text,now){q.notice={n:((q.notice&&q.notice.n)||0)+1,text,at:now};st.rev++;}
 function say(st,q,text,now){q.say={text,until:now+st.dur.say};st.rev++;}
 // next-door houses: same row with no other house in between
 function adjLots(a,b){const A=TOWN.houses[a],B=TOWN.houses[b];if(!A||!B||a===b||A.y!==B.y)return false;const lo=Math.min(A.x,B.x),hi=Math.max(A.x,B.x);return !TOWN.houses.some(h=>h.y===A.y&&h.x>lo&&h.x<hi);}
@@ -270,11 +297,11 @@ function doAction(st,id,action,now,arg){st.now=now;const p=st.players[id];if(!p|
   if(gk.startsWith('coins:')){const n=+gk.slice(6);if(![5,10,20].includes(n))return'Coin gifts are 5, 10 or 20';if(p.ai)return'AI neighbors do not give coins';
    const given=p.coinDay===st.day?p.coinGiven:0;if(given+n>COIN_GIFT_CAP)return`Daily coin-gift limit reached: you can give ${COIN_GIFT_CAP-given} more coins today (max ${COIN_GIFT_CAP}/day)`;
    if(p.coins<n)return`Not enough coins (you have ${p.coins})`;p.coins-=n;q.coins+=n;p.coinDay=st.day;p.coinGiven=given+n;
-   p.needs.social=clamp(p.needs.social+4);q.needs.social=clamp(q.needs.social+4);setFx(st,p,'five',2500,now);setFx(st,q,'five',2500,now);if(q.ai)say(st,q,`${n} coins? You're too kind, ${p.name}! 🪙`,now);log(st,`🪙 ${p.name} gave ${q.name} ${n} coins (+4 Social each).`);return'ok';}
+   p.needs.social=clamp(p.needs.social+4);q.needs.social=clamp(q.needs.social+4);setFx(st,p,'five',2500,now);setFx(st,q,'five',2500,now);if(q.ai)say(st,q,`${n} coins? You're too kind, ${p.name}! 🪙`,now);notify(st,q,`🪙 ${p.name} gave you ${n} coins!`,now);log(st,`🪙 ${p.name} gave ${q.name} ${n} coins (+4 Social each).`);return'ok';}
   if(gk.startsWith('f:')){const t=gk.slice(2),i=p.inv.indexOf(t);if(i<0)return'That item is not in your bag';p.inv.splice(i,1);q.inv.push(t);const G=8;
-   p.needs.social=clamp(p.needs.social+G);q.needs.social=clamp(q.needs.social+G);if(q.ai)say(st,q,`A ${ITEMS[t].n}? I'll put it in my house! Thanks ${p.name} 💖`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${ITEMS[t].e} ${ITEMS[t].n} for their home (+${G} Social each).`);return'ok';}
+   p.needs.social=clamp(p.needs.social+G);q.needs.social=clamp(q.needs.social+G);if(q.ai)say(st,q,`A ${ITEMS[t].n}? I'll put it in my house! Thanks ${p.name} 💖`,now);notify(st,q,`🎁 ${p.name} gave you a ${ITEMS[t].e} ${ITEMS[t].n}! Check your bag.`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${ITEMS[t].e} ${ITEMS[t].n} for their home (+${G} Social each).`);return'ok';}
   const gi=p.gifts.indexOf(gk);if(gi<0)return'That gift is not in your bag';const k=p.gifts.splice(gi,1)[0],it=catItem(k);
-  p.needs.social=clamp(p.needs.social+it.gift);q.needs.social=clamp(q.needs.social+it.gift);if(q.ai)say(st,q,`Aww, ${it.e} for me? Thank you ${p.name}! 💖`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${it.n.replace(' (gift)','')} (+${it.gift} Social each).`);return'ok';}
+  p.needs.social=clamp(p.needs.social+it.gift);q.needs.social=clamp(q.needs.social+it.gift);if(q.ai)say(st,q,`Aww, ${it.e} for me? Thank you ${p.name}! 💖`,now);notify(st,q,`🎁 ${p.name} gave you ${it.e} ${it.n.replace(' (gift)','')}! (+${it.gift} Social)`,now);log(st,`🎁 ${p.name} gave ${q.name} a ${it.n.replace(' (gift)','')} (+${it.gift} Social each).`);return'ok';}
  if(action==='talk'){const o=actionsAt(st,id).find(o=>o.action==='talk'&&(!arg||o.target===arg));if(!o)return'Walk up to someone to chat';const q=st.players[o.target];
   if(cdLeft(st,p,'talk',now)>0)return'Give them a sec 😊';p.cd.talk=now+st.dur.talk;if(q.ai)say(st,q,chatLine(st,q,p),now);else if(!p.say||now>p.say.until)say(st,p,`👋 Hi ${q.name}!`,now);p.needs.social=clamp(p.needs.social+4);q.needs.social=clamp(q.needs.social+4);log(st,`💬 ${p.name} chatted with ${q.name} (+4 Social each).`);return'ok';}
 
@@ -384,7 +411,9 @@ const AI_PREF=['kitchen','desk','plant','couch','console','lamp','garden','cafe'
 function aiBuild(st,p){while(p.inv.length){if(buy(st,p.id,p.inv[0],null,null)!=='ok'){p.inv.shift();}}}
 function aiWant(p){return AI_PREF.find(t=>!has(p,t)&&!p.inv.includes(t)&&p.coins>=ITEMS[t].c+10);}
 // ---------- day loop ----------
-function startGame(st,now){if(st.phase!=='lobby'||!st.order.length)return;st.phase='day';st.day=1;st.dayStart=now-st.dur.day*START_HOUR/24;st.dayEnd=st.dayStart+st.dur.day;st.now=now;log(st,'🌅 Monday 07:00: Day 1 begins in Seak! Walk around with arrows/WASD, press E/Space at a spot.');}
+function startGame(st,now,by){if(st.phase!=='lobby')return'The game has already started';if(!st.order.length)return'Nobody is in the room yet';
+ if(by!=null&&st.host&&by!==st.host){const h=st.players[st.host];return`Only the host${h?' ('+h.name+')':''} can start the game`;}
+ {const sp=(by!=null&&st.players[by])||st.players[st.host]||st.players[st.order[0]];st.startedBy=sp?sp.name:'';}st.phase='day';st.day=1;st.dayStart=now-st.dur.day*START_HOUR/24;st.dayEnd=st.dayStart+st.dur.day;st.now=now;log(st,'🌅 Monday 07:00: Day 1 begins in Seak! Walk around with arrows/WASD, press E/Space at a spot.');return'ok';}
 function endDay(st,now){st.order.forEach(id=>{const p=st.players[id];if(p.busy)finishBusy(st,p,now);const decor=Object.keys(DECOR).reduce((s,t)=>s+(has(p,t)&&t!=='cafe'?DECOR[t]:0),0);
   p.needs.energy=clamp(p.needs.energy-22);p.needs.mood=clamp(p.needs.mood-18+decor);p.needs.social=clamp(p.needs.social-18);p.coins+=10;p.cd={};p.goal=null;p.mood=moodE(p);});
  if(st.day>=DAYS){st.phase='results';st.results=scores(st);log(st,'🏆 Week over! Results are in.');return;}
@@ -414,7 +443,7 @@ const cv=$('cv'),ctx=cv.getContext('2d');
 const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 // Only the player name is saved (no game state is ever resumed). Validate it and clear anything bad.
 (function(){let n=store.get('seakName');if(n!=null&&(typeof n!=='string'||n.length>12||/[\u0000-\u001f<>]/.test(n))){store.del('seakName');n=null;}
- try{for(const k of Object.keys(localStorage))if(k.startsWith('seak')&&k!=='seakName')store.del(k);}catch(e){}
+ try{for(const k of Object.keys(localStorage))if(k.startsWith('seak')&&k!=='seakName'&&k!=='seakSession')store.del(k);}catch(e){}
  $('nameIn').value=n||'';})();
 // Always start on the start screen.
 $('menu').style.display='block';$('game').style.display='none';$('results').style.display='none';
@@ -445,44 +474,91 @@ function send(msg){if(mode==='solo'){const t=now();let r='ok';
   if(r!=='ok')flash(r);ui();}
  else if(ws&&ws.readyState===1)ws.send(JSON.stringify(msg));}
 // ---------- online ----------
-function connect(first){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
- ws.onopen=()=>ws.send(JSON.stringify(first));ws.onclose=()=>{$('mpMsg').textContent='Disconnected from multiplayer. Your game has stopped; this session cannot currently be resumed automatically. Ask the host to create a new room and rejoin its invite link. Solo mode will not start automatically.';flash('Disconnected from multiplayer. Ask the host to create a new room.');$('menu').style.display='flex';};
- ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='err'){$('mpMsg').textContent=m.msg;flash(m.msg);return;}
+function loadSession(){try{const x=JSON.parse(store.get('seakSession')||'null');if(x&&/^[A-Z]{4}$/.test(x.code)&&typeof x.token==='string'&&x.token.length<=64&&typeof x.name==='string'&&x.name.length<=12)return x;}catch(e){}store.del('seakSession');return null;}
+const roomInfo=async code=>{try{const r=await fetch('/room/'+code);return await r.json();}catch(e){return null;}};
+let lastInfo=null,curRoomCode=null;
+function connect(first){if(first.t==='join'&&!first.token){const s=loadSession();if(s&&s.code===first.code)first.token=s.token;}
+ if(ws){ws.onclose=null;try{ws.close();}catch(e){}}
+ ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+ ws.onopen=()=>ws.send(JSON.stringify(first));ws.onclose=()=>{$('mpMsg').textContent='Disconnected from multiplayer. Your seat is saved: press Rejoin (or reload the page and reopen the invite link) to continue.';flash('Disconnected. Press Rejoin to continue.');$('menu').style.display='flex';refreshResume();};
+ ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='err'){$('mpMsg').textContent=m.msg;flash(m.msg);if(m.code==='started')roomInfo(m.room).then(i=>{lastInfo=i;showRoomCard(m.room,i);});return;}
   if(m.t==='arcmsg'||m.t==='pong'||m.t==='pongEnd'){if(window.SeakArcade)window.SeakArcade.onMsg(m);return;}
-  if(m.t==='welcome'){me=m.id;mode='online';window.__seakPlaying=true;}
+  if(m.t==='welcome'){me=m.id;mode='online';window.__seakPlaying=true;if(m.token)store.set('seakSession',JSON.stringify({code:m.code,token:m.token,name:String(first.name||'Player').slice(0,12)}));if(m.rejoined)setTimeout(()=>flash('Welcome back! You rejoined the game.'),300);}
   if(m.t==='state'){offset=m.now-Date.now();const mine=st&&st.players[me]&&st.players[me].pos;st=m.state;keepMine(mine);if($('menu').style.display!=='none')show();ui();}
   if(m.t==='pos'&&st){const mine=st.players[me]&&{...st.players[me].pos};for(const id in m.p){const q=st.players[id];if(!q)continue;const[a,x,y,d]=m.p[id];q.pos={map:a,x,y,dir:d};}keepMine(mine);}};}
+// room card: status of an invited / refused room, with Rejoin or New room options
+function showRoomCard(code,info){curRoomCode=code;$('inviteHead').style.display='block';$('inviteCode').textContent=code;
+ const s=loadSession(),mine=!!(s&&s.code===code),typed=$('nameIn').value.trim().toLowerCase(),away=info&&info.players?info.players.find(p=>p.offline&&p.name.toLowerCase()===typed):null;
+ const started=!!(info&&info.exists&&info.phase!=='lobby'),canRe=started&&(mine||away);let t,newBtn=false;
+ if(!info)t='Could not reach the server.';
+ else if(!info.exists){t=`Room ${code} was not found. It may have closed.`;newBtn=true;}
+ else if(!started)t='Type your name above and press Join.'+(info.host?` Host: ${info.host}.`:'');
+ else{const who=info.startedBy?` Started by ${info.startedBy}.`:'';
+  if(canRe)t=`▶ Game in progress (Day ${info.day}/7): join now.${who}`;
+  else{t=`Game already started (Day ${info.day}/7).${who} If you were playing, type the same name to rejoin; otherwise start a new room.`;newBtn=true;}}
+ $('inviteStatus').textContent=t;$('inviteNewBtn').style.display=newBtn?'':'none';
+ $('joinBtn').textContent=canRe?'Rejoin as '+(mine?s.name:away.name):'Join '+code;}
+$('nameIn').addEventListener('input',()=>{if(curRoomCode&&lastInfo)showRoomCard(curRoomCode,lastInfo);});
+$('inviteNewBtn').onclick=()=>connect({t:'create',name:nm(),look:myLook});
+async function refreshResume(){const s=loadSession(),card=$('resumeCard');if(!s||location.protocol==='file:'){card.style.display='none';return;}
+ const info=await roomInfo(s.code);if(!info||!info.exists||info.phase==='results'){if(info)store.del('seakSession');card.style.display='none';return;}
+ $('resumeTxt').textContent=`Room ${s.code} as ${s.name}: `+(info.phase==='lobby'?'waiting in the lobby':`Day ${info.day}/7 in progress`);card.style.display='block';}
+$('resumeBtn').onclick=()=>{const s=loadSession();if(!s)return;$('mpMsg').textContent='Rejoining '+s.code+'…';connect({t:'join',code:s.code,name:s.name,look:myLook,token:s.token});};
+$('resumeForget').onclick=()=>{store.del('seakSession');$('resumeCard').style.display='none';};
+refreshResume();
+addEventListener('pagehide',()=>{if(ws){ws.onclose=null;try{ws.close();}catch(e){}}});// leaving the page frees the seat right away so you can rejoin
+window.__seakDisconnect=()=>{if(ws)try{ws.close();}catch(e){}};// test hook
 function keepMine(mine){// client-side prediction: keep our own position unless the server disagrees for a while
  const p=st.players[me];if(!p||!mine)return;const s=p.pos;if(Date.now()-lastLocalStep<400&&s.map===mine.map&&Math.abs(s.x-mine.x)+Math.abs(s.y-mine.y)<=3)p.pos=mine;}
 // ---------- invite links: <origin>/?room=CODE (server mode only) ----------
 const inviteCode=(()=>{try{const c=new URLSearchParams(location.search).get('room');return c&&/^[A-Za-z]{4}$/.test(c)?c.toUpperCase():null;}catch(e){return null;}})();
 try{const qn=new URLSearchParams(location.search).get('name');if(qn)$('nameIn').value=qn.replace(/[\u0000-\u001f<>]/g,'').slice(0,12);}catch(e){}
-if(inviteCode&&location.protocol!=='file:'){$('codeIn').value=inviteCode;$('inviteCode').textContent=inviteCode;$('inviteHead').style.display='block';$('soloCard').style.display='none';$('createRow').style.display='none';$('joinBtn').textContent='Join '+inviteCode;setTimeout(()=>$('nameIn').focus(),0);}
+if(inviteCode&&location.protocol!=='file:'){$('codeIn').value=inviteCode;$('inviteCode').textContent=inviteCode;$('inviteHead').style.display='block';$('soloCard').style.display='none';$('createRow').style.display='none';$('joinBtn').textContent='Join '+inviteCode;setTimeout(()=>$('nameIn').focus(),0);
+ $('inviteBtns').insertBefore($('joinBtn'),$('inviteNewBtn'));$('inviteHead').appendChild($('mpMsg'));$('mpCard').style.display='none';
+ roomInfo(inviteCode).then(i=>{lastInfo=i;showRoomCard(inviteCode,i);});}
 function inviteLink(code){return location.origin+'/?room='+code;}
 $('copyBtn').onclick=async()=>{const u=$('inviteUrl').value;try{await navigator.clipboard.writeText(u);}catch(e){$('inviteUrl').select();try{document.execCommand('copy');}catch(_){}}$('copyBtn').textContent='Copied!';setTimeout(()=>$('copyBtn').textContent='Copy',1500);};
 if(navigator.share)$('shareBtn').style.display='';$('shareBtn').onclick=()=>{navigator.share({title:'Join my Seak room',text:'Come play Seak with me! Room '+st.code,url:$('inviteUrl').value}).catch(()=>{});};
 $('createBtn').onclick=()=>connect({t:'create',name:nm(),look:myLook});
-$('joinBtn').onclick=()=>{const c=$('codeIn').value.trim().toUpperCase();if(!/^[A-Z]{4}$/.test(c)){$('mpMsg').textContent='Room codes are 4 letters.';return;}$('mpMsg').textContent='Joining '+c+'…';if(ws)try{ws.close();}catch(e){}connect({t:'join',code:c,name:nm(),look:myLook});};
+$('joinBtn').onclick=()=>{const c=$('codeIn').value.trim().toUpperCase();if(!/^[A-Z]{4}$/.test(c)){$('mpMsg').textContent='Room codes are 4 letters.';return;}$('mpMsg').textContent='Joining '+c+'…';const sx=loadSession(),typed=$('nameIn').value.trim();connect({t:'join',code:c,name:(sx&&sx.code===c&&!typed)?sx.name:nm(),look:myLook});};
 function show(){$('menu').style.display='none';$('game').style.display='grid';if(document.activeElement)document.activeElement.blur();resize();cv.focus();ui();}
 // ---------- input ----------
-const KEYMAP={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
-const KEYS={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]};
-function dirOf(e){return KEYMAP[e.code]||KEYS[(e.key||'').toLowerCase()]||null;}
+// Screen-direction movement on the isometric map: Up = up the screen, etc. Each key is a screen vector in grid terms;
+// held keys are summed (Up+Right = straight along the grid) and a single key is a diagonal grid step that slides along walls.
+const SCREEN_DIRS={up:[-1,-1],down:[1,1],left:[-1,1],right:[1,-1]};
+const KEYNAME={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
+const KEYNAME2={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
+const heldKeys=new Set();
+function gridDir(names){let x=0,y=0;names.forEach(n=>{x+=SCREEN_DIRS[n][0];y+=SCREEN_DIRS[n][1];});return(x||y)?[Math.sign(x),Math.sign(y)]:null;}
+function refreshHeld(){held=gridDir(heldKeys);}
+window.__seakGridDir=gridDir;
+function dirOf(e){return KEYNAME[e.code]||KEYNAME2[(e.key||'').toLowerCase()]||null;}
 const inMenu=()=>$('menu').style.display!=='none';
+const helpOpen=()=>$('help').style.display==='flex';
+function setHelp(on){$('help').style.display=on?'flex':'none';if(on){heldKeys.clear();refreshHeld();}else if(st&&!inMenu())cv.focus();}
+$('helpBtn').onclick=()=>setHelp(true);$('helpBtn2').onclick=()=>setHelp(true);$('helpClose').onclick=()=>setHelp(false);$('help').addEventListener('click',e=>{if(e.target===$('help'))setHelp(false);});
+addEventListener('keydown',e=>{if(helpOpen()){if(e.key==='Escape'||e.key==='?'||e.key==='Enter'){setHelp(false);}e.preventDefault();e.stopImmediatePropagation();return;}
+ if(e.key==='?'&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)){e.preventDefault();e.stopImmediatePropagation();setHelp(true);}},true);
 addEventListener('keydown',e=>{if(!st||inMenu()||(window.SeakArcade&&window.SeakArcade.isOpen()))return;if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&e.target.id!=='cv')e.target.blur();
- const d=dirOf(e);if(d){held=d;e.preventDefault();tryStep();}
+ const d=dirOf(e);if(d){if(!heldKeys.has(d))chordAt=Date.now();heldKeys.add(d);refreshHeld();e.preventDefault();tryStep();}
  const k=(e.key||'').toLowerCase();if(e.code==='KeyE'||e.code==='Space'||k==='e'||k===' '){e.preventDefault();const a=E.actionsAt(st,me)[0];if(a)doAct(a);}
  if(e.code==='KeyR'&&!e.repeat&&rotKey())e.preventDefault();
  if(e.code==='Escape'){selItem=null;selFurn=null;ui();}});
-addEventListener('keyup',e=>{const d=dirOf(e);if(d&&held&&held[0]===d[0]&&held[1]===d[1])held=null;});
-addEventListener('blur',()=>{held=null;});
-document.querySelectorAll('#dpad button').forEach(b=>{const d=b.dataset.d.split(',').map(Number);
- b.addEventListener('pointerdown',e=>{e.preventDefault();held=d;tryStep();});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>{if(held===d)held=null;}));});
+addEventListener('keyup',e=>{const d=dirOf(e);if(d){heldKeys.delete(d);refreshHeld();}});
+addEventListener('blur',()=>{heldKeys.clear();held=null;});
+const PADNAME={'0,-1':'up','0,1':'down','-1,0':'left','1,0':'right'};
+document.querySelectorAll('#dpad button').forEach(b=>{const n=PADNAME[b.dataset.d];
+ b.addEventListener('pointerdown',e=>{e.preventDefault();if(!heldKeys.has(n))chordAt=Date.now();heldKeys.add(n);refreshHeld();tryStep();});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>{heldKeys.delete(n);refreshHeld();}));});
 const WALK_MS=150,RUN_MS=83;
-function tryStep(){if(!st||!held||st.phase!=='day')return;const t=Date.now();const p=st.players[me];if(!p)return;const run=(shiftDown||runToggle)&&p.needs.energy>=10;const car=!!p.car&&E.onRoadFor(st,p,held[0],held[1]);const ms=car?(run?45:60):(run?RUN_MS:WALK_MS);if(t-lastLocalStep<ms)return;id_ms=ms;
- const before=p.pos.map;const tgt={x:p.pos.x+held[0],y:p.pos.y+held[1]};const ok=E.step(st,me,held[0],held[1],now(),run);
- if(!ok&&p.pos.map==='town'){const b=E.TOWN.buildings.find(b=>b.door.x===tgt.x&&b.door.y===tgt.y);if(b&&!E.isOpen(st,b.id,now())&&Date.now()-msgT>1500)flash(`🔒 ${b.name} is closed — ${E.opensText(st,b.id)}`);}if(ok){lastLocalStep=t;if(mode==='online')ws.send(JSON.stringify({t:'step',dx:held[0],dy:held[1],run}));if(p.pos.map!==before){selItem=null;ui();}}
- else if(mode==='online'){/* still send facing */}}
+let chordAt=0;// a brief grace after a key press so two keys pressed together resolve to one grid move instead of a diagonal first
+function tryStep(){if(!st||!held||st.phase!=='day')return;const t=Date.now();if(t-chordAt<45)return;const p=st.players[me];if(!p)return;const run=(shiftDown||runToggle)&&p.needs.energy>=10;const diag=held[0]!==0&&held[1]!==0;
+ const car=!!p.car&&E.onRoadFor(st,p,held[0],held[1]);const ms=(car?(run?45:60):(run?RUN_MS:WALK_MS))*(diag?1.4:1);if(t-lastLocalStep<ms)return;id_ms=ms;
+ // a diagonal (single screen-direction key) falls back to sliding along either axis when a wall or door blocks it
+ const tries=diag?[held,[held[0],0],[0,held[1]]]:[held];let ok=false,used=held;const before=p.pos.map;
+ for(const d of tries){const tgt={x:p.pos.x+d[0],y:p.pos.y+d[1]};ok=E.step(st,me,d[0],d[1],now(),run);used=d;
+  if(!ok&&p.pos.map==='town'){const b=E.TOWN.buildings.find(b=>b.door.x===tgt.x&&b.door.y===tgt.y);if(b&&!E.isOpen(st,b.id,now())&&Date.now()-msgT>1500)flash(`🔒 ${b.name} is closed — ${E.opensText(st,b.id)}`);}
+  if(ok)break;}
+ if(ok){lastLocalStep=t;if(mode==='online')ws.send(JSON.stringify({t:'step',dx:used[0],dy:used[1],run}));if(p.pos.map!==before){selItem=null;ui();}}}
 function HT(o,h){return E.HOME_TIERS[h.villa?'villa':o.home].n;}
 function watchNote(){const o=['office','school'].map(id=>{const b=E.TOWN.buildings.find(b=>b.id===id);return E.isOpen(st,id,now())?`${b.name} open`:`${b.name} ${E.opensText(st,id)}`;});return o.join(' · ');}
 // ---------- side UI ----------
@@ -492,20 +568,26 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#ga
 $('runBtn').addEventListener('pointerdown',e=>{e.preventDefault();runToggle=!runToggle;$('runBtn').classList.toggle('on',runToggle);$('runBtn').textContent=runToggle?'🏃 Running':'🏃 Run';});
 addEventListener('keydown',e=>{if(e.key==='Shift')shiftDown=true;});addEventListener('keyup',e=>{if(e.key==='Shift')shiftDown=false;});addEventListener('blur',()=>{shiftDown=false;});
 $('startBtn').onclick=()=>send({t:'start'});$('botBtn').onclick=()=>send({t:'bot'});
-let lastUi='';
+let lastUi='',lastNotice=null,toastT=0;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),5000);}
 function ui(){if(!st)return;const p=st.players[me];if(!p)return;
  $('lobbyCard').style.display=st.phase==='lobby'?'block':'none';
  $('lobbyList').innerHTML=st.order.map(id=>`<div style="color:${st.players[id].color}">● ${st.players[id].name}</div>`).join('')+(mode==='online'?`<p class="small">Share code <b>${st.code}</b>. Friends open this page and join.</p>`:'');
  if(mode==='online'&&location.protocol!=='file:'&&st.phase==='lobby'){$('inviteBox').style.display='block';const u=inviteLink(st.code);if($('inviteUrl').value!==u)$('inviteUrl').value=u;}else $('inviteBox').style.display='none';
+ {const isHost=mode!=='online'||st.host===me,hp=st.players[st.host];$('startBtn').disabled=!isHost;$('startBtn').textContent=isHost?'Start game ▶':`Waiting for ${hp?hp.name:'the host'} to start`;
+  $('lobbyList').innerHTML=st.order.map(id=>`<div style="color:${st.players[id].color}">● ${st.players[id].name}${id===st.host?' 👑 host':''}${st.players[id].offline?' (away)':''}</div>`).join('')+(mode==='online'?`<p class="small">Share code <b>${st.code}</b>. Friends open this page and join. Only the host can start.</p>`:'');
+  const nn=p.notice?p.notice.n:0;if(lastNotice===null)lastNotice=nn;else if(nn!==lastNotice){lastNotice=nn;toast(p.notice.text);}
+  const w=[];if(st.phase==='day'){if(p.needs.energy<60)w.push([`⚠️ Energy ${p.needs.energy} is below 60: Great Shifts stop. Eat, drink coffee or sleep.`,p.needs.energy<30]);if(p.needs.mood<60)w.push([`⚠️ Mood ${p.needs.mood} is below 60: Great Shifts stop. Hang out, play or sleep.`,p.needs.mood<30]);}
+  const wb=$('warnBar'),wh=w.map(x=>`<div class="${x[1]?'crit':''}">${x[0]}</div>`).join('');if(wb.dataset.h!==wh){wb.innerHTML=wh;wb.dataset.h=wh;}wb.style.display=w.length?'flex':'none';}
  $('botBtn').disabled=st.order.length>=E.MAX_PLAYERS;$('botBtn').textContent=st.order.length>=E.MAX_PLAYERS?'Room full (8)':'+ AI neighbor';
  $('codeLbl').textContent=mode==='online'?'Room '+st.code:'Solo';
  $('meName').textContent=`${E.moodE(p)} ${p.name} & agent`;$('coinLbl').textContent=`🪙 ${p.coins}  🚪 ${p.visits}`;$('eduLbl').textContent=p.edu>=E.GRAD_AT?`Graduated 🎓 (Work pays +${Math.round((E.GRAD_PAY-1)*100)}%)`:`🎓 School ${p.edu}/${E.GRAD_AT} days${p.studied===st.day?' (studied today)':' · study at the School (open daily 8–15)'}`;
  const cols={energy:'#ffd34d',mood:'#ff9ecb',social:'#8ecbff'};$('needs').innerHTML=E.NEEDS.map(n=>`<div class="small">${n[0].toUpperCase()+n.slice(1)} ${p.needs[n]}</div><div class="bar"><i style="width:${p.needs[n]}%;background:${cols[n]}"></i></div>`).join('');
- const inHome=p.pos.map==='h'+p.lot;$('buildCard').style.opacity=inHome&&st.phase==='day'?1:.5;$('buildHint').textContent=(p.inv.length?'':'Buy furniture at Seak Mart (Furniture aisle). ')+(inHome?'Pick an item from your bag, then tap a free floor tile. Drag placed furniture to rearrange it; tap it and press ⟳ Rotate (or R while hovering/dragging) to turn it.':'Go inside your house to place items.');
+ const inHome=p.pos.map==='h'+p.lot;$('buildCard').style.opacity=inHome&&st.phase==='day'?1:.5;$('buildHint').textContent=(p.inv.length?'':'Buy furniture in Seak Mart: walk to the 🛋️ Furniture aisle (back row, left side). ')+(inHome?'Pick an item from your bag, then tap a free floor tile. Drag placed furniture to rearrange it; tap it and press ⟳ Rotate (or R while hovering/dragging) to turn it.':'Go inside your house to place items.');
  $('tiredLbl').style.display=p.needs.energy<30||(p.rested>now())?'block':'none';$('tiredLbl').textContent=p.needs.energy<15?'😪 Exhausted: Mood slipping fast. Eat or sleep!':'😪 Tired: Mood slipping. Eat or sleep soon.';if(p.rested>now()&&p.needs.energy>=30)$('tiredLbl').textContent='😌 Well rested — slept in your own bed';
  $('rewardLbl').textContent=`💼 Shift streak ${p.streak}${p.star?' · 🏅 Star Employee':''} (Great Shift = Energy & Mood ≥ 60 when you work)`+(p.hat?'  '+p.hat:'')+(p.gifts.length?`  🎁×${p.gifts.length}`:'');
  {const opts=[...new Set(p.gifts)].map(k=>[k,E.catItem(k).e+' '+E.catItem(k).n.replace(' (gift)','')+' ×'+p.gifts.filter(x=>x===k).length]).concat([...new Set(p.inv)].map(t=>['f:'+t,E.ITEMS[t].e+' '+E.ITEMS[t].n+' (furniture) ×'+p.inv.filter(x=>x===t).length])).concat([5,10,20].filter(n=>p.coins>=n).map(n=>['coins:'+n,`🪙 ${n} coins`+(n===5?` (${E.COIN_GIFT_CAP-(p.coinDay===st.day?p.coinGiven:0)} left today)`:'')]));
-  $('giftRow').style.display=opts.length?'block':'none';const sel=$('giftSel'),cur=sel.value,h=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');if(sel.dataset.h!==h){sel.innerHTML=h;sel.dataset.h=h;if(opts.some(o=>o[0]===cur))sel.value=cur;}}
+  $('giftRow').style.display=opts.length?'block':'none';$('giftRow').classList.add('on');const sel=$('giftSel'),cur=sel.value,h=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');if(sel.dataset.h!==h){sel.innerHTML=h;sel.dataset.h=h;if(opts.some(o=>o[0]===cur))sel.value=cur;}}
  martPanel(p);
  [...shop.children].forEach(b=>{const n=p.inv.filter(t=>t===b.dataset.i).length;b.querySelector('.cnt').textContent=n?`×${n} in bag`:`${E.ITEMS[b.dataset.i].c}🪙 at Mart`;b.disabled=!inHome||st.phase!=='day'||!n;b.classList.toggle('sel',selItem===b.dataset.i);});
  $('log').innerHTML=st.log.slice().reverse().slice(0,40).map(l=>`<div><span class="small">D${l.d}</span> ${l.m}</div>`).join('');
@@ -514,8 +596,8 @@ function ui(){if(!st)return;const p=st.players[me];if(!p)return;
   `<p>🏠 Best Host: <b>${R.bestHost}</b><br>😴 Most Rested: <b>${R.mostRested}</b><br>🏗️ Town Architect: <b>${R.architect}</b><br>💰 Richest: <b>${R.richest}</b>`+(R.rows.some(r=>r.star)?`<br>🏅 Star Employees: <b>${R.rows.filter(r=>r.star).map(r=>r.name).join(', ')}</b>`:'')+`</p>`;}}
 function martPanel(p){const inMart=p.pos.map==='b:mart';$('martCard').style.display=inMart?'block':'none';if(!inMart)return;
  const aisles=E.actionsAt(st,me).filter(a=>a.action==='shop').map(a=>a.aisle);$('martHint').textContent=aisles.length?'Add to cart, then pay at Checkout 🧾':'Walk up to an aisle (Treats, Fun, Gifts, Furniture, Cosmetics).';
- const keys=[];aisles.forEach(ai=>{if(ai==='U')Object.keys(E.ITEMS).forEach(t=>keys.push('f:'+t));else Object.keys(E.CAT).filter(k=>E.CAT[k].aisle===ai).forEach(k=>keys.push(k));});
- const html=keys.map(k=>{const it=E.catItem(k);const d=it.fx?Object.entries(it.fx).map(([n,v])=>`+${v} ${n}`).join(' '):it.gift?`gift: +${it.gift} Social both`:it.watch?'exact clock + opening times, +5 Mood':it.car?'parks at home; fast on roads, no Energy drain, +10 Mood':it.house?(it.house==='villa'?'move to the hilltop (one only)':'bigger home, more space'):it.hat?'hat':it.color?'agent color':'furniture → bag';return`<button data-k="${k}">${it.e} ${it.n} <b>${it.c}🪙</b><br><span class="small">${d}</span></button>`;}).join('');
+ const keys=[];aisles.forEach(ai=>{keys.push('hdr:'+ai);if(ai==='U')Object.keys(E.ITEMS).forEach(t=>keys.push('f:'+t));else Object.keys(E.CAT).filter(k=>E.CAT[k].aisle===ai).forEach(k=>keys.push(k));});
+ const html=keys.map(k=>{if(k.startsWith('hdr:')){const ai=k.slice(4);return`<div class="aisleH">${E.PUB_SPOT[ai].e} ${E.AISLES[ai]} aisle${ai==='P'?' · in-game coins only, no real money':ai==='U'?' · goes into your bag, place it at home':''}</div>`;}const it=E.catItem(k);const d=it.fx?Object.entries(it.fx).map(([n,v])=>`+${v} ${n}`).join(' '):it.gift?`gift: +${it.gift} Social both`:it.watch?'exact clock + opening times, +5 Mood':it.car?'parks at home; fast on roads, no Energy drain, +10 Mood':it.house?(it.house==='villa'?'move to the hilltop (one only)':'bigger home, more space'):it.hat?'hat':it.color?'agent color':'furniture → bag';return`<button data-k="${k}">${it.e} ${it.n} <b>${it.c}🪙</b><br><span class="small">${d}</span></button>`;}).join('');
  const box=$('martItems');if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.querySelectorAll('button').forEach(b=>b.onclick=()=>send({t:'do',action:'shop',arg:b.dataset.k}));}
  const total=p.cart.reduce((s,k)=>s+E.catItem(k).c,0),groups={};p.cart.forEach(k=>groups[k]=(groups[k]||0)+1);
   $('cartBox').innerHTML=p.cart.length?`🛒 <b>Unpaid</b> (can't use until checkout):<div>${Object.entries(groups).map(([k,n])=>{const it=E.catItem(k);return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0"><span style="flex:1">${it.e} ${it.n} · ${it.c}🪙</span><button data-cart="minus" data-k="${k}" aria-label="Remove one ${it.n}" style="min-width:38px;min-height:36px">−</button><b>${n}</b><button data-cart="plus" data-k="${k}" aria-label="Add one ${it.n}" ${p.cart.length>=6?'disabled':''} style="min-width:38px;min-height:36px">+</button><button data-cart="remove" data-k="${k}" aria-label="Remove ${it.n}" style="min-width:44px;min-height:36px">✕</button></div>`;}).join('')}</div><button data-cart="clear" style="min-height:40px">Clear cart</button><div>Total <b>${total}🪙</b>${total>p.coins?' (not enough coins!)':''}</div>`:'Cart is empty.';
@@ -802,6 +884,12 @@ function addSprite(add,R,S){const tw=iso.tw,o=ip(R.x,R.y),dx=Math.round(o.x-R.h*
  for(let j=-R.h;j<R.w;j++){let best=-1;for(let lx=0;lx<R.w;lx++){for(const ly of [lx-j,lx-j-1])if(ly>=0&&ly<R.h)best=Math.max(best,lx+ly);}if(best<0)continue;
   let sx=(j+R.h)*tw+S.pad,sw=tw;if(j===-R.h){sx=0;sw=tw+S.pad;}if(j===R.w-1)sw=S.CW-sx;
   add(R.x+R.y+best+.01,()=>ctx.drawImage(S.cv,sx*DPR,0,sw*DPR,S.CH*DPR,dx+sx,dy,sw,S.CH));}}
+// true when a town actor stands behind (north/west of) a building and the building's silhouette covers the given screen points:
+// their name tag / bubble must then be hidden, otherwise they float on top of the roof (labels are drawn in a final pass).
+function hiddenBehindBuilding(v,pts){for(const b of E.TOWN.buildings){if(v.y>=b.y||v.x>=b.x+b.w-.001)continue;const sty=bStyle(b),z=(sty.wall+(sty.roof||0)+(sty.extra||0))*T;
+  const Tt=ip(b.x,b.y),R=ip(b.x+b.w,b.y),B=ip(b.x+b.w,b.y+b.h),Lf=ip(b.x,b.y+b.h),hull=[{x:Lf.x,y:Lf.y-z},{x:Tt.x,y:Tt.y-z},{x:R.x,y:R.y-z},R,B,Lf];
+  for(const q of pts){let inside=false;for(let i=0,j=hull.length-1;i<hull.length;j=i++){const a=hull[i],c=hull[j];if((a.y>q.y)!==(c.y>q.y)&&q.x<(c.x-a.x)*(q.y-a.y)/(c.y-a.y)+a.x)inside=!inside;}if(inside)return true;}}return false;}
+window.__seakHidden=(x,y)=>{const p=ip(x+.5,y+.5);return hiddenBehindBuilding({x,y},[{x:p.x,y:p.y+iso.th*.15},{x:p.x,y:p.y+iso.th*.15+iso.tw*.55}]);};
 function bStyle(b){const dr=b.door.y===b.y+b.h-1?{face:'s',u:b.door.x-b.x+.5}:b.door.x===b.x+b.w-1?{face:'e',u:b.door.y-b.y+.5}:null;
  const base={col:b.col,door:dr,wall:1.25,winGap:1};
  return Object.assign(base,{
@@ -944,7 +1032,7 @@ function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('
    if(tier==='dream'||tier==='villa'){const f=ip(h.x+h.w+.5,h.y+h.h-.5);add(fr+1.6,()=>emoji('🌳',f.x,f.y-T*.4,T*.8));}
    if(o&&o.car&&!(o.pos.map==='town'&&E.tileAt(st,'town',o.pos.x,o.pos.y)==='=')){const c=ip(h.exit.x+1.5,h.exit.y+.5);add(h.exit.x+h.exit.y+1.5,()=>emoji(o.car==='#e8434a'?'🚗':'🚙',c.x,c.y-T*.15,T*.75));}
    L(()=>{if(!o)emoji('🔒',q.x,q.y-z,T*.5);if(o){o.items.slice(0,6).forEach((it,i)=>emoji(E.ITEMS[it.t].e,q.x+(i-2.5)*T*.38,q.y-z+T*.05,T*.34));pill((oid===me?'⭐ ':'')+o.name+'  🚪'+o.visits,q.x,q.y-z-T*.55,Math.max(11,T*.3),'#3b3355','#ffffffe0','#0002');label(HT(o,h),q.x,q.y-z+T*.55,10,'#444');}else label(h.villa?'🏯 Hilltop Villa — for sale 500🪙 at Seak Mart':'empty lot',q.x,q.y-z-T*.5,11,'#555');});});}
- else if(map[0]==='b'){const b=E.TOWN.buildings.find(b=>'b:'+b.id===map),Ly=E.PUB_LAYOUT[b.id];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const f=E.PUB_SPOT[Ly[y][x]]||E.PUB_DECOR[Ly[y][x]];if(f&&Ly[y][x]!=='#'&&Ly[y][x]!=='D'){const ch=Ly[y][x];add(x+y,()=>drawFurn('pub:'+ch,f.col,x,y));if(f.action==='shop'||f.game){const q=ip(x+.5,y+.5);L(()=>emoji(f.e,q.x,q.y-T*(f.game?1.25:1.2),T*.36));}}}
+ else if(map[0]==='b'){const b=E.TOWN.buildings.find(b=>'b:'+b.id===map),Ly=E.PUB_LAYOUT[b.id];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const f=E.PUB_SPOT[Ly[y][x]]||E.PUB_DECOR[Ly[y][x]];if(f&&Ly[y][x]!=='#'&&Ly[y][x]!=='D'){const ch=Ly[y][x];add(x+y,()=>drawFurn('pub:'+ch,f.col,x,y));if(f.action==='shop'||f.game){const q=ip(x+.5,y+.5);L(()=>{emoji(f.e,q.x,q.y-T*(f.game?1.25:1.2),T*.36);if(f.action==='shop')pill(E.AISLES[ch]+(ch==='P'?' · coins only':''),q.x,q.y-T*1.55,Math.max(10,T*.24),'#3b3355','#ffffffe8','#0002');});}}}
   const inside=st.order.filter(id=>st.players[id].pos.map===map).length,q=ip(0,0);L(()=>pill(`${b.e} ${b.name}`+(b.id==='diner'&&inside>1?` · ${inside} inside (crowded = smaller meals)`:''),W/2,Math.max(58,q.y-T*1.4),Math.min(16,Math.max(12,T*.3)),'#3b3355','#fffffff0','#0002'));}
  else{const oid=E.ownerOfMap(st,map),o=st.players[oid];const dg=drag&&drag.on&&oid===me?drag:null;
   if(dg){for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++)if(E.canMove(st,p,dg.fx,dg.fy,x,y)){const a=ip(x,y),b=ip(x+1,y),c1=ip(x+1,y+1),d=ip(x,y+1);poly([a,b,c1,d],'#4ad16a22');ctx.setLineDash([5,4]);ctx.strokeStyle='#2fae55';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c1.x,c1.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.stroke();ctx.setLineDash([]);}}
@@ -958,13 +1046,14 @@ function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('
   const sleeping=q.busy&&q.busy.a==='sleep';let bed=null;if(sleeping&&map[0]==='h'){const ow=st.players[E.ownerOfMap(st,map)];bed=ow&&ow.items.filter(i=>i.t==='bed').sort((a,b)=>Math.abs(a.x-q.pos.x)+Math.abs(a.y-q.pos.y)-(Math.abs(b.x-q.pos.x)+Math.abs(b.y-q.pos.y)))[0];if(bed&&Math.abs(bed.x-q.pos.x)+Math.abs(bed.y-q.pos.y)>1)bed=null;}
   let lx=pt.x,ly=fy+cs*.95;if(sleeping){const bp=bed?ip(bed.x+.5,bed.y+.5):pt,bz=bed?T*.28:0;top=bp.y-bz-cs*1.6;lx=bp.x;ly=bp.y+iso.th*.6;add(Math.max(v.x+v.y,bed?bed.x+bed.y:0)+.6,()=>{top=drawSleeper(bp.x-iso.tw*.25,bp.y-bz-iso.th*.1,q,cs,t);});}
   else add(v.x+v.y+.5,()=>{top=drawChar(pt.x,fy,q,cs,q.id===me,t,moving);});
-  L(()=>{chrBubble(lx,top,q,cs);label((q.id===me?'▼ ':'')+q.name+(q.persona&&E.PERSONA[q.persona]?' · '+E.PERSONA[q.persona].tag:''),lx,ly,Math.max(10,cs*.75),q.id===me?'#b0006a':'#3b3355');});
-  if(q.say&&now()<q.say.until)L(()=>{const x=pt.x,y=top-cs*.9;ctx.font='bold 13px system-ui';const w=Math.min(260,ctx.measureText(q.say.text).width+18);rr(x-w/2,y-30,w,26,12,'#fff','#ff9ecb');ctx.beginPath();ctx.moveTo(x-6,y-4);ctx.lineTo(x,y+4);ctx.lineTo(x+6,y-4);ctx.fillStyle='#fff';ctx.fill();ctx.fillStyle='#3b3355';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(q.say.text,x,y-17,w-10);ctx.textBaseline='alphabetic';});});
+  const hidTag=isTown&&!sleeping&&hiddenBehindBuilding(v,[{x:pt.x,y:fy},{x:lx,y:ly},{x:pt.x,y:top}]);
+  if(!hidTag)L(()=>{chrBubble(lx,top,q,cs);label((q.id===me?'▼ ':'')+q.name+(q.persona&&E.PERSONA[q.persona]?' · '+E.PERSONA[q.persona].tag:''),lx,ly,Math.max(10,cs*.75),q.id===me?'#b0006a':'#3b3355');});
+  if(!hidTag&&q.say&&now()<q.say.until)L(()=>{const x=pt.x,y=top-cs*.9;ctx.font='bold 13px system-ui';const w=Math.min(260,ctx.measureText(q.say.text).width+18);rr(x-w/2,y-30,w,26,12,'#fff','#ff9ecb');ctx.beginPath();ctx.moveTo(x-6,y-4);ctx.lineTo(x,y+4);ctx.lineTo(x+6,y-4);ctx.fillStyle='#fff';ctx.fill();ctx.fillStyle='#3b3355';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(q.say.text,x,y-17,w-10);ctx.textBaseline='alphabetic';});});
  drawables.sort((a,b)=>a.depth-b.depth).forEach(d=>d.fn());
  if(!isTown){const k=roomKind(map),gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.max(W,H)*.75);gr.addColorStop(0,'#00000000');gr.addColorStop(1,k==='arcade'?'#0a0020aa':'#2a1a4a44');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);if(k==='arcade'){ctx.fillStyle='#10002a22';ctx.fillRect(0,0,W,H);}}
  labels.forEach(f=>f());
  if(st.phase==='day'){const m=E.clockMin(st,now()),night=m>=22*60||m<6*60?1:m>=20*60?(m-20*60)/120:m<8*60?(8*60-m)/120:0;if(night>0){ctx.fillStyle=`rgba(20,24,70,${(0.45*night).toFixed(3)})`;ctx.fillRect(0,0,W,H);}}
- $('dayLbl').textContent=st.phase==='lobby'?'Lobby: press Start':st.phase==='results'?'Results':`Day ${st.day}/7`;$('timerLbl').textContent=st.phase==='day'?(E.isNight(st,now())?'🌙 ':'☀️ ')+(st.players[me]&&st.players[me].watch?'⌚ '+E.clockText(st,now())+' · '+watchNote():E.clockText(st,now()).replace(/:\d\d$/,'h')):'';$('whereLbl').textContent=isTown?'📍 Town':map[0]==='b'?'📍 '+E.TOWN.buildings.find(b=>'b:'+b.id===map).name:'📍 '+st.players[E.ownerOfMap(st,map)].name+"'s house";if(Date.now()-msgT>2500)$('msg').style.opacity=0;
+ $('dayLbl').textContent=st.phase==='lobby'?(mode==='online'&&st.host!==me?'Lobby: waiting for host':'Lobby: press Start'):st.phase==='results'?'Results':`Day ${st.day}/7`+(mode==='online'&&st.startedBy?` · Started by ${st.startedBy}`:'');{const lf=st.phase==='day'?Math.max(0,Math.ceil((st.dayEnd-now())/1000)):-1;$('leftLbl').textContent=lf<0?'':`⏳ ${Math.floor(lf/60)}:${String(lf%60).padStart(2,'0')} left today`;}$('timerLbl').textContent=st.phase==='day'?(E.isNight(st,now())?'🌙 ':'☀️ ')+(st.players[me]&&st.players[me].watch?'⌚ '+E.clockText(st,now())+' · '+watchNote():E.clockText(st,now()).replace(/:\d\d$/,'h')):'';$('whereLbl').textContent=isTown?'📍 Town':map[0]==='b'?'📍 '+E.TOWN.buildings.find(b=>'b:'+b.id===map).name:'📍 '+st.players[E.ownerOfMap(st,map)].name+"'s house";if(Date.now()-msgT>2500)$('msg').style.opacity=0;
 }
 // ---- drag & drop to rearrange furniture in your own home (mouse + touch) ----
 let drag=null,selFurn=null,hoverFurn=null;
@@ -987,7 +1076,12 @@ cv.addEventListener('pointerup',e=>endDrag(e));cv.addEventListener('pointercance
 cv.addEventListener('pointerdown',e=>{if(!st||!selItem)return;const p=st.players[me];if(p.pos.map!=='h'+p.lot)return;const r=cv.getBoundingClientRect();
  const sx=e.clientX-r.left,sy=e.clientY-r.top,dx=(sx-iso.ox)/iso.tw,dy=(sy-iso.oy)/iso.th;const x=Math.floor((dx+dy)/2),y=Math.floor((dy-dx)/2);if(E.canPlace(st,p,x,y)){send({t:'buy',item:selItem,x,y});selItem=null;ui();}else flash("Can't place there");});
 window.__seakBridge={get st(){return st;},get me(){return me;},get mode(){return mode;},net(m){if(mode==='online'&&ws&&ws.readyState===1)ws.send(JSON.stringify(m));},finish(arg){send({t:'do',action:'play',arg});},flash:t=>flash(t)};
-let lastRev=-1;(function loop(){if(held)tryStep();if(st){if(st.rev!==lastRev){lastRev=st.rev;ui();}actionBar();draw();}requestAnimationFrame(loop);})();
+// Seak Mart panel root cause (fixed): walking only moves your position (no state revision), so the aisle list used to refresh only when
+// something else changed the game state and often stayed on "Walk up to an aisle". It now also refreshes whenever you move, and an
+// exception in one UI section can no longer stop the render loop or the Mart panel.
+let lastRev=-1,lastSig='';(function loop(){try{if(held)tryStep();if(st){if(st.rev!==lastRev){lastRev=st.rev;try{ui();}catch(e){window.__seakErr(String(e&&e.message||e));}}
+ const pp=st.players[me];if(pp){const sig=pp.pos.map+':'+pp.pos.x+','+pp.pos.y+':'+st.phase+':'+st.day;if(sig!==lastSig){lastSig=sig;try{martPanel(pp);}catch(e){window.__seakErr(String(e&&e.message||e));}}}
+ actionBar();draw();}}catch(e){window.__seakErr(String(e&&e.message||e));}requestAnimationFrame(loop);})();
 window.__seak=()=>({phase:st&&st.phase,pos:st&&st.players[me]&&{...st.players[me].pos}});window.SeakDebug={get st(){return st},send,setMe:id=>me=id};
 // screenshot hook: index.html#auto=town / #auto=home
 if(/auto/.test(location.hash)){$('nameIn').value='Ahmad';$('soloBtn').click();const p=st.players.me;p.coins=400;
