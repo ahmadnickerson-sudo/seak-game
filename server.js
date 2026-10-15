@@ -1,21 +1,32 @@
 // Seak multiplayer server: serves index.html and runs the authoritative game over WebSocket.
 // The game rules live in index.html (<script id="engine">) and are shared with the browser's Solo mode.
-const http=require('http'),fs=require('fs'),path=require('path'),vm=require('vm');const {WebSocketServer}=require('ws');
+const http=require('http'),fs=require('fs'),path=require('path'),vm=require('vm'),crypto=require('crypto');const {WebSocketServer}=require('ws');
 const PORT=process.env.PORT||3000;const HTML=path.join(__dirname,'index.html');
 function loadEngine(){const src=fs.readFileSync(HTML,'utf8').match(/<script id="engine">([\s\S]*?)<\/script>/)[1];const ctx={module:{exports:{}},globalThis:{}};vm.runInNewContext(src,ctx);return ctx.module.exports;}
 const E=loadEngine();
 const SPEED=parseFloat(process.env.SEAK_SPEED||'1');// e.g. 0.03 for tests (scales day length, action time, cooldowns)
 const server=http.createServer((req,res)=>{if(req.url==='/'||req.url.startsWith('/index.html')||req.url.startsWith('/?')){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});fs.createReadStream(HTML).pipe(res);}
- else if(req.url==='/health'){res.end('ok');}else{res.writeHead(404);res.end('not found');}});
+ else if(req.url==='/health'){res.end('ok');}
+ else if(req.url.startsWith('/room/')){const c=decodeURIComponent(req.url.slice(6).split('?')[0]).toUpperCase(),room=rooms.get(c);res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});
+  if(!room)return res.end(JSON.stringify({exists:false}));const st=room.st,h=st.players[st.host];res.end(JSON.stringify({exists:true,code:c,phase:st.phase,day:st.day,full:st.order.length>=E.MAX_PLAYERS,host:h?h.name:null,startedBy:st.startedBy||null,players:st.order.filter(i=>!st.players[i].ai).map(i=>({name:st.players[i].name,offline:!!st.players[i].offline}))}));}else{res.writeHead(404);res.end('not found');}});
 const wss=new WebSocketServer({server});const rooms=new Map();let nextId=1;
+const ROOM_TTL=parseFloat(process.env.SEAK_ROOM_TTL||'1200')*1000;// a started game with nobody connected is kept this long so players can rejoin
+const newToken=()=>crypto.randomBytes(12).toString('hex');
+// find an existing seat for a (re)joining player: a saved session token, or the same name as a disconnected player
+function findSeat(room,m){const st=room.st;if(m.token&&typeof m.token==='string'){for(const id in room.tokens)if(room.tokens[id]===m.token&&st.players[id])return id;}
+ const nm=String(m.name||'').slice(0,12).toLowerCase();if(nm&&st.phase!=='lobby')return st.order.find(id=>{const p=st.players[id];return !p.ai&&p.offline&&p.name.toLowerCase()===nm;})||null;return null;}
 function code(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ';let c;do{c=Array.from({length:4},()=>A[Math.floor(Math.random()*A.length)]).join('');}while(rooms.has(c));return c;}
 function broadcast(room){const msg=JSON.stringify({t:'state',state:room.st,now:Date.now()});room.lastRev=room.st.rev;for(const c of room.clients)if(c.readyState===1)c.send(msg);}
 wss.on('connection',ws=>{ws.id='p'+(nextId++);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw);}catch{return;}const now=Date.now();const err=msg=>ws.send(JSON.stringify({t:'err',msg}));
-  if(m.t==='create'||m.t==='join'){let room;if(m.t==='create'){const c=code();room={st:E.createState(c,{speed:SPEED}),clients:new Set(),lastRev:-1};rooms.set(c,room);}
+  if(m.t==='create'||m.t==='join'){let room;if(m.t==='create'){const c=code();room={st:E.createState(c,{speed:SPEED}),clients:new Set(),lastRev:-1,tokens:{},emptyAt:null};rooms.set(c,room);}
    else{room=rooms.get(String(m.code||'').toUpperCase());if(!room)return err(`Room ${String(m.code||'').toUpperCase()} not found. Check the code or ask the host for a new link.`);}
+   if(m.t==='join'&&room.st.phase!=='lobby'){const seat=findSeat(room,m);
+    if(!seat){const st=room.st,h=st.players[st.host];return ws.send(JSON.stringify({t:'err',code:'started',room:room.st.code,host:h?h.name:null,startedBy:st.startedBy||null,msg:'Game already started. Rejoin with your saved name, or start a new room.'}));}
+    for(const c of room.clients)if(c.id===seat){c.room=null;room.clients.delete(c);try{c.close();}catch(e){}}
+    ws.id=seat;room.st.players[seat].offline=false;room.emptyAt=null;ws.room=room;room.clients.add(ws);ws.send(JSON.stringify({t:'welcome',id:seat,code:room.st.code,token:room.tokens[seat]||(room.tokens[seat]=newToken()),rejoined:true}));room.st.rev++;broadcast(room);return;}
    if(!E.addPlayer(room.st,ws.id,String(m.name||'Player'),false,m.look))return err(room.st.order.length>=E.MAX_PLAYERS?`Room is full (${E.MAX_PLAYERS} max)`:'That game has already started. Ask the host to make a new room.');
-   ws.room=room;room.clients.add(ws);ws.send(JSON.stringify({t:'welcome',id:ws.id,code:room.st.code}));broadcast(room);return;}
+   ws.room=room;room.clients.add(ws);room.tokens[ws.id]=newToken();ws.send(JSON.stringify({t:'welcome',id:ws.id,code:room.st.code,token:room.tokens[ws.id]}));broadcast(room);return;}
   const room=ws.room;if(!room)return;const st=room.st;let r='ok';
   // arcade: 'arc' marks which mini-game you have open (for Pong pairing); 'arcmsg' relays Pong frames to your partner
   if(m.t==='arc'){const p=st.players[ws.id];if(p){const g=m.game;p.arc=['pong','pong-cpu','blockfall','chomp'].includes(g)?g:null;if(p.arc!=='pong')endPong(room,ws.id);st.rev++;broadcast(room);}return;}
@@ -28,9 +39,13 @@ wss.on('connection',ws=>{ws.id='p'+(nextId++);
   if(m.t==='say'){E.chat(st,ws.id,m.text,Date.now());return;}
   if(m.t==='step'){E.step(st,ws.id,m.dx|0,m.dy|0,now,!!m.run);return;}// positions go out in the 10Hz 'pos' broadcast
   if(m.t==='do')r=E.doAction(st,ws.id,String(m.action),now,m.arg==null?null:String(m.arg));else if(m.t==='buy')r=E.buy(st,ws.id,String(m.item),m.x==null?null:m.x|0,m.y==null?null:m.y|0);else if(m.t==='rotate')r=E.rotateItem(st,ws.id,m.x|0,m.y|0);else if(m.t==='move')r=E.moveItem(st,ws.id,m.fx|0,m.fy|0,m.x|0,m.y|0);
-  else if(m.t==='start')E.startGame(st,now);else if(m.t==='bot'){if(st.phase==='lobby')E.addPlayer(st,'bot'+(nextId++),['Pixel','Juno','Byte','Mochi','Nova','Kiwi','Ziggy'][st.order.length%7]+' (AI)',true);}
+  else if(m.t==='start')r=E.startGame(st,now,ws.id);else if(m.t==='bot'){if(st.phase==='lobby')E.addPlayer(st,'bot'+(nextId++),['Pixel','Juno','Byte','Mochi','Nova','Kiwi','Ziggy'][st.order.length%7]+' (AI)',true);}
   if(r!=='ok')err(r);E.tick(st,now);broadcast(room);});
- ws.on('close',()=>{const room=ws.room;if(!room)return;endPong(room,ws.id);room.clients.delete(ws);E.removePlayer(room.st,ws.id);if(!room.clients.size)rooms.delete(room.st.code);else broadcast(room);});});
+ ws.on('close',()=>{const room=ws.room;if(!room)return;endPong(room,ws.id);room.clients.delete(ws);
+  if(room.st.phase==='lobby'){E.removePlayer(room.st,ws.id);delete room.tokens[ws.id];if(!room.clients.size)rooms.delete(room.st.code);else broadcast(room);return;}
+  // game already started: keep the seat so the player can rejoin (by session token or name)
+  const p=room.st.players[ws.id];if(p)p.offline=true;room.st.rev++;if(!room.clients.size)room.emptyAt=Date.now();else broadcast(room);});});
+setInterval(()=>{const t=Date.now();for(const [c,room] of rooms)if(room.emptyAt&&!room.clients.size&&t-room.emptyAt>ROOM_TTL)rooms.delete(c);},5000);
 // ---------- online Pong (server-authoritative). Player a defends the bottom edge, b the top; b's client mirrors the view ----------
 const PONG={W:300,H:400,PW:60,TO:5};
 function pongServe(P,d){P.ball={x:PONG.W/2,y:PONG.H/2,vx:(Math.random()-.5)*3,vy:3.2*d};}
