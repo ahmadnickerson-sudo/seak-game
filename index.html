@@ -176,15 +176,16 @@ function buildTown(){const g=[];for(let y=0;y<TH;y++){g.push([]);for(let x=0;x<T
  // fountain (solid 2x2) in the west half of the square; trees are solid, grass patches are plain walkable '.' tiles
  for(let y=30;y<=31;y++)for(let x=27;x<=28;x++)set(x,y,'F');
  for(const [gx,gy,gw,gh] of PLAZA_GRASS)for(let y=gy;y<gy+gh;y++)for(let x=gx;x<gx+gw;x++)if(g[y][x]===',')set(x,y,'.');
- PLAZA_TREES.forEach(([x,y])=>set(x,y,'T'));
+ const UNDER={};// ground that was under each plaza tree/bench (',' brick or '.' grass) so the renderer paints matching ground beneath them
+ PLAZA_TREES.forEach(([x,y])=>{UNDER[x+','+y]=g[y][x];set(x,y,'T');});
  // ice cream stand: solid 2x1 counter on the east grass patch; serve from the tiles directly north/south of it (kept clear)
  [[40,30],[41,30]].forEach(([x,y])=>{set(x,y,'I');spots.push({x,y,action:'icecream',place:'icecream'});});
- [[24,28],[27,28],[39,28],[42,28],[25,32]].forEach(([x,y])=>{set(x,y,'S');spots.push({x,y,action:'hang',place:'plaza',e:'🪑'});});
+ [[24,28],[27,28],[39,28],[42,28],[25,32]].forEach(([x,y])=>{UNDER[x+','+y]=g[y][x];set(x,y,'S');spots.push({x,y,action:'hang',place:'plaza',e:'🪑'});});
  // decor trees: seeded scatter, only where all 8 neighbours are plain grass (so trees never wall anything in) and outside open lots
  let r=12345;const rnd=()=>((r=(r*1103515245+12345)&0x7fffffff)/0x7fffffff);
  const inLot=(x,y)=>(x>=PL.x-1&&x<=PL.x+PL.w&&y>=PL.y-1&&y<=PL.y+PL.h)||OPEN_LOTS.concat([SCHOOL_LOT,ARCADE_LOT,MART_LOT,VILLA_AREA]).some(l=>x>=l.x-1&&x<=l.x+l.w&&y>=l.y-1&&y<=l.y+l.h);
  for(let y=2;y<TH-2;y++)for(let x=2;x<TW-2;x++){if(g[y][x]!=='.'||inLot(x,y)||rnd()>0.11)continue;let ok=true;for(let dy=-1;dy<=1&&ok;dy++)for(let dx=-1;dx<=1;dx++)if(g[y+dy][x+dx]!=='.'){ok=false;break;}if(ok)set(x,y,'T');}
- return{w:TW,h:TH,g:g.map(r=>r.join('')),houses,buildings,spots,plaza:PL,openLots:OPEN_LOTS,school:SCHOOL_LOT};}
+ return{w:TW,h:TH,g:g.map(r=>r.join('')),houses,buildings,spots,plaza:PL,under:UNDER,openLots:OPEN_LOTS,school:SCHOOL_LOT};}
 const TOWN=buildTown();
 // home tiers: everyone starts in a Starter home; upgrades are bought at Seak Mart's Real Estate desk
 const HOME_TIERS={starter:{w:7,h:6,n:'Starter home',rank:0},cozy:{w:9,h:7,n:'Cozy House',rank:1,c:150},dream:{w:11,h:8,n:'Dream House',rank:2,c:350},villa:{w:13,h:9,n:'Hilltop Villa',rank:3,c:500}};
@@ -1047,8 +1048,8 @@ function draw(){if(st&&$('game').style.display!=='none'&&(!W||!H||Math.abs(W-$('
  ctx.fillStyle=isTown?'#a8e6b8':'#f6e9ff';ctx.fillRect(0,0,W,H);
  const M=T*3,drawables=[],labels=[];const add=(depth,fn)=>drawables.push({depth,fn});const L=(fn)=>labels.push(fn);
  // ---- ground ----
- if(isTown){for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){if(!onScreen(x,y,M))continue;const c=E.tileAt(st,map,x,y);let col=TCOL[c]||'#c8f5d4';if(c==='.'&&(x+y)%2)col='#bff0cc';if(c===','){brickTile(x,y);continue;}
-   const inPl=c==='.'&&x>=E.TOWN.plaza.x&&x<E.TOWN.plaza.x+E.TOWN.plaza.w&&y>=E.TOWN.plaza.y&&y<E.TOWN.plaza.y+E.TOWN.plaza.h;
+ if(isTown){for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){if(!onScreen(x,y,M))continue;const c=E.tileAt(st,map,x,y);let col=TCOL[c]||'#c8f5d4';if(c==='.'&&(x+y)%2)col='#bff0cc';let ug=c;if(c==='T'||c==='S'){const u=E.TOWN.under&&E.TOWN.under[x+','+y];ug=u||'.';if(ug===','){brickTile(x,y);continue;}if(ug==='.'){col=(x+y)%2?'#bff0cc':'#c8f5d4';}}if(c===','){brickTile(x,y);continue;}
+   const inPl=(c==='.'||(ug==='.'&&(c==='T'||c==='S')&&E.TOWN.under&&E.TOWN.under[x+','+y]==='.'))&&x>=E.TOWN.plaza.x&&x<E.TOWN.plaza.x+E.TOWN.plaza.w&&y>=E.TOWN.plaza.y&&y<E.TOWN.plaza.y+E.TOWN.plaza.h;
    if(inPl){if(groundSpr('grass',x,y))continue;tileDiamond(x,y,(x+y)%2?'#9fe3a8':'#a8e8b0');grassTufts(x,y);continue;}
    tileDiamond(x,y,col);if(c==='='&&(x<=2||x>=MW-3))roadMark(x,y,MW);if(c==='.'&&((x*7+y*13)%17===0)){const q=ip(x+.5,y+.5);emoji('🌼',q.x,q.y,T*.3);}
    else if(c==='.'&&((x*11+y*5)%7===0)){const q=ip(x+.3+((x*13)%5)/12,y+.4+((y*7)%5)/12);ctx.strokeStyle='#7fcf94';ctx.lineWidth=1.3;ctx.beginPath();for(const k of[-1,0,1]){ctx.moveTo(q.x+k*3,q.y);ctx.lineTo(q.x+k*4.5,q.y-5-(k?0:2));}ctx.stroke();}

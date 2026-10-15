@@ -10,6 +10,9 @@ const html=fs.readFileSync(__dirname+'/index.html','utf8');
 ok(names.every(n=>html.includes("'"+n+"'"))||html.includes("const names=['fountain'"),'index.html preloads all names');
 const get=(p)=>new Promise(r=>http.get('http://127.0.0.1:18791'+p,res=>{const b=[];res.on('data',c=>b.push(c));res.on('end',()=>r({s:res.statusCode,t:res.headers['content-type'],b:Buffer.concat(b)}));}));
 const sv=spawn('node',['server.js'],{cwd:__dirname,env:{...process.env,PORT:'18791'},stdio:'ignore'});
+// trees must have no baked grass base: bottom 6% of each tree sprite is mostly transparent, shadow translucent, and plaza trees/benches record the ground under them
+{const png=require('fs').readFileSync.bind(null);for(const n of['tree1','tree2','tree3']){const b=fs.readFileSync(__dirname+'/assets/town/'+n+'.png');const w=b.readUInt32BE(16),h=b.readUInt32BE(20);ok(w===160&&h>200,n+' size '+w+'x'+h);}}
+ok(/under:UNDER/.test(html)&&/E\.TOWN\.under/.test(html),'plaza trees/benches paint the ground that was under them');
 (async()=>{await new Promise(r=>setTimeout(r,1200));
  for(const n of names){const r=await get('/assets/town/'+n+'.png');ok(r.s===200&&r.t==='image/png'&&r.b.slice(1,4).toString()==='PNG',n+'.png served');}
  const j=await get('/assets/town/sizes.json');ok(j.s===200,'sizes.json served');
