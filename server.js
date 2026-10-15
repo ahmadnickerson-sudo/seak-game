@@ -6,6 +6,7 @@ function loadEngine(){const src=fs.readFileSync(HTML,'utf8').match(/<script id="
 const E=loadEngine();
 const SPEED=parseFloat(process.env.SEAK_SPEED||'1');// e.g. 0.03 for tests (scales day length, action time, cooldowns)
 const server=http.createServer((req,res)=>{if(req.url==='/'||req.url.startsWith('/index.html')||req.url.startsWith('/?')){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});fs.createReadStream(HTML).pipe(res);}
+ else if(/^\/assets\/town\/[\w.-]+\.(png|json)$/.test(req.url.split('?')[0])){const fp=path.join(__dirname,req.url.split('?')[0]);fs.readFile(fp,(e,d)=>{if(e){res.writeHead(404);return res.end('not found');}res.writeHead(200,{'Content-Type':fp.endsWith('.png')?'image/png':'application/json','Cache-Control':'public, max-age=3600'});res.end(d);});}
  else if(req.url==='/health'){res.end('ok');}
  else if(req.url.startsWith('/room/')){const c=decodeURIComponent(req.url.slice(6).split('?')[0]).toUpperCase(),room=rooms.get(c);res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});
   if(!room)return res.end(JSON.stringify({exists:false}));const st=room.st,h=st.players[st.host];res.end(JSON.stringify({exists:true,code:c,phase:st.phase,day:st.day,full:st.order.length>=E.MAX_PLAYERS,host:h?h.name:null,startedBy:st.startedBy||null,players:st.order.filter(i=>!st.players[i].ai).map(i=>({name:st.players[i].name,offline:!!st.players[i].offline}))}));}else{res.writeHead(404);res.end('not found');}});
