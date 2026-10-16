@@ -814,24 +814,40 @@ function isoBlock(x,y,w,h,z,col){const a=ip(x,y),b=ip(x+w,y),c=ip(x+w,y+h),d=ip(
 function isoCol(x,y,z,col,e){
   const a=ip(x,y),b=ip(x+1,y),c=ip(x+1,y+1),d=ip(x,y+1);
   const A={x:a.x,y:a.y-z},B={x:b.x,y:b.y-z},C={x:c.x,y:c.y-z},D={x:d.x,y:d.y-z};
+  const cap=Math.max(2,Math.min(4,T*.08));
 
-  const cap=Math.max(1,T*.12);
-  const capA={x:A.x,y:A.y},capB={x:B.x,y:B.y},capC={x:C.x,y:C.y+cap},capD={x:D.x,y:D.y+cap};
-
-  // Flat side faces; avoid drawing outlines on each tile.
+  // Draw only the exposed vertical faces, using one flat color per face.
   if(e.s) poly([d,c,C,D],shade(col,.72));
   if(e.e) poly([b,c,C,B],shade(col,.86));
 
-  // Thin top cap rather than a full bright diamond.
-  poly([capA,capB,capC,capD],shade(col,1.1));
+  // A narrow strip follows each wall face's top edge; never draw a full tile diamond.
+  // South-facing wall top edge runs D -> C.
+  if(e.s){
+    poly([
+      {x:D.x,y:D.y},
+      {x:C.x,y:C.y},
+      {x:C.x,y:C.y+cap},
+      {x:D.x,y:D.y+cap}
+    ],shade(col,1.06));
+  }
 
-  // Subtle outline only on exposed edges, omitting shared interior tile boundaries.
+  // East-facing wall top edge runs B -> C.
+  if(e.e){
+    poly([
+      {x:B.x,y:B.y},
+      {x:C.x,y:C.y},
+      {x:C.x,y:C.y+cap},
+      {x:B.x,y:B.y+cap}
+    ],shade(col,1.06));
+  }
+
+  // Stroke only exposed outer silhouette edges; omit shared tile edges and top-face outlines.
   ctx.beginPath();
   if(e.n){ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);}
   if(e.w){ctx.moveTo(D.x,D.y);ctx.lineTo(A.x,A.y);}
-  if(e.s){ctx.moveTo(D.x,D.y);ctx.lineTo(d.x,d.y);ctx.lineTo(c.x,c.y);}
-  if(e.e){ctx.moveTo(B.x,B.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);}
-  ctx.strokeStyle='#00000030';
+  if(e.s){ctx.moveTo(D.x,D.y);ctx.lineTo(d.x,d.y);}
+  if(e.e){ctx.moveTo(B.x,B.y);ctx.lineTo(b.x,b.y);}
+  ctx.strokeStyle='#00000024';
   ctx.lineWidth=1;
   ctx.stroke();
 }
