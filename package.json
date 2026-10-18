@@ -1,0 +1,9 @@
+{
+  "name": "seak-dead-end",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Free retro isometric co-op zombie shooter",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" }
+}
