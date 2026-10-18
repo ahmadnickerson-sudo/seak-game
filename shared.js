@@ -120,6 +120,28 @@ function tickBullets(game,dt,onKill){
  game.bullets=game.bullets.filter(b=>b.life>0&&b.x>0&&b.y>0&&b.x<W&&b.y<H);
  game.zombies=game.zombies.filter(z=>z.hp>0);}
 function spawnPoint(rnd){for(let i=0;i<30;i++){const side=Math.floor(rnd()*4),x=side===0?1:side===1?W-2:2+rnd()*(W-4),y=side===2?1:side===3?H-2:2+rnd()*(H-4);if(!circleBlocked(x,y,ZR))return{x,y};}return{x:1,y:22};}
-return{W,H,tiles,solid,bidx,buildings:bl,isSolid,pointSolid,circleBlocked,moveEntity,clearLine,makeField,nextCell,tickZombies,tickBullets,spawnPoint,PR,ZR};
+
+// ---- ammo boxes: fixed spots (streets, plaza, building interiors beside crates), never on doors/crates/door-adjacent cells ----
+const AMMO_GAIN={2:60,3:12},AMMO_CAP={2:180,3:48},AMMO_RESPAWN=25000;
+const ammoSpots=(function(){const spots=[],used=new Set(),doorCells=new Set();
+ for(const b of bl)for(const d of b.doors)for(const c of [d.x,d.y]&&[[d.x,d.y],[d.out.x,d.out.y],[d.in.x,d.in.y]])doorCells.add(c[0]+','+c[1]);
+ const nearDoor=(x,y)=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(doorCells.has((x+dx)+','+(y+dy)))return true;return false;};
+ const open=(x,y)=>inb(x,y)&&!isSolid(x,y)&&tiles[y][x]!=='d'&&!nearDoor(x,y);
+ const add=(x,y)=>{if(!open(x,y)||used.has(x+','+y))return false;used.add(x+','+y);spots.push({id:spots.length+1,x,y});return true;};
+ // inside buildings: a floor cell next to a crate (cover + loot), not next to a door
+ for(const b of bl){for(const c of b.crates){let done=false;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const x=c[0]+dx,y=c[1]+dy;if(tiles[y]&&tiles[y][x]==='f'&&open(x,y)&&bidx[y][x]===b.idx&&add(x,y)){done=true;break;}}if(done)break;}}
+ // outdoors: sample a grid, take the nearest open cell that is not beside a building wall
+ const free=(x,y)=>open(x,y)&&bidx[y][x]<0&&![[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]].some(([a,b])=>isSolid(x+a,y+b));
+ for(let gy=6;gy<H-3;gy+=13)for(let gx=6;gx<W-3;gx+=15){let best=null,bd=99;for(let dy=-4;dy<=4;dy++)for(let dx=-5;dx<=5;dx++){const x=gx+dx,y=gy+dy;if(inb(x,y)&&free(x,y)&&Math.abs(dx)+Math.abs(dy)<bd){bd=Math.abs(dx)+Math.abs(dy);best=[x,y];}}if(best)add(best[0],best[1]);}
+ add(33,23);add(33,25);
+ return spots;})();
+function ammoInit(){return ammoSpots.map(s=>({id:s.id,x:s.x,y:s.y,kind:'ammo'}));}
+function tickAmmo(game,now,onPick){
+ game.respawns=game.respawns||[];
+ for(const it of game.pickups.slice()){for(const p of Object.values(game.players)){if(p.hp<=0||Math.hypot(p.x-it.x,p.y-it.y)>.85)continue;
+  let got=0;for(const n of[2,3]){const cur=Number.isFinite(p.ammo[n])?p.ammo[n]:0,nv=Math.min(AMMO_CAP[n],cur+AMMO_GAIN[n]);got+=nv-cur;p.ammo[n]=nv;}
+  if(!got)continue;game.pickups=game.pickups.filter(x=>x!==it);game.respawns.push({id:it.id,x:it.x,y:it.y,at:now+AMMO_RESPAWN});p.pickAt=now;p.pickMsg='AMMO +'+AMMO_GAIN[2]+' MG  +'+AMMO_GAIN[3]+' SG';if(onPick)onPick(p,it);break;}}
+ for(const r of game.respawns.slice())if(now>=r.at){game.respawns=game.respawns.filter(x=>x!==r);game.pickups.push({id:r.id,x:r.x,y:r.y,kind:'ammo'});}}
+return{ammoSpots,ammoInit,tickAmmo,AMMO_GAIN,AMMO_CAP,W,H,tiles,solid,bidx,buildings:bl,isSolid,pointSolid,circleBlocked,moveEntity,clearLine,makeField,nextCell,tickZombies,tickBullets,spawnPoint,PR,ZR};
 
 });
