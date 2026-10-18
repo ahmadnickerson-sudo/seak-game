@@ -514,7 +514,7 @@ const IS_TOUCH=(matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints
 function smallScr(){return innerWidth<=800||innerHeight<=500;}
 function syncUI(){document.body.classList.toggle('touchui',IS_TOUCH||smallScr());document.body.classList.toggle('smallscr',smallScr());if(IS_TOUCH&&!T.mouseSeen)T.on=true;}
 syncUI();
-let game=null,ws=null,cam={x:null,y:null},me=null,online=false,keys={},mouse={x:0,y:0,down:false},last=0,shotAt=0,weapon=1,soloId='solo',view={scale:1,ox:0,oy:0},bannerTimer=0,seenWave=0;
+const ZOOM=2;let game=null,ws=null,cam={x:null,y:null},me=null,online=false,keys={},mouse={x:0,y:0,down:false},last=0,shotAt=0,weapon=1,soloId='solo',view={scale:1,ox:0,oy:0},bannerTimer=0,seenWave=0;
 const guns={1:{name:'PISTOL',damage:34,rate:300,spread:.045,pellets:1,mag:Infinity,reserve:Infinity,speed:15},2:{name:'MACHINE GUN',damage:17,rate:95,spread:.10,pellets:1,mag:36,reserve:180,speed:17},3:{name:'SHOTGUN',damage:15,rate:650,spread:.43,pellets:7,mag:8,reserve:48,speed:12}};
 function initState(){return{phase:'playing',wave:0,score:0,players:{},zombies:[],bullets:[],pickups:DM.ammoInit(),respawns:[],nextId:1,breakUntil:0,waveStart:0,ended:false};}
 function player(id,name){return{id,name,x:33,y:23,hp:100,maxHp:100,score:0,weapon:1,ammo:{1:Infinity,2:36,3:8},reserve:{1:Infinity,2:180,3:48},lastShot:0,color:E.COLORS[(Object.keys(game.players).length)%E.COLORS.length],look:E.defaultLook(Object.keys(game.players).length),angle:0};}
@@ -526,7 +526,11 @@ function resize(){syncUI();let r=cv.getBoundingClientRect(),d=Math.min(devicePix
 window.addEventListener('resize',resize);
 function iso(x,y){return{x:(x-y)*12,y:(x+y)*6};}
 function fit(){let w=cv.width,h=cv.height;let a=iso(0,0),b=iso(E.TW,E.TH);let minX=iso(0,E.TH).x,maxX=iso(E.TW,0).x;let scale=Math.min(w/(maxX-minX+100),h/(E.TH*6+100));view={scale,ox:w/2-(minX+maxX)/2*scale,oy:25*scale};
-let pl=game&&game.players&&game.players[me];if((document.body.classList.contains('touchui')||smallScr())&&pl){const z=Math.max(scale,w/(15*24));const c=iso(pl.x,pl.y);if(cam.x==null){cam.x=c.x;cam.y=c.y;}else{cam.x+=(c.x-cam.x)*.18;cam.y+=(c.y-cam.y)*.18;}view={scale:z,ox:w/2-cam.x*z,oy:h*.55-(cam.y-10)*z};}}
+let pl=game&&game.players&&game.players[me];if(pl){const touchy=document.body.classList.contains('touchui')||smallScr();const z=ZOOM*(touchy?Math.max(scale,w/(15*24)):scale);const c=iso(pl.x,pl.y);if(cam.x==null){cam.x=c.x;cam.y=c.y;}else{cam.x+=(c.x-cam.x)*.18;cam.y+=(c.y-cam.y)*.18;}
+ const fy=touchy?.55:.5;let cx=cam.x,cy=cam.y;const hw=w/2/z,top=fy*h/z,bot=(1-fy)*h/z;
+ if(maxX-minX>2*hw)cx=Math.max(minX+hw,Math.min(maxX-hw,cx));else cx=(minX+maxX)/2;
+ const yMin=-16,yMax=(E.TW+E.TH)*6+4;if(yMax-yMin>top+bot){const ty=cy-10;cy=Math.max(yMin+top,Math.min(yMax-bot,ty))+10;}else cy=(yMin+yMax)/2+10;
+ view={scale:z,ox:w/2-cx*z,oy:fy*h-(cy-10)*z};}}
 function point(x,y){let p=iso(x,y);return{x:view.ox+p.x*view.scale,y:view.oy+p.y*view.scale};}
 function diamond(x,y,c1,c2){let p=point(x,y),s=view.scale;ctx.beginPath();ctx.moveTo(p.x,p.y-6*s);ctx.lineTo(p.x+12*s,p.y);ctx.lineTo(p.x,p.y+6*s);ctx.lineTo(p.x-12*s,p.y);ctx.closePath();ctx.fillStyle=c1;ctx.fill();ctx.strokeStyle=c2;ctx.lineWidth=Math.max(1,s);ctx.stroke();}
 function seeded(n){return Math.abs(Math.sin(n*127.1+311.7)*43758.5453)%1;}
@@ -640,7 +644,7 @@ function bindTouch(){
  addEventListener('blur',()=>{T.held={};T.fire=false;recompute();});
 }
 bindTouch();
-window.__dead={get game(){return game},get me(){return me},get weapon(){return weapon},T,cam,pt:point,get view(){return view},DM};window.addEventListener('keydown',e=>key(e,true));window.addEventListener('keyup',e=>key(e,false));
+window.__dead={ZOOM,get game(){return game},get me(){return me},get weapon(){return weapon},T,cam,pt:point,get view(){return view},DM};window.addEventListener('keydown',e=>key(e,true));window.addEventListener('keyup',e=>key(e,false));
 cv.addEventListener('mousemove',e=>{let r=cv.getBoundingClientRect();mouse.x=(e.clientX-r.left)*cv.width/r.width;mouse.y=(e.clientY-r.top)*cv.height/r.height;});cv.addEventListener('mousedown',e=>{mouse.down=true;shoot();});window.addEventListener('mouseup',()=>mouse.down=false);cv.addEventListener('wheel',e=>{weapon=weapon%3+1;if(game?.players[me])game.players[me].weapon=weapon;drawGuns();e.preventDefault();},{passive:false});$('fireBtn').onclick=shoot;
 $('solo').onclick=startSolo;$('create').onclick=()=>connect('create');$('join').onclick=()=>connect('join',$('code').value.toUpperCase());$('restart').onclick=()=>{if(online){ws?.send(JSON.stringify({t:'restart'}));$('results').style.display='none';}else startSolo();};document.addEventListener('visibilitychange',()=>{if(!document.hidden)resize();});
 })();

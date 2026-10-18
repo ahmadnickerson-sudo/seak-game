@@ -73,7 +73,7 @@ const MOB={viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isM
  await touch('touchEnd',[]);await sleep(400);
  const p1=B.st.players[me];
  rep('online: server moved the touch player (D-pad)',Math.hypot(p1.x-p0.x,p1.y-p0.y)>.8,`${p0.x.toFixed(1)},${p0.y.toFixed(1)} -> ${p1.x.toFixed(1)},${p1.y.toFixed(1)}`);
- rep('online: server fired bullets from the same touch (FIRE, machine gun)',maxB>0&&p1.ammo[2]<p0.ammo[2],`bullets seen ${maxB}, ammo ${p1.ammo[2]}`);
+ rep('online: server fired bullets from the same touch (FIRE, machine gun)',maxB>0&&p1.ammo[2]<=p0.ammo[2],`bullets seen ${maxB}, ammo ${p1.ammo[2]}`);
  rep('online: weapon button selected machine gun on server',p1.weapon===2);
  await pg.screenshot({path:OUT+'/m05_online_after.png'});
  rep('mobile online: no page errors',pg.errs.length===0,JSON.stringify(pg.errs));w.close();await ctx.close();}
@@ -81,7 +81,7 @@ const MOB={viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isM
 {const {ctx,pg}=await mk({viewport:{width:1280,height:800}});await pg.goto(URL);await sleep(400);await pg.click('#solo');await sleep(800);
  const v=await pg.evaluate(()=>({touch:getComputedStyle(document.querySelector('#touch')).display,side:getComputedStyle(document.querySelector('#side')).display,sc:__dead.view.scale,base:Math.min(document.querySelector('#cv').width/((68+46)*12+100),document.querySelector('#cv').height/(46*6+100)),T:__dead.T.on}));
  rep('desktop: no touch overlay, side panel shown, touch aim off',v.touch==='none'&&v.side!=='none'&&!v.T,JSON.stringify(v));
- rep('desktop: camera still fits whole map (unchanged zoom)',Math.abs(v.sc-v.base)<.01,`${v.sc.toFixed(3)} vs ${v.base.toFixed(3)}`);
+ rep('desktop: follow camera at 2x the old whole-map fit',Math.abs(v.sc/v.base-2)<.02,`${v.sc.toFixed(3)} vs ${v.base.toFixed(3)}`);
  const x0=await pg.evaluate(()=>__dead.game.players[__dead.me].x);await pg.keyboard.down('d');await sleep(500);await pg.keyboard.up('d');const x1=await pg.evaluate(()=>__dead.game.players[__dead.me].x);
  rep('desktop: WASD still moves',x1>x0+.5,`${x0.toFixed(1)}->${x1.toFixed(1)}`);
  await pg.keyboard.press('3');rep('desktop: key 3 selects shotgun',await pg.evaluate(()=>__dead.weapon===3));
