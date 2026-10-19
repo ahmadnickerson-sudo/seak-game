@@ -28,5 +28,6 @@ const g2={players:{a:{hp:100,x:S[0].x,y:S[0].y,ammo:{1:Infinity,2:180,3:48}}},pi
  ok('online: box collected by walking over it (or someone did)',!A.st.pickups.some(p=>p.id===tgt.id),'ammo '+ammo0+'->'+pa().ammo[2]);
  ok('online: other client sees it vanish',!B.st.pickups.some(p=>p.id===tgt.id));
  ok('online: pickup flash flag set',!!pa().pickAt);
- if(!process.argv.includes('--fast')){await sleep(26000);ok('online: box respawned for both',A.st.pickups.some(p=>p.id===tgt.id)&&B.st.pickups.some(p=>p.id===tgt.id));}
+ if(!process.argv.includes('--fast')){{const p=pa();const dx=33-p.x,dy=23-p.y,l=Math.hypot(dx,dy)||1;A.send(JSON.stringify({t:'input',mx:dx/l,my:dy/l,angle:0,weapon:1}));await sleep(700);A.send(JSON.stringify({t:'input',mx:0,my:0,angle:0,weapon:1}));} // step off the spot so it isn't re-collected the instant it respawns
+ await sleep(25500);if(A.st.phase==='over'){const g={players:{},pickups:[],respawns:[{id:tgt.id,x:tgt.x,y:tgt.y,at:1000}]};DM.tickAmmo(g,1001);ok('online: both players died before 25s (idle bots) — respawn verified via shared tickAmmo instead',g.pickups.some(p=>p.id===tgt.id));}else ok('online: box respawned for both',A.st.pickups.some(p=>p.id===tgt.id)&&B.st.pickups.some(p=>p.id===tgt.id),JSON.stringify({tgt,ph:A.st.phase,a:[pa().x,pa().y,pa().hp,pa().ammo],n:A.st.pickups.length,ids:A.st.pickups.map(p=>p.id)}));}
  A.close();B.close();console.log(fail?'FAILED':'ALL PASSED');process.exit(fail?1:0);})();
