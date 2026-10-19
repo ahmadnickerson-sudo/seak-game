@@ -75,7 +75,7 @@ await shot('09_solo_in_house');
 ch.kill();
 // ================= MULTIPLAYER: 2 clients =================
 function cl(name){const w=new WebSocket('ws://localhost:'+PORT);const c={w,st:null,id:null,errs:[]};w.on('message',d=>{const m=JSON.parse(d);if(m.t==='welcome'){c.id=m.id;c.code=m.code;c.st=m.game}if(m.t==='state')c.st=m.game;if(m.t==='err')c.errs.push(m.msg)});c.send=o=>w.send(JSON.stringify(o));c.open=new Promise(r=>w.on('open',r));return c;}
-const A=cl(),B=cl();await A.open;await B.open;A.send({t:'create',name:'Alice'});await sleep(300);B.send({t:'join',code:A.code,name:'Bob'});await sleep(300);
+const A=cl(),B=cl();await A.open;await B.open;A.send({t:'create',name:'Alice'});await sleep(300);B.send({t:'join',code:A.code,name:'Bob'});await sleep(300);A.send({t:'ready',v:true});B.send({t:'ready',v:true});await sleep(300);A.send({t:'start'});await sleep(300);
 rep('mp: two players in room',Object.keys(A.st.players).length===2);
 // each client walks a computed path (BFS on shared grid) into a different building through a different door, driving real server 'input' messages
 async function walkTo(c,tx,ty,maxMs=60000){const t0=Date.now();const f=DM.makeField(tx,ty);

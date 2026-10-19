@@ -17,7 +17,7 @@ a.x=-5;DM.tickAmmo(g,t+24000);ok('no respawn before 25s',g.pickups.length===n0-1
 const g2={players:{a:{hp:100,x:S[0].x,y:S[0].y,ammo:{1:Infinity,2:180,3:48}}},pickups:DM.ammoInit(),respawns:[]};DM.tickAmmo(g2,t);ok('full ammo does not consume box',g2.pickups.length===n0);
 (async()=>{const mk=()=>{const w=new WebSocket('ws://localhost:'+PORT);w.st=null;w.on('message',d=>{const m=JSON.parse(d);if(m.t==='welcome'){w.id=m.id;w.code=m.code;w.st=m.game}if(m.t==='state')w.st=m.game;});return w;};
  const A=mk();await new Promise(r=>A.on('open',r));A.send(JSON.stringify({t:'create',name:'A'}));await sleep(800);
- const B=mk();await new Promise(r=>B.on('open',r));B.send(JSON.stringify({t:'join',code:A.code,name:'B'}));await sleep(800);
+ const B=mk();await new Promise(r=>B.on('open',r));B.send(JSON.stringify({t:'join',code:A.code,name:'B'}));await sleep(500);for(const c of[A,B])c.send(JSON.stringify({t:'ready',v:true}));await sleep(300);A.send(JSON.stringify({t:'start'}));await sleep(500);
  ok('online: both clients see boxes',A.st.pickups.length>5&&B.st.pickups.length===A.st.pickups.length);
  const n=A.st.pickups.length;
  // walk A onto a box that is not the spawn one

@@ -62,7 +62,7 @@ const MOB={viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isM
  const center=async sel=>pg.evaluate(s=>{const r=document.querySelector(s).getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}},sel);
  await pg.goto(URL);await sleep(400);await pg.fill('#name','Phone');await pg.tap('#create');await sleep(1200);
  const code=await pg.evaluate(()=>document.querySelector('#room').textContent.replace('ROOM ',''));
- const B={st:null,id:null};const w=new WebSocket('ws://localhost:'+PORT);w.on('message',d=>{const m=JSON.parse(d);if(m.t==='welcome'){B.id=m.id;B.st=m.game}if(m.t==='state')B.st=m.game;});await new Promise(r=>w.on('open',r));w.send(JSON.stringify({t:'join',code,name:'Bob'}));await sleep(500);
+ const B={st:null,id:null};const w=new WebSocket('ws://localhost:'+PORT);w.on('message',d=>{const m=JSON.parse(d);if(m.t==='welcome'){B.id=m.id;B.st=m.game}if(m.t==='state')B.st=m.game;});await new Promise(r=>w.on('open',r));w.send(JSON.stringify({t:'join',code,name:'Bob'}));await sleep(500);await pg.tap('#lbReady');w.send(JSON.stringify({t:'ready',v:true}));await sleep(400);await pg.tap('#lbStart');await sleep(800);
  rep('online: touch controls shown after joining a room',await pg.evaluate(()=>getComputedStyle(document.querySelector('#touch')).display==='block'));
  for(let i=0;i<30&&!(B.st.phase==='playing'&&B.st.zombies.length);i++)await sleep(300);
  const me=await pg.evaluate(()=>__dead.me);const p0=B.st.players[me];
