@@ -6,8 +6,8 @@ const {WebSocketServer}=require('ws');
 const PORT=process.env.PORT||3000, HTML=path.join(__dirname,'index.html'), rooms=new Map();let seq=0;
 const DM=require('./shared.js');
 const MAX=8, W=68,H=46;
-const guns={1:{damage:34,rate:300,spread:.045,pellets:1,speed:15},2:{damage:17,rate:95,spread:.10,pellets:1,speed:17},3:{damage:15,rate:650,spread:.43,pellets:7,speed:12}};
-function fresh(code){return{code,players:{},zombies:[],bullets:[],pickups:DM.ammoInit(),respawns:[],wave:0,phase:'lobby',host:null,breakUntil:0,nextId:1,ended:false,clients:new Set(),last:Date.now()};}
+const guns={1:{damage:34,rate:300,spread:.045,pellets:1,speed:15},2:{damage:17,rate:95,spread:.10,pellets:1,speed:17},3:{damage:15,rate:650,spread:.43,pellets:7,speed:12},4:{damage:4,rate:55,spread:.5,pellets:3,speed:7,life:6,kind:'flame'},5:{damage:0,rate:900,spread:0,pellets:1,speed:6,life:35,kind:'rocket'}};
+function fresh(code){return{code,players:{},zombies:[],bullets:[],pickups:DM.ammoInit(),respawns:[],wpick:DM.weaponInit(),wresp:[],fx:[],wave:0,phase:'lobby',host:null,breakUntil:0,nextId:1,ended:false,clients:new Set(),last:Date.now()};}
 function roomInfo(c){const r=rooms.get(String(c||'').toUpperCase());if(!r)return{exists:false};const ps=Object.values(r.players);return{exists:true,code:r.code,started:r.phase!=='lobby',phase:r.phase,players:ps.length,max:MAX,full:ps.length>=MAX,names:ps.map(p=>p.name),wave:r.wave};}
 const server=http.createServer((req,res)=>{const u=req.url.split('?')[0];
  const page=()=>{res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});fs.createReadStream(HTML).pipe(res);};
@@ -22,8 +22,9 @@ const wss=new WebSocketServer({server});
 function send(ws,o){if(ws.readyState===1)ws.send(JSON.stringify(o));}
 function broadcast(r){const game=publicState(r);for(const c of r.clients)send(c,{t:'state',game});}
 function pubPlayers(r){const o={};for(const[k,p]of Object.entries(r.players)){const{token,disc,...q}=p;o[k]=q;}return o;}
-function publicState(r){return{code:r.code,players:pubPlayers(r),zombies:r.zombies,bullets:r.bullets,pickups:r.pickups,wave:r.wave,phase:r.phase,host:r.host,breakUntil:r.breakUntil,ended:r.ended,nextId:r.nextId};}
-function addPlayer(r,ws,name){if(Object.keys(r.players).length>=MAX)return null;let id='p'+(++seq);r.players[id]={id,name:String(name||'Survivor').replace(/[<>]/g,'').slice(0,12),x:33+(Math.random()-.5)*3,y:23+(Math.random()-.5)*3,hp:100,maxHp:100,score:0,weapon:1,ammo:{1:Infinity,2:36,3:8},reserve:{1:Infinity,2:180,3:48},lastShot:0,angle:0,ready:false,token:crypto.randomBytes(8).toString('hex'),color:['#b7f36b','#ffb36b','#7dc9ff','#e7a5ff'][Object.keys(r.players).length%4]};ws.id=id;ws.room=r;r.clients.add(ws);if(!r.host)r.host=id;return id;}
+function publicState(r){return{code:r.code,players:pubPlayers(r),zombies:r.zombies,bullets:r.bullets,pickups:r.pickups,wpick:r.wpick,fx:r.fx,wave:r.wave,phase:r.phase,host:r.host,breakUntil:r.breakUntil,ended:r.ended,nextId:r.nextId};}
+function addPlayer(r,ws,name){if(Object.keys(r.players).length>=MAX)return null;let id='p'+(++seq);r.players[id]={id,name:String(name||'Survivor').replace(/[<>]/g,'').slice(0,12),x:33+(Math.random()-.5)*3,y:23+(Math.random()-.5)*3,hp:100,maxHp:100,score:0,weapon:1,ammo:{1:Infinity,2:36,3:8,4:0,5:0},owned:{},reserve:{1:Infinity,2:180,3:48},lastShot:0,angle:0,ready:false,token:crypto.randomBytes(8).toString('hex'),color:['#b7f36b','#ffb36b','#7dc9ff','#e7a5ff'][Object.keys(r.players).length%4]};ws.id=id;ws.room=r;r.clients.add(ws);if(!r.host)r.host=id;return id;}
+function canUse(p,n){return[1,2,3].includes(n)||((n===4||n===5)&&p.owned&&p.owned[n]);}
 function allReady(r){const ps=Object.values(r.players).filter(p=>!p.disc);return ps.length>0&&ps.every(p=>p.ready);}
 function startGame(r){r.phase='break';r.breakUntil=Date.now()+1500;r.last=Date.now();for(const q of Object.values(r.players))q.ready=true;}
 function dropPlayer(r,id){delete r.players[id];if(r.host===id){const n=Object.keys(r.players)[0];r.host=n||null;}if(!Object.keys(r.players).length)rooms.delete(r.code);}
@@ -36,8 +37,8 @@ const r=ws.room,p=r&&r.players[ws.id];if(!p)return;
 if(m.t==='ready'){if(r.phase!=='lobby')return;p.ready=!!m.v;broadcast(r);return;}
 if(m.t==='start'){if(r.phase!=='lobby')return;if(ws.id!==r.host)return send(ws,{t:'err',msg:'Only the host can start.'});if(!allReady(r))return send(ws,{t:'err',msg:'Everyone must be ready first.'});startGame(r);broadcast(r);return;}
 if(m.t==='leave'){ws.close();return;}
-if(m.t==='input'){p.mx=Math.max(-1,Math.min(1,+m.mx||0));p.my=Math.max(-1,Math.min(1,+m.my||0));p.angle=normAng(m.angle,p.angle);p.weapon=[1,2,3].includes(+m.weapon)?+m.weapon:p.weapon;}
-if(m.t==='shoot'){const n=[1,2,3].includes(+m.weapon)?+m.weapon:p.weapon,g=guns[n],now=Date.now();if(r.phase!=='playing'||p.hp<=0||now-p.lastShot<g.rate||p.ammo[n]===0)return;p.lastShot=now;p.weapon=n;if(p.ammo[n]!==Infinity)p.ammo[n]--;const a=normAng(m.angle,p.angle);for(let i=0;i<g.pellets;i++){const ang=a+(Math.random()-.5)*g.spread;r.bullets.push({x:p.x,y:p.y,vx:Math.cos(ang)*g.speed,vy:Math.sin(ang)*g.speed,damage:g.damage,owner:p.id,life:35,color:n===3?'#ffcc8a':'#ffe17a'});}}
+if(m.t==='input'){p.mx=Math.max(-1,Math.min(1,+m.mx||0));p.my=Math.max(-1,Math.min(1,+m.my||0));p.angle=normAng(m.angle,p.angle);p.weapon=canUse(p,+m.weapon)?+m.weapon:p.weapon;}
+if(m.t==='shoot'){const n=canUse(p,+m.weapon)?+m.weapon:p.weapon,g=guns[n],now=Date.now();if(r.phase!=='playing'||p.hp<=0||now-p.lastShot<g.rate||p.ammo[n]===0)return;p.lastShot=now;p.weapon=n;if(p.ammo[n]!==Infinity)p.ammo[n]--;const a=normAng(m.angle,p.angle);for(let i=0;i<g.pellets;i++){const ang=a+(Math.random()-.5)*g.spread;r.bullets.push({id:r.nextId++,kind:g.kind,x:p.x,y:p.y,vx:Math.cos(ang)*g.speed,vy:Math.sin(ang)*g.speed,damage:g.damage,owner:p.id,life:g.life||35,color:n===3?'#ffcc8a':'#ffe17a'});}}
 if(m.t==='restart'){r.zombies=[];r.bullets=[];r.wave=0;r.phase='break';r.breakUntil=Date.now()+800;for(const q of Object.values(r.players)){q.hp=100;q.score=0;q.x=33;q.y=23;}r.ended=false;}
 });ws.on('close',()=>{const r=ws.room;if(!r)return;r.clients.delete(ws);const p=r.players[ws.id];if(!p)return;
  if(r.clients.has&&[...r.clients].some(c=>c.id===ws.id))return; // a newer socket took over (reconnect)
@@ -45,10 +46,10 @@ if(m.t==='restart'){r.zombies=[];r.bullets=[];r.wave=0;r.phase='break';r.breakUn
  else{p.disc=Date.now();p.mx=0;p.my=0;setTimeout(()=>{const q=r.players[p.id];if(q&&q.disc&&Date.now()-q.disc>=19000){dropPlayer(r,p.id);if(rooms.has(r.code))broadcast(r);}},20000);}
 });});
 setInterval(()=>{const now=Date.now();for(const r of rooms.values()){let dt=Math.min(50,now-r.last);r.last=now;if(r.ended)continue;
-DM.tickAmmo(r,now);if(r.phase==='break'){if(now>=r.breakUntil)spawn(r);}else if(r.phase==='playing'){
+DM.tickAmmo(r,now);DM.tickWeapons(r,now);if(r.phase==='break'){if(now>=r.breakUntil)spawn(r);}else if(r.phase==='playing'){
 for(const p of Object.values(r.players)){if(p.hp<=0)continue;let l=Math.hypot(p.mx||0,p.my||0)||1;DM.moveEntity(p,(p.mx||0)/l*dt*.004,(p.my||0)/l*dt*.004,DM.PR);}
 DM.tickZombies(r,dt,now);
-DM.tickBullets(r,dt,(z,b)=>{if(r.players[b.owner])r.players[b.owner].score+=10+z.type*5;});
+DM.tickBullets(r,dt,(z,b)=>{if(b&&r.players[b.owner])r.players[b.owner].score+=10+z.type*5;},now);
 
 if(!r.zombies.length){r.phase='break';r.breakUntil=now+5000;}if(Object.values(r.players).every(p=>p.hp<=0)){r.ended=true;r.phase='over';}
 }broadcast(r);}},50);

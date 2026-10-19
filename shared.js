@@ -112,11 +112,29 @@ function tickZombies(game,dt,now,onHit){
   if(d<.65&&now-z.hitAt>700){t.hp=Math.max(0,t.hp-z.damage);z.hitAt=now;if(onHit)onHit(z,t);}
  }
 }
-function tickBullets(game,dt,onKill){
+// ---- weapons 4 (flamethrower) / 5 (rocket launcher): rare findable pickups ----
+const SPECIAL={4:{name:'FLAMETHROWER',give:120,cap:240},5:{name:'ROCKET LAUNCHER',give:4,cap:8}},WEAPON_RESPAWN=60000;
+const BURN_DPS=14,BURN_MS=1800,ROCKET_R=2.6,ROCKET_DMG=140,ROCKET_KNOCK=1.3;
+function explode(game,x,y,owner,onKill,now){
+ game.fx=game.fx||[];game.fx.push({id:'x'+(game.nextId++),t:'boom',x,y,at:now});
+ for(const z of game.zombies){if(z.hp<=0)continue;const d=Math.hypot(z.x-x,z.y-y);if(d>ROCKET_R)continue;
+  if(d>.3&&!clearLine(x,y,z.x,z.y,.05))continue; // walls/crates shield
+  z.hp-=ROCKET_DMG*(1-.55*d/ROCKET_R);
+  const ux=(z.x-x)/(d||1),uy=(z.y-y)/(d||1),k=ROCKET_KNOCK*(1-d/ROCKET_R)+.2;for(let i=0;i<6;i++)moveEntity(z,ux*k/6,uy*k/6,ZR);
+  if(z.hp<=0&&onKill)onKill(z,{owner});}}
+function tickBullets(game,dt,onKill,now){now=now||Date.now();
  for(const b of game.bullets){const dx=b.vx*dt*.006,dy=b.vy*dt*.006,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/.2));b.life-=dt*.06;
-  for(let k=0;k<n&&b.life>0;k++){b.x+=dx/n;b.y+=dy/n;
-   if(pointSolid(b.x,b.y)){b.life=0;break;}
-   for(const z of game.zombies){if(z.hp>0&&Math.hypot(z.x-b.x,z.y-b.y)<.55){z.hp-=b.damage;b.life=0;if(z.hp<=0&&onKill)onKill(z,b);break;}}}}
+  let px=b.x,py=b.y;
+  for(let k=0;k<n&&b.life>0;k++){px=b.x;py=b.y;b.x+=dx/n;b.y+=dy/n;
+   if(pointSolid(b.x,b.y)){b.life=0;if(b.kind==='rocket'){b.hit=1;explode(game,px,py,b.owner,onKill,now);}break;}
+   for(const z of game.zombies){if(z.hp>0&&Math.hypot(z.x-b.x,z.y-b.y)<(b.kind==='rocket'?.6:.55)){
+    if(b.kind==='rocket'){b.life=0;b.hit=1;explode(game,b.x,b.y,b.owner,onKill,now);break;}
+    z.hp-=b.damage;if(b.kind==='flame'){z.burnUntil=now+BURN_MS;z.burnBy=b.owner;z.burning=true;}b.life=0;if(z.hp<=0&&onKill)onKill(z,b);break;}}}
+  if(b.kind==='rocket'&&b.life<=0&&!b.hit){b.hit=1;explode(game,b.x,b.y,b.owner,onKill,now);}
+ }
+ // burning damage over time
+ for(const z of game.zombies){if(z.hp<=0)continue;if(z.burnUntil>now){z.burning=true;z.hp-=BURN_DPS*dt/1000;if(z.hp<=0&&onKill)onKill(z,{owner:z.burnBy,kind:'burn'});}else z.burning=false;}
+ if(game.fx)game.fx=game.fx.filter(f=>now-f.at<1200);
  game.bullets=game.bullets.filter(b=>b.life>0&&b.x>0&&b.y>0&&b.x<W&&b.y<H);
  game.zombies=game.zombies.filter(z=>z.hp>0);}
 function spawnPoint(rnd){for(let i=0;i<30;i++){const side=Math.floor(rnd()*4),x=side===0?1:side===1?W-2:2+rnd()*(W-4),y=side===2?1:side===3?H-2:2+rnd()*(H-4);if(!circleBlocked(x,y,ZR))return{x,y};}return{x:1,y:22};}
@@ -142,7 +160,27 @@ function tickAmmo(game,now,onPick){
   let got=0;for(const n of[2,3]){const cur=Number.isFinite(p.ammo[n])?p.ammo[n]:0,nv=Math.min(AMMO_CAP[n],cur+AMMO_GAIN[n]);got+=nv-cur;p.ammo[n]=nv;}
   if(!got)continue;game.pickups=game.pickups.filter(x=>x!==it);game.respawns.push({id:it.id,x:it.x,y:it.y,at:now+AMMO_RESPAWN});p.pickAt=now;p.pickMsg='AMMO +'+AMMO_GAIN[2]+' MG  +'+AMMO_GAIN[3]+' SG';if(onPick)onPick(p,it);break;}}
  for(const r of game.respawns.slice())if(now>=r.at){game.respawns=game.respawns.filter(x=>x!==r);game.pickups.push({id:r.id,x:r.x,y:r.y,kind:'ammo'});}}
-return{ground:DATA.g,ammoSpots,ammoInit,tickAmmo,AMMO_GAIN,AMMO_CAP,W,H,tiles,solid,bidx,buildings:bl,isSolid,pointSolid,circleBlocked,moveEntity,clearLine,makeField,nextCell,tickZombies,tickBullets,spawnPoint,PR,ZR};
+
+const weaponSpots=(function(){const out=[];const taken=new Set((typeof ammoSpots!=='undefined'?ammoSpots:[]).map(s=>s.x+','+s.y));
+ const ok=(x,y)=>inb(x,y)&&!isSolid(x,y)&&tiles[y][x]!=='d'&&!taken.has(x+','+y)&&![[0,0],[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>tiles[y+b]&&tiles[y+b][x+a]==='d');
+ const near=(cx,cy,pred)=>{for(let r=0;r<6;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const x=cx+dx,y=cy+dy;if(ok(x,y)&&pred(x,y))return[x,y];}return null;};
+ const inB=b=>(x,y)=>bidx[y][x]===b.idx;
+ const find=id=>bl.find(b=>b.id===id);
+ const add=(c,w)=>{if(c){out.push({id:'w'+(out.length+1),x:c[0],y:c[1],w});taken.add(c[0]+','+c[1]);}};
+ const m=find('mart'),s=find('school'),v=bl[8];
+ if(m)add(near(m.x+Math.floor(m.w/2),m.y+Math.floor(m.h/2),inB(m)),5);
+ if(s)add(near(s.x+Math.floor(s.w/2),s.y+Math.floor(s.h/2),inB(s)),4);
+ if(v)add(near(v.x+Math.floor(v.w/2),v.y+Math.floor(v.h/2),inB(v)),5);
+ add(near(36,25,(x,y)=>bidx[y][x]<0),4); // plaza edge near the spawn
+ return out;})();
+function weaponInit(){return weaponSpots.map(s=>({id:s.id,x:s.x,y:s.y,w:s.w}));}
+function tickWeapons(game,now){game.wpick=game.wpick||[];game.wresp=game.wresp||[];
+ for(const it of game.wpick.slice())for(const p of Object.values(game.players)){if(p.hp<=0||Math.hypot(p.x-it.x,p.y-it.y)>.85)continue;
+  const S=SPECIAL[it.w];p.owned=p.owned||{};const cur=Number.isFinite(p.ammo[it.w])?p.ammo[it.w]:0;if(p.owned[it.w]&&cur>=S.cap)continue;
+  p.owned[it.w]=true;p.ammo[it.w]=Math.min(S.cap,cur+S.give);p.pickAt=now;p.pickMsg=S.name+'!  PRESS '+it.w;
+  game.wpick=game.wpick.filter(x=>x!==it);game.wresp.push({id:it.id,x:it.x,y:it.y,w:it.w,at:now+WEAPON_RESPAWN});break;}
+ for(const r of game.wresp.slice())if(now>=r.at){game.wresp=game.wresp.filter(x=>x!==r);game.wpick.push({id:r.id,x:r.x,y:r.y,w:r.w});}}
+return{SPECIAL,weaponSpots,weaponInit,tickWeapons,explode,ROCKET_R,ground:DATA.g,ammoSpots,ammoInit,tickAmmo,AMMO_GAIN,AMMO_CAP,W,H,tiles,solid,bidx,buildings:bl,isSolid,pointSolid,circleBlocked,moveEntity,clearLine,makeField,nextCell,tickZombies,tickBullets,spawnPoint,PR,ZR};
 
 
 });
