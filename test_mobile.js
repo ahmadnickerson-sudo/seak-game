@@ -30,7 +30,7 @@ const MOB={viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isM
  rep('D-pad RIGHT moves player (world dx>0, dy<0 = screen right)',b.wx>a.wx+1&&b.wy<a.wy-1,`${a.wx.toFixed(1)},${a.wy.toFixed(1)} -> ${b.wx.toFixed(1)},${b.wy.toFixed(1)}`);
  rep('camera follows: player stays near screen centre horizontally',Math.abs(b.sx-b.w/2)<b.w*.2,`sx ${b.sx.toFixed(0)}/${b.w}`);
  rep('camera moved with the player (view offset changed)',Math.abs(b.ox-a.ox)>20);
- for(const [k,t] of [['u','up: world -x,-y'],['d','down: +x,+y'],['l','left: -x,+y']]){const s0=await scr();const c=await center('#dpad .'+k);await touch('touchStart',[{x:c.x,y:c.y,id:1}]);await sleep(500);await touch('touchEnd',[]);await sleep(150);const s1=await scr();
+ for(const [k,t] of [['u','up: world -x,-y'],['d','down: +x,+y'],['l','left: -x,+y']]){await pg.evaluate(()=>{const p=__dead.game.players[__dead.me];p.x=33.5;p.y=26;});await sleep(900);const s0=await scr();const c=await center('#dpad .'+k);await touch('touchStart',[{x:c.x,y:c.y,id:1}]);await sleep(500);await touch('touchEnd',[]);await sleep(150);const s1=await scr();
   const dx=s1.wx-s0.wx,dy=s1.wy-s0.wy;const okk=k==='u'?dx<-.5&&dy<-.5:k==='d'?dx>.5&&dy>.5:dx<-.5&&dy>.5;rep('D-pad '+t,okk,`d=${dx.toFixed(1)},${dy.toFixed(1)}`);}
  // wait for first wave
  for(let i=0;i<20;i++){if(await pg.evaluate(()=>__dead.game.zombies.length>0&&__dead.game.phase==='playing'))break;await sleep(500);}

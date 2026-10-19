@@ -7,7 +7,13 @@ ok('14 buildings',B.length===14,B.length);
 ok('every building has 2-3 doors on distinct sides',B.every(b=>b.doors.length>=2&&b.doors.length<=3&&new Set(b.doors.map(d=>d.s)).size===b.doors.length),B.map(b=>b.doors.length).join(','));
 ok('bigger interiors get 3 doors',B.every(b=>((b.w-2)*(b.h-2)>=12)===(b.doors.length===3)));
 // crates
-ok('1 crate small / 2 crates larger',B.every(b=>b.crates.length===((b.w-2)*(b.h-2)>=12?2:1)),B.map(b=>b.crates.length).join(','));
+ok('crates scale with interior size (1 per ~16 floor tiles, max 8)',B.every(b=>b.crates.length===Math.max(1,Math.min(8,Math.ceil((b.w-2)*(b.h-2)/16)))),B.map(b=>b.crates.length).join(','));
+{const ORIG={house:[7,6],diner:[13,9],office:[13,9],school:[15,9],arcade:[13,9],mart:[17,11]};
+ B.forEach(b=>{const o=b.id?ORIG[b.id]:(b.idx===8?[13,9]:ORIG.house);ok(`${b.id||'house'+b.idx}: interior matches original Seak (${o[0]-2}x${o[1]-2} floor)`,b.w===o[0]&&b.h===o[1]);});
+ const crateFrac=B.map(b=>b.crates.length/((b.w-2)*(b.h-2)));ok('crates never exceed 12% of floor',crateFrac.every(f=>f<=.125),crateFrac.map(f=>f.toFixed(2)).join(','));
+ ok('every building has 2-3 doors',B.every(b=>b.doors.length>=2&&b.doors.length<=3));
+ const ov=[];for(const a of B)for(const c of B)if(a.idx<c.idx&&a.x<c.x+c.w&&c.x<a.x+a.w&&a.y<c.y+c.h&&c.y<a.y+a.h)ov.push(a.idx+'/'+c.idx);ok('no overlapping buildings',ov.length===0,ov.join());
+ const roadHit=B.some(b=>{for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)if([1,2,33,34,65,66].includes(x)||[8,22,23,37].includes(y))return true;return false});ok('buildings keep the main/ring roads clear',!roadHit);}
 ok('crates never on/next to doorway inner cells',B.every(b=>b.crates.every(c=>b.doors.every(d=>Math.abs(d.in.x-c[0])+Math.abs(d.in.y-c[1])>1))));
 // all floor reachable from every door by BFS on the real solid grid
 function reach(sx,sy){const seen=new Set([sx+','+sy]),q=[[sx,sy]];while(q.length){const[x,y]=q.shift();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=nx+','+ny;if(seen.has(k)||DM.isSolid(nx,ny))continue;seen.add(k);q.push([nx,ny]);}}return seen;}

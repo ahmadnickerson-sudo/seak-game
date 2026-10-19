@@ -359,7 +359,7 @@ Object.assign(E,{rotateItem,LOOK,AI_LOOKS,sanitizeLook,defaultLook,PERSONA,leade
 })(typeof globalThis!=='undefined'?globalThis:this);
 </script>
 <script id="deadmap">(function(root,f){const m=f();if(typeof module!=='undefined'&&module.exports)module.exports=m;else root.DeadMap=m;})(this,function(){'use strict';
-const DATA={"w":68,"h":46,"g":["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T==..............................==..............................==T","T==..............................==...................T..........==T","T==...T..........T...............==..............................==T","T==.....HHHHHH..........HHHHHH...==.........HHHHHH........HHHHHH.==T","T==.T...HHHHHH..........HHHHHH.T.==.........HHHHHH........HHHHHH.==T","T==.....HHHHHH..........HHHHHH...==..T....T.HHHHHH........HHHHHH.==T","T==.....HHHDHH..........HHHDHH...==.........HHHDHH........HHHDHH.==T","T==================================================================T","T==........=.....................==............=.................==T","T==........=....T......T.........==.T......T...=...T.T..T..T...T.==T","T==........=.....................==...T........=.................==T","T==........=.....................==............=.................==T","T==....BBBBBBBB.T...BBBBBBBB.....==..T.....BBBBBBBB....BBBBBBBBB.==T","T==....BBBBBBBB.....BBBBBBBB.....==....T...BBBBBBBB....BBBBBBBBB.==T","T==....BBBBPBBB.T...BBBBPBBB.....==.T......BBBBPBBB..T.BBBBBBBBB.==T","T==.T......=............=........==............=.......BBBBPBBBB.==T","T==........=............=........==.........T..=...........=.....==T","T==........=............=........==......T.....=...........=.....==T","T==.T......=............=........==............=...........=.....==T","T==.....T..=..T......T..=........==............=...T.......=.....==T","T==........=............=........==............=...........=.....==T","T==================================================================T","T==================================================================T","T==........=.....................==............=.................==T","T==........=...........T.........==.......T....=.................==T","T==........=.....................==............=.................==T","T==....HHHHHHHH.........,,,,,,..,==,..,,,,,....=....BBBBBBBB.....==T","T==....HHHHHHHH...T...T.S,,S,,.T,==,T.,S,,S.T..=....BBBBBBBB.....==T","T==....HHHHHHHH......,,,,,,,,,,,,==,,,,,,,,,,,.=....BBBBPBBB.....==T","T==....HHHHDHHH......,,,,,,FF,,,,==,,,,.II,,,,.==========........==T","T==........=.........,,,,,,FF,,,,==,,,,...,,,,.=.................==T","T==........=..........T..S,,,,.T,==,T.,,,,..T..=.................==T","T==........=.............,,,,,..,==,..,,,,.....=.................==T","T==........=.....................==............=.................==T","T==..T.....=.......T..T...T......==........T...=.................==T","T==........=.....................==............=.................==T","T==================================================================T","T==.....HHHDHH..........HHHDHH...==.........HHHDHH........HHHDHH.==T","T==.....HHHHHH..........HHHHHH...==.T....T..HHHHHH.T.T.T..HHHHHH.==T","T==...T.HHHHHH....T.....HHHHHH...==.........HHHHHH........HHHHHH.==T","T==.T...HHHHHH..T.......HHHHHH...==.........HHHHHH........HHHHHH.==T","T==...................T........T.==...T.................T........==T","T==.T...T.....T..................==..............T.T...........T.==T","T==..............................==..............................==T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],"houses":[{"x":8,"y":4,"w":6,"h":4,"door":{"x":11,"y":7}},{"x":24,"y":4,"w":6,"h":4,"door":{"x":27,"y":7}},{"x":44,"y":4,"w":6,"h":4,"door":{"x":47,"y":7}},{"x":8,"y":38,"w":6,"h":4,"door":{"x":11,"y":38}},{"x":24,"y":38,"w":6,"h":4,"door":{"x":27,"y":38}},{"x":44,"y":38,"w":6,"h":4,"door":{"x":47,"y":38}},{"x":58,"y":4,"w":6,"h":4,"door":{"x":61,"y":7}},{"x":58,"y":38,"w":6,"h":4,"door":{"x":61,"y":38}},{"x":7,"y":27,"w":8,"h":4,"door":{"x":11,"y":30}}],"buildings":[{"id":"diner","x":7,"y":13,"w":8,"h":3,"door":{"x":11,"y":15}},{"id":"office","x":43,"y":13,"w":8,"h":3,"door":{"x":47,"y":15}},{"id":"school","x":20,"y":13,"w":8,"h":3,"door":{"x":24,"y":15}},{"id":"arcade","x":52,"y":27,"w":8,"h":3,"door":{"x":56,"y":29}},{"id":"mart","x":55,"y":13,"w":9,"h":4,"door":{"x":59,"y":16}}]};
+const DATA={"w":68,"h":46,"g":["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T==..............................==..............................==T","T==.....HHHHHHH.........HHHHHHH..==.........HHHHHHH...T...HHHHHHH==T","T==...T.HHHHHHH..T......HHHHHHH..==.........HHHHHHH.......HHHHHHH==T","T==.....HHHHHHH.........HHHHHHH..==.........HHHHHHH.......HHHHHHH==T","T==.T...HHHHHHH.........HHHHHHHT.==.........HHHHHHH.......HHHHHHH==T","T==.....HHHHHHH.........HHHHHHH..==..T....T.HHHHHHH.......HHHHHHH==T","T==.....HHHHHHH.........HHHHHHH..==.........HHHHHHH.......HHHHHHH==T","T==================================================================T","T==........=.....................==............=.................==T","T==........=....T......T.........==.T......T...=...T.T..T..T...T.==T","T==........=.....................==...T........=BBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBBTBBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBBTBBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==BBBBBBBBBBBBB.BBBBBBBBBBBBBBB.==BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==T","T==........=............=........==............=BBBBBBBBBBBBBBBBB==T","T==================================================================T","T==================================================================T","T==........=.....................==............=.................==T","T==..HHHHHHHHHHHHH.....T.........==.......T....=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH...............==............=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH......,,,,,,..,==,..,,,,,....=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHHT...T.S,,S,,.T,==,T.,S,,S.T..=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH...,,,,,,,,,,,,==,,,,,,,,,,,.=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH...,,,,,,FF,,,,==,,,,.II,,,,.===BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH...,,,,,,FF,,,,==,,,,...,,,,.=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH....T..S,,,,.T,==,T.,,,,..T..=..BBBBBBBBBBBBB..==T","T==..HHHHHHHHHHHHH.......,,,,,..,==,..,,,,.....=..BBBBBBBBBBBBB..==T","T==........=.....................==............=.................==T","T==..T.....=.......T..T...T......==........T...=.................==T","T==........=.....................==............=.................==T","T==================================================================T","T==.....HHHHHHH.........HHHHHHH..==.........HHHHHHH.......HHHHHHH==T","T==.....HHHHHHH.........HHHHHHH..==.T....T..HHHHHHHT.T.T..HHHHHHH==T","T==...T.HHHHHHH...T.....HHHHHHH..==.........HHHHHHH.......HHHHHHH==T","T==.T...HHHHHHH.T.......HHHHHHH..==.........HHHHHHH.......HHHHHHH==T","T==.....HHHHHHH.......T.HHHHHHHT.==...T.....HHHHHHH.....T.HHHHHHH==T","T==.T...HHHHHHH.........HHHHHHH..==.........HHHHHHHT......HHHHHHH==T","T==..............................==..............................==T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],"houses":[{"x":8,"y":2,"w":7,"h":6,"door":{"x":11,"y":7}},{"x":24,"y":2,"w":7,"h":6,"door":{"x":27,"y":7}},{"x":44,"y":2,"w":7,"h":6,"door":{"x":47,"y":7}},{"x":8,"y":38,"w":7,"h":6,"door":{"x":11,"y":38}},{"x":24,"y":38,"w":7,"h":6,"door":{"x":27,"y":38}},{"x":44,"y":38,"w":7,"h":6,"door":{"x":47,"y":38}},{"x":58,"y":2,"w":7,"h":6,"door":{"x":61,"y":7}},{"x":58,"y":38,"w":7,"h":6,"door":{"x":61,"y":38}},{"x":5,"y":25,"w":13,"h":9,"door":{"x":11,"y":33}}],"buildings":[{"id":"diner","x":3,"y":12,"w":13,"h":9,"door":{"x":9,"y":20}},{"id":"office","x":35,"y":12,"w":13,"h":9,"door":{"x":41,"y":20}},{"id":"school","x":17,"y":12,"w":15,"h":9,"door":{"x":24,"y":20}},{"id":"arcade","x":50,"y":25,"w":13,"h":9,"door":{"x":56,"y":33}},{"id":"mart","x":48,"y":11,"w":17,"h":11,"door":{"x":56,"y":21}}]};
 // ---- DeadMap logic (shared by server.js and index.html; generated by tools/build.js) ----
 const W=DATA.w,H=DATA.h;
 const SOLID_GROUND='TFI'; // trees/border, fountain, ice-cream stand
@@ -402,7 +402,7 @@ function connectedAll(b,crates){ // all floor cells + all door-inner cells mutua
  return cells.every(c=>seen.has(c[0]+','+c[1]))&&b.doors.every(d=>seen.has(d.in.x+','+d.in.y));
 }
 function placeCrates(b){
- const area=(b.w-2)*(b.h-2),want=area>=12?2:1,crates=[],inner=new Set(b.doors.map(d=>d.in.x+','+d.in.y));
+ const area=(b.w-2)*(b.h-2),want=Math.max(1,Math.min(8,Math.ceil(area/16))),crates=[],inner=new Set(b.doors.map(d=>d.in.x+','+d.in.y));
  const near=(c)=>b.doors.some(d=>Math.abs(d.in.x-c[0])+Math.abs(d.in.y-c[1])<=1);
  // prefer cells far from doors, then not adjacent to other crates
  const score=c=>b.doors.reduce((m,d)=>Math.min(m,Math.abs(d.in.x-c[0])+Math.abs(d.in.y-c[1])),99);
@@ -489,7 +489,7 @@ const ammoSpots=(function(){const spots=[],used=new Set(),doorCells=new Set();
  const open=(x,y)=>inb(x,y)&&!isSolid(x,y)&&tiles[y][x]!=='d'&&!nearDoor(x,y);
  const add=(x,y)=>{if(!open(x,y)||used.has(x+','+y))return false;used.add(x+','+y);spots.push({id:spots.length+1,x,y});return true;};
  // inside buildings: a floor cell next to a crate (cover + loot), not next to a door
- for(const b of bl){for(const c of b.crates){let done=false;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const x=c[0]+dx,y=c[1]+dy;if(tiles[y]&&tiles[y][x]==='f'&&open(x,y)&&bidx[y][x]===b.idx&&add(x,y)){done=true;break;}}if(done)break;}}
+ for(const b of bl){let nSp=0;for(const c of b.crates){if(nSp>=(b.w*b.h>60?2:1))break;let done=false;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const x=c[0]+dx,y=c[1]+dy;if(tiles[y]&&tiles[y][x]==='f'&&open(x,y)&&bidx[y][x]===b.idx&&add(x,y)){done=true;nSp++;break;}}}}
  // outdoors: sample a grid, take the nearest open cell that is not beside a building wall
  const free=(x,y)=>open(x,y)&&bidx[y][x]<0&&![[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]].some(([a,b])=>isSolid(x+a,y+b));
  for(let gy=6;gy<H-3;gy+=13)for(let gx=6;gx<W-3;gx+=15){let best=null,bd=99;for(let dy=-4;dy<=4;dy++)for(let dx=-5;dx<=5;dx++){const x=gx+dx,y=gy+dy;if(inb(x,y)&&free(x,y)&&Math.abs(dx)+Math.abs(dy)<bd){bd=Math.abs(dx)+Math.abs(dy);best=[x,y];}}if(best)add(best[0],best[1]);}
@@ -502,7 +502,8 @@ function tickAmmo(game,now,onPick){
   let got=0;for(const n of[2,3]){const cur=Number.isFinite(p.ammo[n])?p.ammo[n]:0,nv=Math.min(AMMO_CAP[n],cur+AMMO_GAIN[n]);got+=nv-cur;p.ammo[n]=nv;}
   if(!got)continue;game.pickups=game.pickups.filter(x=>x!==it);game.respawns.push({id:it.id,x:it.x,y:it.y,at:now+AMMO_RESPAWN});p.pickAt=now;p.pickMsg='AMMO +'+AMMO_GAIN[2]+' MG  +'+AMMO_GAIN[3]+' SG';if(onPick)onPick(p,it);break;}}
  for(const r of game.respawns.slice())if(now>=r.at){game.respawns=game.respawns.filter(x=>x!==r);game.pickups.push({id:r.id,x:r.x,y:r.y,kind:'ammo'});}}
-return{ammoSpots,ammoInit,tickAmmo,AMMO_GAIN,AMMO_CAP,W,H,tiles,solid,bidx,buildings:bl,isSolid,pointSolid,circleBlocked,moveEntity,clearLine,makeField,nextCell,tickZombies,tickBullets,spawnPoint,PR,ZR};
+return{ground:DATA.g,ammoSpots,ammoInit,tickAmmo,AMMO_GAIN,AMMO_CAP,W,H,tiles,solid,bidx,buildings:bl,isSolid,pointSolid,circleBlocked,moveEntity,clearLine,makeField,nextCell,tickZombies,tickBullets,spawnPoint,PR,ZR};
+
 
 });
 </script>
@@ -547,10 +548,10 @@ let DOORI=null,AMMOSET=null;
 function doorInfo(){if(DOORI)return DOORI;DOORI={};AMMOSET=new Set((DM.ammoSpots||[]).map(s=>s.x+','+s.y));for(const b of DM.buildings)for(const d of b.doors)DOORI[d.x+','+d.y]={b,d,ox:d.out.x-d.x,oy:d.out.y-d.y};return DOORI;}
 function nearDoorTile(x,y){for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(DM.tiles[y+dy]&&DM.tiles[y+dy][x+dx]==='d')return true;return false;}
 function isExt(x,y,bi){const t=DM.tiles[y]&&DM.tiles[y][x];if(!t)return true;if(t==='W')return false;return DM.bidx[y][x]!==bi||t==='d';}
-function faceTf(face,p,s){if(face==='L')ctx.transform(s,.5*s,0,-s,p.x-12*s,p.y);else ctx.transform(s,-.5*s,0,-s,p.x,p.y+6*s);}
+function faceTf(face,p,s,k){k=k||1;if(face==='L')ctx.transform(s,.5*s,0,-s*k,p.x-12*s,p.y);else ctx.transform(s,-.5*s,0,-s*k,p.x,p.y+6*s);}
 function R(u,v,w,h,c){ctx.fillStyle=c;ctx.fillRect(u,v,w,h);}
-function faceDetail(face,x,y,bi,wall,base,ext,sign){const s=view.scale,p=point(x,y),st=bi%4,dmg=bi%3===2,hk=face==='L'?1:2;
- ctx.save();faceTf(face,p,s);
+function faceDetail(face,x,y,bi,wall,base,ext,sign,kh){const s=view.scale,p=point(x,y),st=bi%4,dmg=bi%3===2,hk=face==='L'?1:2;
+ ctx.save();faceTf(face,p,s,kh);
  R(0,0,12,1.6,shadeC(base,.55));R(0,1.6,12,.5,shadeC(base,.8));R(0,10,12,1,shadeC(base,1.28));R(0,9.6,12,.4,shadeC(base,.72));
  if(!ext){R(0,2.2,12,2.2,shadeC(base,.82));R(0,4.4,12,.5,shadeC(base,.62));ctx.restore();return;}
  const dk=shadeC(base,.74),lt=shadeC(base,1.18);
@@ -581,17 +582,19 @@ function prism(cx,cy,hw,hh,top,left,right){const s=view.scale,W=hw*24*s,D=hw*12*
  ctx.fillStyle=left;ctx.beginPath();ctx.moveTo(cx-W,cy);ctx.lineTo(cx,cy+D);ctx.lineTo(cx,cy+D-H);ctx.lineTo(cx-W,cy-H);ctx.closePath();ctx.fill();ctx.stroke();
  ctx.fillStyle=right;ctx.beginPath();ctx.moveTo(cx+W,cy);ctx.lineTo(cx,cy+D);ctx.lineTo(cx,cy+D-H);ctx.lineTo(cx+W,cy-H);ctx.closePath();ctx.fill();ctx.stroke();
  ctx.fillStyle=top;ctx.beginPath();ctx.moveTo(cx,cy-D-H);ctx.lineTo(cx+W,cy-H);ctx.lineTo(cx,cy+D-H);ctx.lineTo(cx-W,cy-H);ctx.closePath();ctx.fill();ctx.stroke();}
-function drawWallTile(x,y){const bi=DM.bidx[y][x],b=DM.buildings[bi],wall=WALLS[bi%WALLS.length],roof=ROOFS[(bi*3+1)%ROOFS.length],s=view.scale,W=12*s,D=6*s,H=11*s;doorInfo();
+function wallHeight(x,y,b){return(y===b.y||x===b.x)?16:11;}
+function playerBehind(x,y){const p=game&&game.players&&game.players[me];if(!p)return false;return p.x+p.y<x+y-.2&&Math.abs(p.x-x)<=2.6&&Math.abs(p.y-y)<=2.6;}
+function drawWallTile(x,y){const bi=DM.bidx[y][x],b=DM.buildings[bi],wall=WALLS[bi%WALLS.length],roof=ROOFS[(bi*3+1)%ROOFS.length],s=view.scale,W=12*s,D=6*s,WHU=wallHeight(x,y,b),H=WHU*s,KH=WHU/11;doorInfo();
  const eL=isExt(x,y+1,bi),eR=isExt(x+1,y,bi),dmg=bi%3===2,p0=point(x,y);
  // contact shadows on the ground
  ctx.fillStyle='rgba(0,0,0,.26)';if(eL&&!(DM.tiles[y+1]&&DM.tiles[y+1][x]==='W')){ctx.beginPath();ctx.moveTo(p0.x-W,p0.y);ctx.lineTo(p0.x,p0.y+D);ctx.lineTo(p0.x-4.5*s,p0.y+D+2.2*s);ctx.lineTo(p0.x-W-4.5*s,p0.y+2.2*s);ctx.closePath();ctx.fill();}
  if(eR&&!(DM.tiles[y][x+1]==='W')){ctx.beginPath();ctx.moveTo(p0.x+W,p0.y);ctx.lineTo(p0.x,p0.y+D);ctx.lineTo(p0.x+4.5*s,p0.y+D+2.2*s);ctx.lineTo(p0.x+W+4.5*s,p0.y+2.2*s);ctx.closePath();ctx.fill();}
  const left=shadeC(wall,1.04),right=shadeC(wall,.74);
- let p=block(x,y,.5,11,roof,left,right,BLD_LINE);
+ let p=block(x,y,.5,WHU,roof,left,right,BLD_LINE);const seeThru=WHU>11&&playerBehind(x,y);if(seeThru){ctx.save();ctx.globalAlpha=.38;}
  // faces (outer faces get texture, windows, signs; inner faces get wainscot)
  let sgn=null;if(b.id&&SIGN_C[b.id]){const dd=b.doors.find(d=>d.out.y-d.y===1||d.out.x-d.x===1);if(dd){const sx=dd.out.y-dd.y===1?dd.x-1:dd.x,sy=dd.out.y-dd.y===1?dd.y:dd.y-1,face=dd.out.y-dd.y===1?'L':'R';if(sx===x&&sy===y)sgn=face;}}
- if(DM.tiles[y+1]&&DM.tiles[y+1][x]!=='W')faceDetail('L',x,y,bi,wall,left,eL,sgn==='L'?b.id:null);
- if(DM.tiles[y][x+1]!=='W')faceDetail('R',x,y,bi,wall,right,eR,sgn==='R'?b.id:null);
+ if(DM.tiles[y+1]&&DM.tiles[y+1][x]!=='W')faceDetail('L',x,y,bi,wall,left,eL,sgn==='L'?b.id:null,KH);
+ if(DM.tiles[y][x+1]!=='W')faceDetail('R',x,y,bi,wall,right,eR,sgn==='R'?b.id:null,KH);
  // roof: two-tone cel shading, shingle rows, ridge, eave trim
  const T={x:p.x,y:p.y-D-H},Rr={x:p.x+W,y:p.y-H},B={x:p.x,y:p.y+D-H},Lf={x:p.x-W,y:p.y-H},lerp=(a,c,t)=>({x:a.x+(c.x-a.x)*t,y:a.y+(c.y-a.y)*t});
  ctx.fillStyle=shadeC(roof,1.16);ctx.beginPath();ctx.moveTo(Lf.x,Lf.y);ctx.lineTo(T.x,T.y);ctx.lineTo(B.x,B.y);ctx.closePath();ctx.fill();
@@ -605,9 +608,10 @@ function drawWallTile(x,y){const bi=DM.bidx[y][x],b=DM.buildings[bi],wall=WALLS[
  if(dmg&&H3(x,y,21)<.35){ctx.fillStyle='#17100e';const c=lerp(Lf,Rr,.5);ctx.beginPath();ctx.moveTo(c.x-3*s,c.y);ctx.lineTo(c.x,c.y-1.8*s);ctx.lineTo(c.x+3*s,c.y);ctx.lineTo(c.x,c.y+1.8*s);ctx.closePath();ctx.fill();ctx.fillStyle='#3a2a22';ctx.fillRect(c.x-1*s,c.y-.5*s,2*s,s);}
  // chimney
  if(y===b.y&&x===b.x+b.w-3&&bi%5<3){const cx=p.x+1*s,cy=p.y-H-1*s;prism(cx,cy,.16,9,'#2a1a18','#8a4a3a','#5a2e26');ctx.fillStyle='#b8624e';ctx.fillRect(cx-3.2*s,cy-9*s-1*s,.8*s,.6*s);}
+ if(seeThru)ctx.restore();
  // porch props on grass beside exposed front faces
  for(const f of['L','R']){if(f==='L'?!eL:!eR)continue;const cx=f==='L'?x:x+1,cy=f==='L'?y+1:y;if(!DM.tiles[cy]||'.'.indexOf(DM.tiles[cy][cx])<0&&DM.tiles[cy][cx]!=='.'&&false)continue;
-  const tt=DM.tiles[cy]&&DM.tiles[cy][cx];if(tt==='W'||tt==='d'||tt==='C'||tt==='f'||tt==='T'||tt==='F'||nearDoorTile(cx,cy)||AMMOSET.has(cx+','+cy)||DM.isSolid(cx,cy))continue;const g=E.TOWN.g[cy][cx];if(g==='='||g===',')continue;
+  const tt=DM.tiles[cy]&&DM.tiles[cy][cx];if(tt==='W'||tt==='d'||tt==='C'||tt==='f'||tt==='T'||tt==='F'||nearDoorTile(cx,cy)||AMMOSET.has(cx+','+cy)||DM.isSolid(cx,cy))continue;const g=DM.ground[cy][cx];if(g==='='||g===',')continue;
   if(H3(x,y,f==='L'?31:32)>.13)continue;const kind=Math.floor(H3(x,y,33)*3),q=f==='L'?point(x,y+.78):point(x+.78,y);drawProp(kind,q.x,q.y,s);}
 }
 function drawProp(kind,px,py,s){ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(px,py+.6*s,4*s,1.6*s,0,0,7);ctx.fill();
@@ -615,14 +619,14 @@ function drawProp(kind,px,py,s){ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();
  if(kind===0){bxr(-3,-7,6,7,'#7a4a24');ctx.fillStyle='#3a3a40';ctx.fillRect(px-3*s,py-5.4*s,6*s,.7*s);ctx.fillRect(px-3*s,py-2.4*s,6*s,.7*s);ctx.fillStyle='#2a1a10';ctx.fillRect(px-2.2*s,py-7.6*s,4.4*s,1*s);}
  else if(kind===1){bxr(-3.5,-4,7,4,'#b8602c');ctx.fillStyle='#2f6a34';ctx.fillRect(px-4*s,py-8*s,8*s,4.4*s);ctx.fillStyle='#4a9a4a';ctx.fillRect(px-3*s,py-8.6*s,3*s,2*s);ctx.fillStyle='#d8506a';ctx.fillRect(px+1*s,py-7.6*s,1.2*s,1.2*s);ctx.fillRect(px-2.4*s,py-6.4*s,1.2*s,1.2*s);}
  else{bxr(-.6,-14,1.2,14,'#2a2a30');bxr(-2.2,-17.5,4.4,3.6,'#ffd27a');ctx.fillStyle='#fff3c8';ctx.fillRect(px-1.2*s,py-16.8*s,1.4*s,1.6*s);bxr(-1.8,-.9,3.6,.9,'#2a2a30');}}
-function doorFrame(x,y,di){const s=view.scale,p=point(x,y),bi=di.b.idx,wall=WALLS[bi%WALLS.length],ox=di.ox,oy=di.oy;
+function doorFrame(x,y,di){const s=view.scale,WHD=(di.d.s==='N'||di.d.s==='W')?16:11,p=point(x,y),bi=di.b.idx,wall=WALLS[bi%WALLS.length],ox=di.ox,oy=di.oy;
  // doormat + step on the floor
  const rc=['#8a2f3a','#2f5a7a','#5a7a3a','#7a5a2f'][bi%4],mp=point(x+ox*.2,y+oy*.2);
  ctx.fillStyle=BLD_LINE;ctx.beginPath();ctx.moveTo(mp.x,mp.y-5*s);ctx.lineTo(mp.x+10*s,mp.y);ctx.lineTo(mp.x,mp.y+5*s);ctx.lineTo(mp.x-10*s,mp.y);ctx.closePath();ctx.fill();
  ctx.fillStyle=rc;ctx.beginPath();ctx.moveTo(mp.x,mp.y-4*s);ctx.lineTo(mp.x+8.4*s,mp.y);ctx.lineTo(mp.x,mp.y+4*s);ctx.lineTo(mp.x-8.4*s,mp.y);ctx.closePath();ctx.fill();
  ctx.fillStyle=shadeC(rc,1.35);ctx.beginPath();ctx.moveTo(mp.x,mp.y-2*s);ctx.lineTo(mp.x+4.4*s,mp.y);ctx.lineTo(mp.x,mp.y+2*s);ctx.lineTo(mp.x-4.4*s,mp.y);ctx.closePath();ctx.fill();
  // frame: posts + header (world edges across the doorway)
- const A=ox!==0?[[x,y-.5],[x,y+.5]]:[[x-.5,y],[x+.5,y]],pa=point(A[0][0],A[0][1]),pb=point(A[1][0],A[1][1]),H=11*s;
+ const A=ox!==0?[[x,y-.5],[x,y+.5]]:[[x-.5,y],[x+.5,y]],pa=point(A[0][0],A[0][1]),pb=point(A[1][0],A[1][1]),H=WHD*s;
  ctx.fillStyle=BLD_LINE;ctx.beginPath();ctx.moveTo(pa.x,pa.y-H);ctx.lineTo(pb.x,pb.y-H);ctx.lineTo(pb.x,pb.y-H+4.4*s);ctx.lineTo(pa.x,pa.y-H+4.4*s);ctx.closePath();ctx.fill();
  ctx.fillStyle=shadeC(wall,.6);ctx.beginPath();ctx.moveTo(pa.x,pa.y-H+.7*s);ctx.lineTo(pb.x,pb.y-H+.7*s);ctx.lineTo(pb.x,pb.y-H+3.7*s);ctx.lineTo(pa.x,pa.y-H+3.7*s);ctx.closePath();ctx.fill();
  for(const q of[pa,pb]){ctx.fillStyle=BLD_LINE;ctx.fillRect(q.x-1.5*s,q.y-H,3*s,H+1*s);ctx.fillStyle='#e8dcc0';ctx.fillRect(q.x-.9*s,q.y-H+.6*s,1.8*s,H-.2*s);ctx.fillStyle='#b8a888';ctx.fillRect(q.x+.1*s,q.y-H+.6*s,.8*s,H-.2*s);}
@@ -642,7 +646,7 @@ function floorDeco(x,y,s){const bi=DM.bidx[y][x],b=DM.buildings[bi];if(!b)return
  if(inRug){const rc=['#8a2f3a','#2f5a7a','#5a7a3a','#7a5a2f'][(bi+1)%4];ctx.fillStyle=rc;ctx.beginPath();ctx.moveTo(p.x,p.y-5.4*s);ctx.lineTo(p.x+10.8*s,p.y);ctx.lineTo(p.x,p.y+5.4*s);ctx.lineTo(p.x-10.8*s,p.y);ctx.closePath();ctx.fill();
   ctx.strokeStyle=shadeC(rc,1.5);ctx.lineWidth=Math.max(1,s*.7);ctx.beginPath();ctx.moveTo(p.x,p.y-3.4*s);ctx.lineTo(p.x+6.8*s,p.y);ctx.lineTo(p.x,p.y+3.4*s);ctx.lineTo(p.x-6.8*s,p.y);ctx.closePath();ctx.stroke();
   ctx.fillStyle=shadeC(rc,.7);ctx.fillRect(p.x-1*s,p.y-.5*s,2*s,s);}}
-function drawGround(){fit();let s=view.scale;for(let y=0;y<E.TH;y++)for(let x=0;x<E.TW;x++){let t=DM.tiles[y][x],o=E.TOWN.g[y][x],n=x*91+y*177;let c=['#4f7850','#557d52','#4a724b'][Math.floor(seeded(n)*3)];if(o==='=')c='#515b5a';if(o===',')c='#7d8c7a';
+function drawGround(){fit();let s=view.scale;for(let y=0;y<E.TH;y++)for(let x=0;x<E.TW;x++){let t=DM.tiles[y][x],o=DM.ground[y][x],n=x*91+y*177;let c=['#4f7850','#557d52','#4a724b'][Math.floor(seeded(n)*3)];if(o==='=')c='#515b5a';if(o===',')c='#7d8c7a';
 if(t==='f'||t==='C'||t==='W'){const fb=DM.bidx[y][x],fs=fb%4;c=fs===0?((x+y)%2?'#8a6f55':'#7f664e'):fs===1?((x+y)%2?'#9a9a8c':'#6e7068'):fs===2?((x+y)%2?'#6b4f3a':'#614632'):((x+y)%2?'#b8aa90':'#a89a80');}if(t==='d')c='#b5985f';{const pp=point(x,y);if(pp.x<-30*s||pp.x>cv.width+30*s||pp.y<-30*s||pp.y>cv.height+30*s)continue;}diamond(x,y,c,'#0002');if(t==='f'||t==='C'){floorDeco(x,y,s);}
 if(t==='d'){let p=point(x,y);ctx.fillStyle='#e6cf8e';ctx.fillRect(p.x-4*s,p.y-1*s,8*s,2*s);}}}
 function drawStatic(x,y){let t=DM.tiles[y][x],s=view.scale;if(t==='W')return drawWallTile(x,y);if(t==='d'){const di=doorInfo()[x+','+y];if(di)doorFrame(x,y,di);return;}if(t==='C')return drawCrate(x,y);
